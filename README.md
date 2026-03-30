@@ -144,4 +144,4 @@ these indices. The code below provides an implementation.
         )
   
 
-[![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/heptaflar/e3ub/actions/workflows/python-package.yml)
+[![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
