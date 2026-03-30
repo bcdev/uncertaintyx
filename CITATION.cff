@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+title: >-
+  Uncertaintyx: tensor-level uncertainty
+  propagation with JAX
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Ralf
+    family-names: Quast
+    email: ralf.quast@brockmann-consult.de
+    affiliation: Brockmann Consult GmbH
+    orcid: 'https://orcid.org/0000-0002-6857-6503'
+license: MIT
+repository-code: >-
+  https://github.com/bcdev/uncertaintyx/
+abstract: >-
+  Uncertaintyx is a lightweight framework for
+  tensor‑level uncertainty propagation, fitting
+  of empirical or physics‑informed models, and
+  metrology‑aware workflows. It produces uncertainty
+  tensors by combining tensor‑valued models with
+  algorithmic differentiation backends such as JAX.
+  Conventional NumPy acts as a bidirectional
+  interoperability layer.

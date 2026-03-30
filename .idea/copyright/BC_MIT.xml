@@ -1,0 +1,6 @@
+<component name="CopyrightManager">
+  <copyright>
+    <option name="notice" value="Copyright (c) Brockmann Consult GmbH, &amp;#36;originalComment.match(&quot;Copyright \(c\) Brockmann Consult GmbH (\d+)&quot;, 1, &quot;-&quot;, &quot;&amp;#36;today.year&quot;)&amp;#36;today.year. &#10;License: MIT" />
+    <option name="myName" value="BC-MIT" />
+  </copyright>
+</component>

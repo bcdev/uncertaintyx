@@ -1,0 +1,100 @@
+#  Copyright (c) Brockmann Consult GmbH, 2026
+#  License: MIT
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uncertaintyx"
+dynamic = ["version"]
+authors = [
+    { name = "Ralf Quast", email = "ralf.quast@brockmann-consult.de" },
+]
+description = """\
+  Tensor-level uncertainty propagation with JAX\
+  """
+keywords = [
+    "metrology for Earth Observation",
+    "uncertainty propagation",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Private :: No Upload",
+]
+readme = { file = "README.md", content-type = "text/markdown" }
+license = { file = "LICENSE", content-type = "text/plain" }
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "jax",
+    "jaxopt",
+    "matplotlib",
+    "numpy",
+    "odrpack",
+    "pandas",
+    "seaborn",
+    "torch",
+]
+
+[project.optional-dependencies]
+extra = [
+    "jupyterlab",
+]
+test = [
+    "pytest",
+    "pytest-cov",
+]
+lint = [
+    "black",
+    "flake8",
+    "jupyterlab-black",
+]
+
+
+[project.scripts]
+
+[project.urls]
+
+[tool.black]
+line-length = 78
+
+[tool.coverage.report]
+exclude_also = [
+    "@nb.guvectorize",
+    "@nb.vectorize",
+]
+
+[tool.coverage.run]
+omit = [
+]
+
+[tool.pytest.ini_options]
+addopts = "-p no:warnings"
+testpaths = ["test"]
+
+[tool.ruff]
+line-length = 78
+
+[tool.setuptools.dynamic]
+version = { attr = "uncertaintyx.__version__" }
+
+[tool.setuptools.packages.find]
+include = [
+    "uncertaintyx*",
+]
+exclude = [
+    "test*",
+]
+
+[tool.setuptools.package-data]
+
