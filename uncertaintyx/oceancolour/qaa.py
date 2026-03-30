@@ -52,7 +52,7 @@ class Eta(ToM):
 
     def __init__(self):
         def f(p, x):
-            """The empirical model function."""
+            """The model function."""
             a, b = p
             return a * (1.0 - b * jnp.exp(-x))
 
@@ -71,7 +71,7 @@ class S(ToM):
 
     def __init__(self):
         def f(p, x):
-            """The empirical model function."""
+            """The model function."""
             a, b, c = p
             return a + b / (c + x)
 

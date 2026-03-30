@@ -40,11 +40,11 @@ class ODR(Fitting):
         **kwargs,
     ) -> Result:
         r"""
-        Fits the parameters of an empirical model function to
-        :math:`M` samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
+        Fits the parameters of a model function to :math:`M`
+        samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
         of data.
 
-        :param f: The empirical model function.
+        :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param ux: Uncertainties :math:`u(X) \in \mathbb{R}^{M \times m}`.
@@ -144,11 +144,11 @@ class HomoscedasticRegression(Fitting):
         self, f: M, x: np.ndarray, y: np.ndarray, *, max_iter: int = 100
     ) -> Result:
         r"""
-        Fits the parameters of an empirical model function to
-        :math:`M` samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
+        Fits the parameters of a model function to :math:`M`
+        samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
         of data.
 
-        :param f: The empirical model function.
+        :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param max_iter: The maximum number of iterations conducted.
@@ -176,11 +176,11 @@ class HomoHeteroscedasticRegression(Fitting):
         max_iter: int = 100,
     ) -> Result:
         r"""
-        Fits the parameters of an empirical model function to
-        :math:`M` samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
+        Fits the parameters of a model function to :math:`M`
+        samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
         of data.
 
-        :param f: The empirical model function.
+        :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param u: Uncertainties :math:`u(X) \in \mathbb{R}^{M \times m}`.
@@ -209,11 +209,11 @@ class HeteroHomoscedasticRegression(Fitting):
         max_iter: int = 100,
     ) -> Result:
         r"""
-        Fits the parameters of an empirical model function to
-        :math:`M` samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
+        Fits the parameters of a model function to :math:`M`
+        samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
         of data.
 
-        :param f: The empirical model function.
+        :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param u: Uncertainties :math:`u(Y) \in \mathbb{R}^{M \times n}`.
@@ -244,11 +244,11 @@ class HeteroscedasticRegression(Fitting):
         max_iter: int = 100,
     ) -> Result:
         r"""
-        Fits the parameters of an empirical model function to
-        :math:`M` samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
+        Fits the parameters of a model function to :math:`M`
+        samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
         of data.
 
-        :param f: The empirical model function.
+        :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param ux: Uncertainties :math:`u(X) \in \mathbb{R}^{M \times m}`.

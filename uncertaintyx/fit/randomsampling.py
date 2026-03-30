@@ -17,7 +17,7 @@ from ..interface.core import Result
 
 class Bootstrap(Fitting):
     """
-    The bootstrap method to fit an empirical model function to x and y
+    The bootstrap method to fit a model function to x and y
     data with unknown (or crudely known) uncertainties.
 
     Use the bootstrap method to propagate uncertainties of x and y to
@@ -62,11 +62,11 @@ class Bootstrap(Fitting):
         **kwargs,
     ):
         r"""
-        Fits the parameters of an empirical model function to
-        :math:`M` samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
+        Fits the parameters of a model function to :math:`M`
+        samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
         of data.
 
-        :param f: The empirical model function.
+        :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :returns: The fit result.
@@ -142,7 +142,7 @@ class NormalPerturbator(Perturbing):
 
 class MonteCarlo(Fitting):
     """
-    The Monte Carlo method to fit an empirical model function to x and y
+    The Monte Carlo method to fit a model function to x and y
     data with known uncertainties.
 
     Use the Monte Carlo method to propagate uncertainties of x and y to
@@ -185,11 +185,11 @@ class MonteCarlo(Fitting):
         **kwargs,
     ):
         r"""
-        Fits the parameters of an empirical model function to
-        :math:`M` samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
+        Fits the parameters of a model function to :math:`M`
+        samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
         of data.
 
-        :param f: The empirical model function.
+        :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param ux: Uncertainties :math:`u(X) \in \mathbb{R}^{M \times m}`.

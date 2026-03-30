@@ -4,7 +4,7 @@
 Interface adapters for pure PyTorch functions.
 
 Adapters employ PyTorch algorithmic differentiation to compute
-derivatives of generic empirical model functions.
+derivatives of generic model functions.
 """
 
 from abc import ABC
