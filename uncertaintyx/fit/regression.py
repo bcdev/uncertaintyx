@@ -155,6 +155,7 @@ class HomoscedasticRegression(Fitting):
         :returns: The fit result.
         return ODR().fit(f, x, y)
         """
+        return ODR().fit(f, x, y)
 
 class HomoHeteroscedasticRegression(Fitting):
     """
