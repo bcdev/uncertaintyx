@@ -1,0 +1,29 @@
+name: uncertaintyx
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.11,<3.14
+  #
+  # Imports
+  - jax
+  - jaxopt
+  - matplotlib
+  - numpy
+  - odrpack
+  - pandas
+  - pytorch
+  - seaborn
+  #
+  # Extra
+  - jupyterlab
+  #
+  # Test
+  - pytest
+  - pytest-cov
+  #
+  # Lint
+  - black
+  - black-jupyter
+  - flake8
+  - ruff
