@@ -100,8 +100,8 @@ class F(ABC):
 
 class M(ABC):
     r"""
-    Interface for a differentiable empirical model function
-    that is mappable over a batch dimension.
+    Interface for a differentiable model function that is mappable
+    over a batch dimension.
 
     Declares a function
 
@@ -257,8 +257,31 @@ class M(ABC):
 
 
 class Result:
-    """
-    The result of an empirical model fitting.
+    r"""
+    The result of a model fitting.
+
+    Under the same notation and remarks as :class:`M` let
+
+    .. math::
+        f: \mathbb{R}^{k} \times \mathbb{R}^{M \times m} \to
+        \mathbb{R}^{M \times n}, \quad (p, X) \mapsto f(X)
+
+    be a differentiable model function. Then the result of a model
+    fitting includes:
+
+    - The model function :math:`f` itself
+    - The optimized model parameter values :math:`p \in \mathbb{R}^{k}`
+    - The standard uncertainty of the optimized parameter values
+      :math:`u(p) \in \mathbb{R}^{k}`.
+    - The uncertainty tensor of the optimized parameter values
+      :math:`U(p) \in \mathbb{R}^{k \times k}`
+    - The irreducible residual variance
+      :math:`v = \|f(p, X) - Y\|^{2} / (M - \|k\|), v \in \mathbb{R}^{n}`
+    - The value of the cost function at its minimum
+    - The exit status, a nonzero value indicating failure
+
+    Besides these properties, the class provides functions to
+    propagate uncertainties.
     """
 
     def __init__(
@@ -275,16 +298,17 @@ class Result:
         r"""
         Creates a new instance of this class.
 
-        Let k denote an arbitrary shape, then:
+        Keyword-only arguments may be used to include custom properties
+        with the result.
 
-        :param f: The empirical model function.
-        :param popt: The optimized parameters :math:`p \in \mathbb{R}^{k}`.
-        :param punc: The standard uncertainties associated with the
-        optimized parameters :math:`u(p) \in \mathbb{R}^{k}`.
-        :param pcov: The uncertainty tensor associated with the
-        optimized parameters :math:`U(p) \in \mathbb{R}^{k \times k}`.
-        :param rvar: The residual variance.
-        :param cost: The value of the cost function.
+        :param f: The model function.
+        :param popt: The optimized model parameter values.
+        :param punc: The uncertainty of the optimized model
+        parameter values.
+        :param pcov: The uncertainty tensor of the optimized model
+        parameter values.
+        :param rvar: The irreducible residual variance.
+        :param cost: The value of the cost function at its minimum.
         :param info: The exit status, a nonzero value indicating failure.
         """
         self._f = f
@@ -312,29 +336,30 @@ class Result:
     @property
     def popt(self) -> np.ndarray:
         r"""
-        Returns the optimized parameter values :math:`p \in \mathbb{R}^{k}`.
+        Returns the optimized model parameter values
+        :math:`p \in \mathbb{R}^{k}`.
         """
         return self._popt
 
     @property
     def pcov(self) -> np.ndarray:
         r"""
-        Returns uncertainty tensor associated with the optimized
-        parameter values :math:`U(p) \in \mathbb{R}^{k \times k}`.
+        Returns uncertainty tensor of the optimized model parameter
+        values :math:`U(p) \in \mathbb{R}^{k \times k}`.
         """
         return self._pcov
 
     @property
     def punc(self) -> np.ndarray:
         r"""
-        Returns the standard uncertainties associated with the optimized
+        Returns the standard uncertainties of the optimized model
         parameter values :math:`u(p) \in \mathbb{R}^{k}`.
         """
         return self._punc
 
     def f(self, x: np.ndarray) -> np.ndarray:
         r"""
-        Evaluates the fitted empirical model function.
+        Evaluates the fitted model function.
 
         Let :math:`M` denote the number of input samples and let
         :math:`m` and :math:`n` be arbitrary shapes, then:
@@ -347,8 +372,8 @@ class Result:
     def ycov_p(self, x: np.ndarray) -> np.ndarray:
         r"""
         Evaluates the uncertainty tensor of the fitted
-        empirical model function values due to the uncertainty
-        of model parameters.
+        model function values due to the uncertainty of
+        model parameters.
 
         Under the same notation as :meth:`f`:
 
@@ -360,8 +385,8 @@ class Result:
     def yunc_p(self, x: np.ndarray) -> np.ndarray:
         r"""
         Evaluates the standard uncertainty of the fitted
-        empirical model function values due to the uncertainty
-        of model parameters.
+        model function values due to the uncertainty of
+        model parameters.
 
         Under the same notation as :meth:`f`:
 
@@ -372,7 +397,7 @@ class Result:
 
     def yvar_p(self, x: np.ndarray) -> np.ndarray:
         r"""
-        Evaluates the variance of the fitted empirical model function
+        Evaluates the variance of the fitted model function
         values due to the uncertainty of model parameters.
 
         Under the same notation as :meth:`f`:
@@ -385,8 +410,8 @@ class Result:
     def ycov_x(self, x: np.ndarray, u: np.ndarray) -> np.ndarray:
         r"""
         Evaluates the uncertainty tensor of the fitted
-        empirical model function values due to the uncertainty
-        of inputs.
+        model function values due to the uncertainty of
+        inputs.
 
         The uncertainty tensor may provide either full covariance,
         i.e., :math:`U(X) \in \mathbb{R}^{M \times m \times m}` or
@@ -411,8 +436,8 @@ class Result:
     def yunc_x(self, x: np.ndarray, u: np.ndarray) -> np.ndarray:
         r"""
         Evaluates the standard uncertainty of the fitted
-        empirical model function values due to the uncertainty
-        of inputs.
+        model function values due to the uncertainty of
+        inputs.
 
         Under the same notation as :meth:`f` and :meth:`ycov_x`:
 
@@ -424,8 +449,8 @@ class Result:
 
     def yvar_x(self, x: np.ndarray, u: np.ndarray) -> np.ndarray:
         r"""
-        Evaluates the variance of the fitted empirical model
-        function values due to the uncertainty of inputs.
+        Evaluates the variance of the fitted model function
+        values due to the uncertainty of inputs.
 
         Under the same notation as :meth:`f` and :meth:`ycov_x`:
 
@@ -438,8 +463,8 @@ class Result:
     def yunc(self, x: np.ndarray, u: np.ndarray | None = None) -> np.ndarray:
         r"""
         Evaluates the total standard uncertainty of the fitted
-        empirical model function values due to the uncertainty
-        of model parameters and inputs, and residual variance.
+        model function values due to the uncertainty of model
+        parameters and inputs, and residual variance.
 
         Under the same notation as :meth:`f` and :meth:`ycov_x`:
 
@@ -456,7 +481,8 @@ class Result:
     @property
     def rvar(self) -> Any:
         r"""
-        Returns the residual variance :math:`v \in \mathbb{R}^{n}`.
+        Returns the irreducible residual variance
+        :math:`v \in \mathbb{R}^{n}`.
         """
         return self._rvar
 
@@ -465,7 +491,8 @@ class Result:
         Returns the value of a property.
 
         :param name: The name of the property.
-        :returns: The value of the property.
+        :returns: The value of the property or `None` if the property
+        is not defined.
         """
         return self._properties.get(name, None)
 
@@ -476,11 +503,13 @@ class Fitting(ABC):
     @abstractmethod
     def fit(self, f: M, x: np.ndarray, y: np.ndarray, **kwargs) -> Result:
         r"""
-        Fits the parameters of an empirical model function to
-        :math:`M` samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
+        Fits the parameters of a model function to :math:`M`
+        samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
         of data.
 
-        :param f: The empirical model function.
+        Under the same notation and remarks as :class:`M`:
+
+        :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :returns: The fit result.
