@@ -107,7 +107,7 @@ class M(ABC):
 
     .. math::
         f: \mathbb{R}^{k} \times \mathbb{R}^{m} \to
-        \mathbb{R}^{n}, \quad x \mapsto f(x)
+        \mathbb{R}^{n}, \quad (p, x) \mapsto f(p, x)
 
     where :math:`k, m, n` are shapes (natural numbers or tuples
     of natural numbers) and :math:`p \in \mathbb{R}^{k} are model
