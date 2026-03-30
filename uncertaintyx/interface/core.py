@@ -252,7 +252,7 @@ class M(ABC):
     def f(self) -> Callable[[Any, Any], Any]:
         r"""
         Returns the native function
-        :math:`f: \mathbb{R}^{k} \mathbb{R}^{m} \to \mathbb{R}^{n}`.
+        :math:`f: \mathbb{R}^{k} \times \mathbb{R}^{m} \to \mathbb{R}^{n}`.
         """
 
 
