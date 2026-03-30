@@ -4,7 +4,7 @@
 Interface adapters for pure JAX functions.
 
 Adapters employ JAX algorithmic differentiation to compute
-derivatives of generic empirical model functions.
+derivatives of generic model functions.
 """
 
 from abc import ABC
