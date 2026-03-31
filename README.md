@@ -1,6 +1,6 @@
 ![Matrix plot](assets/img/qaa3-ycov.png)
 
-# Uncertaintyx: tensor‑level uncertainty propagation with JAX
+# Uncertaintyx
 
 In an algorithm‑centric world, the “measurement devices” are complex, 
 evolving data‑processing codes rather than static laboratory 
