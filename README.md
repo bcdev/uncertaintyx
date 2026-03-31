@@ -13,7 +13,7 @@ differentiation (AD) provides a better foundation because it derives local
 linearizations directly from the implementation whenever needed, so sensitivity
 information automatically stays consistent with the code. Combined with random
 sampling methods for strongly nonlinear behaviour, uncertainty propagation
-is defined in terms of algorithmically differentiable programs. AD frameworks
+can be defined in terms of algorithmically differentiable programs. AD frameworks
 treat inputs, outputs, sensitivities, and uncertainties as dynamic tensor‑valued
 objects rather than forcing the uncertainty calculus into a fixed set of
 closed‑form formulas.
