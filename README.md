@@ -1,8 +1,22 @@
 ![Matrix plot](assets/img/qaa3-ycov.png)
 
-# Uncertaintyx
+# Uncertaintyx: tensor‑level uncertainty propagation with JAX
 
-Tensor‑level uncertainty propagation with [JAX](https://docs.jax.dev/).
+In an algorithm‑centric world, the “measurement devices” are complex, 
+evolving data‑processing codes rather than static laboratory 
+instruments. In this setting, the classical GUM equations, which assume 
+a fixed analytical model, a fixed data flow, and analytical Jacobians, 
+offer limited practical help: the true forward map is the current state 
+of the code, and this changes as algorithms, implementations, 
+and dependencies evolve. Algorithmic differentiation provides a better
+foundation because it derives local linearizations directly from the
+implementation whenever needed, so sensitivity information automatically
+stays consistent with the code. Combined with random sampling and
+related numerical methods for strongly nonlinear behaviour, this enables
+uncertainty propagation to be defined in terms of algorithmically
+differentiable programs. This framework treats inputs, outputs, and
+uncertainties as tensor‑valued objects rather than forcing everything
+into a fixed set of closed‑form formulas.
 
 ## Synopsis
 
@@ -10,7 +24,7 @@ Tensor‑level uncertainty propagation with [JAX](https://docs.jax.dev/).
 propagation, fitting of empirical or physics-informed models, and
 metrology‑aware workflows. It produces uncertainty tensors by combining
 tensor‑valued models with algorithmic (a.k.a. automatic) differentiation
-backends such as JAX. Conventional [NumPy](https://numpy.org)
+backends such as [JAX](https://docs.jax.dev/). Conventional [NumPy](https://numpy.org)
 acts as a bidirectional interoperability layer, enabling JAX‑based code
 to interoperate smoothly with existing workflows.
 
