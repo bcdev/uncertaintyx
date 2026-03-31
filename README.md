@@ -18,6 +18,10 @@ differentiable programs. This framework treats inputs, outputs, and
 uncertainties as tensor‑valued objects rather than forcing everything
 into a fixed set of closed‑form formulas.
 
+The ideas presented here grew out of earlier project-specific implementations
+of algorithmic-differentiation-based uncertainty propagation for harmonised
+satellite calibration workflows underpinning fundamental climate data records.
+
 ## Synopsis
 
 **Uncertaintyx** is a lightweight framework for tensor‑level uncertainty
