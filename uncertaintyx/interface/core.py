@@ -110,7 +110,7 @@ class M(ABC):
         \mathbb{R}^{n}, \quad (p, x) \mapsto f(p, x)
 
     where :math:`k, m, n` are shapes (natural numbers or tuples
-    of natural numbers) and :math:`p \in \mathbb{R}^{k} are model
+    of natural numbers) and :math:`p \in \mathbb{R}^{k}` are model
     parameters. The function can be applied to a batch of input
     samples :math:`X \in \mathbb{R}^{M \times m}` over the outer
     batch dimension :math:`M` to produce a corresponding batch of
