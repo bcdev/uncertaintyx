@@ -56,7 +56,7 @@ as large, evolving software systems. In many modern applications—remote
 sensing retrieval chains, satellite calibration pipelines, high‑resolution
 climate data processing—the “measurement device” is not a static laboratory
 instrument with a simple response model, but a complex codebase that changes
-as algorithms, parameterisations, and dependencies are updated. The genuine
+as algorithms, parameterization, and dependencies are updated. The genuine
 forward map from inputs to outputs is whatever the current version of the
 code computes. Maintaining an analytical model and its hand‑derived Jacobians
 in sync with such a code is labour‑intensive and error‑prone, and often not
