@@ -18,9 +18,10 @@ treat inputs, outputs, sensitivities, and uncertainties as dynamic tensor‑valu
 objects rather than forcing the uncertainty calculus into a fixed set of
 closed‑form formulas.
 
-The concept presented here grew out of earlier project-specific implementations
-of AD-based uncertainty propagation for multi-mission sensor calibration
-workflows underpinning fundamental Earth climate data records.
+> [!NOTE]
+> The concept presented here grew out of earlier project-specific implementations
+> of AD-based uncertainty propagation for multi-mission sensor calibration
+> workflows underpinning fundamental Earth climate data records.
 
 ## Synopsis
 
