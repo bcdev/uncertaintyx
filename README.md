@@ -4,15 +4,15 @@
 
 In an algorithm‑centric world, the “measurement devices” are complex, 
 evolving data‑processing codes rather than static laboratory 
-instruments. In this setting, the classical GUM equations, which assume 
-a fixed analytical model, a fixed data flow, and analytical Jacobians, 
-offer limited practical help: the true forward map is the current state 
-of the code, and this changes as algorithms, implementations, 
-and dependencies evolve. Algorithmic differentiation provides a better
-foundation because it derives local linearizations directly from the
-implementation whenever needed, so sensitivity information automatically
-stays consistent with the code. Combined with random sampling and
-related numerical methods for strongly nonlinear behaviour, this enables
+instruments. In this setting, the classical [GUM](https://doi.org/10.59161/JCGMGUM-1-2023)
+equations, which assume a fixed analytical model, a fixed data flow,
+and analytical Jacobians, offer limited practical help: the true forward
+map is the current state of the code, and this changes as algorithms,
+implementations, and dependencies evolve. Algorithmic differentiation
+provides a better foundation because it derives local linearizations
+directly from the implementation whenever needed, so sensitivity
+information automatically stays consistent with the code. Combined with
+random sampling methods for strongly nonlinear behaviour, this enables
 uncertainty propagation to be defined in terms of algorithmically
 differentiable programs. This framework treats inputs, outputs, and
 uncertainties as tensor‑valued objects rather than forcing everything
