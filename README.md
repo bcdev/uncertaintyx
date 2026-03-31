@@ -6,7 +6,7 @@ Tensor‑level uncertainty propagation with [JAX](https://docs.jax.dev/).
 
 ## Synopsis
 
-**Uncertaintyx** is a leightweight framework for tensor‑level uncertainty
+**Uncertaintyx** is a lightweight framework for tensor‑level uncertainty
 propagation, fitting of empirical or physics-informed models, and
 metrology‑aware workflows. It produces uncertainty tensors by combining
 tensor‑valued models with algorithmic (a.k.a. automatic) differentiation
@@ -32,7 +32,7 @@ fidelity. Frameworks like JAX, facilitating GPUs and TPUs besides CPUs,
 make algorithmic differentiation a game changer, automatically generating
 exact derivatives—even for complex, nonlinear models—at machine precision
 to produce Jacobians and Hessians seamlessly. This approach efficiently
-propagates full covariance structures while honoring spatiotemporal
+propagates full covariance structures while honouring spatiotemporal
 correlations.
 
 **How does it work?** You define and code a function that maps from one
@@ -73,15 +73,15 @@ and structured handling for them. These Jacobians form the foundation
 for parameter estimation, sensitivity analysis, and uncertainty
 propagation within the framework.
 
-The **single-input tensor paradigm** is leightweight and modern,
+The **single-input tensor paradigm** is lightweight and modern,
 following the design principles of leading machine learning frameworks.
 By accepting a single input tensor of arbitrary shape, the model
 remains both flexible and conceptually clean—supporting multiple
 logical inputs without cluttering the function signature. Organizing
-and assembling these logical inputs into a unified tensor structure is the
-user’s responsibility. In this role, you serve as the *Thalamus*—the
-interface channeling structured data into Uncertaintyx’s computational
-core.
+and assembling these logical inputs into a unified tensor structure is
+the user’s responsibility. In this role, you serve as the *Thalamus*—the
+interface channelling structured data into the computational core
+of Uncertaintyx. 
 
 > [!NOTE]
 > The batch dimension $M$ enumerates independent samples (e.g.,
