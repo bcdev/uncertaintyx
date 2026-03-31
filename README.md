@@ -19,7 +19,7 @@ objects rather than forcing the uncertainty calculus into a fixed set of
 closed‑form formulas.
 
 The ideas presented here grew out of earlier project-specific implementations
-of AD-based uncertainty propagation for harmonised satellite calibration
+of AD-based uncertainty propagation for harmonized satellite calibration
 workflows underpinning fundamental climate data records.
 
 ## Synopsis
@@ -37,7 +37,7 @@ deliver 3D data, and Earth climate records form 4D datasets—with ocean
 and atmosphere data reaching up to 5D. Applying standard matrix-based
 uncertainty propagation requires flattening these N-D arrays into 1D
 vectors, which obscures the vital spatiotemporal structure of both the
-data and the algorithms designed to analyze it. Tensors are the ideal
+data and the algorithms designed to analyse it. Tensors are the ideal
 solution, and the law of propagation of uncertainty, when formulated
 and coded in general tensor form, is elegantly beautiful. If you’re curious,
 compare [NIST TN 1297](https://www.nist.gov/pml/nist-technical-note-1297/nist-tn-1297-appendix-law-propagation-uncertainty) (Equation A-3)
