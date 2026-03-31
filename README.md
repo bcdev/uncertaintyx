@@ -2,8 +2,8 @@
 
 # Uncertaintyx
 
-In an algorithm-driven measurement context, the “measurement procedures”
-are not static laboratory instructions but complex, evolving data-processing
+In an algorithm-driven measurement context, the “measurement models”
+are not static laboratory instruments but complex, evolving data-processing
 codes. In this setting, the classical [GUM](https://doi.org/10.59161/JCGMGUM-1-2023)
 framework—built on assumptions of a fixed analytical model, a fixed data
 flow, and manually maintained analytical Jacobians—offers limited
