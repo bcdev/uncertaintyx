@@ -20,7 +20,7 @@ closed‑form formulas.
 
 The concept presented here grew out of earlier project-specific implementations
 of AD-based uncertainty propagation for multi-mission sensor calibration
-workflows underpinning fundamental climate data records.
+workflows underpinning fundamental Earth climate data records.
 
 ## Synopsis
 
