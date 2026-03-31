@@ -6,29 +6,28 @@ In an algorithm‑centric world, the “measurement devices” are complex,
 evolving data‑processing codes rather than static laboratory 
 instruments. In this setting, the classical [GUM](https://doi.org/10.59161/JCGMGUM-1-2023)
 equations, which assume a fixed analytical model, a fixed data flow,
-and analytical Jacobians, offer limited practical help: the true forward
+and hand‑managed analytical Jacobians, offer limited practical help: the true forward
 map is the current state of the code, and this changes as algorithms,
-implementations, and dependencies evolve. Algorithmic differentiation
-provides a better foundation because it derives local linearizations
-directly from the implementation whenever needed, so sensitivity
-information automatically stays consistent with the code. Combined with
-random sampling methods for strongly nonlinear behaviour, this enables
-uncertainty propagation to be defined in terms of algorithmically
-differentiable programs. This framework treats inputs, outputs, and
-uncertainties as tensor‑valued objects rather than forcing everything
+implementations, and dependencies evolve. Algorithmic differentiation (AD)
+provides a better foundation because it derives local linearizations directly
+from the implementation whenever needed, so sensitivity information automatically
+stays consistent with the code. Combined with random sampling methods for strongly
+nonlinear behaviour, this enables uncertainty propagation to be defined in terms
+of algorithmically differentiable programs. AD frameworks treat inputs, outputs,
+and uncertainties as tensor‑valued objects rather than forcing the data processing
 into a fixed set of closed‑form formulas.
 
 The ideas presented here grew out of earlier project-specific implementations
-of algorithmic-differentiation-based uncertainty propagation for harmonised
-satellite calibration workflows underpinning fundamental climate data records.
+of AD-based uncertainty propagation for harmonised satellite calibration
+workflows underpinning fundamental climate data records.
 
 ## Synopsis
 
 **Uncertaintyx** is a lightweight framework for tensor‑level uncertainty
 propagation, fitting of empirical or physics-informed models, and
 metrology‑aware workflows. It produces uncertainty tensors by combining
-tensor‑valued models with algorithmic (a.k.a. automatic) differentiation
-backends such as [JAX](https://docs.jax.dev/). Conventional [NumPy](https://numpy.org)
+tensor‑valued models with AD backends such as [JAX](https://docs.jax.dev/).
+Conventional [NumPy](https://numpy.org)
 acts as a bidirectional interoperability layer, enabling JAX‑based code
 to interoperate smoothly with existing workflows.
 
@@ -47,7 +46,7 @@ with the tensor equation and code further below.
 or Monte Carlo often struggle with scalability for high-dimensional
 tensors, demanding extensive evaluations or approximations that compromise
 fidelity. Frameworks like JAX, facilitating GPUs and TPUs besides CPUs,
-make algorithmic differentiation a game changer, automatically generating
+make  differentiation a game changer, automatically generating
 exact derivatives—even for complex, nonlinear models—at machine precision
 to produce Jacobians and Hessians seamlessly. This approach efficiently
 propagates full covariance structures while honouring spatiotemporal
