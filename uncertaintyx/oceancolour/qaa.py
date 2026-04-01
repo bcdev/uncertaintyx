@@ -53,15 +53,15 @@ class Eta(ToM):
     def __init__(self):
         def f(p, x):
             """The model function."""
-            a, b = p
-            return a * (1.0 - b * jnp.exp(-x))
+            a, c = p
+            return a * (1.0 - 1.2 * jnp.exp(-c * x))
 
         super().__init__(f)
 
     def estimate(
         self, x: np.ndarray | None = None, y: np.ndarray | None = None
     ) -> np.ndarray:
-        return np.array([2.0, 1.2])
+        return np.array([2.0, 0.9])
 
 
 class S(ToM):
