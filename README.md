@@ -90,7 +90,7 @@ f(p, X) \mapsto Y
 $$
 
 The main objective of Uncertaintyx is to provide efficient access
-to Uncertainty tensors for such functions. While Jacobians themselves
+to uncertainty tensors for such functions. While Jacobians themselves
 are obtained through automatic differentiation (using JAX),
 **Uncertaintyx** delivers a high-level interface, utilities,
 and structured handling for them. These Jacobians form the foundation
