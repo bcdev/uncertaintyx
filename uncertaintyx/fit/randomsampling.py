@@ -33,7 +33,7 @@ class Bootstrap(Fitting):
     """
 
     def __init__(
-        self, fitting: Fitting, seed: int = 5489, how_many: int = 5000
+        self, fitting: Fitting, seed: int = 5489, how_many: int = 1000
     ):
         """
         Creates a new bootstrap instance.
@@ -155,7 +155,7 @@ class MonteCarlo(Fitting):
         self,
         fitting: Fitting,
         perturbator: Perturbing = NormalPerturbator(5489),
-        how_many: int = 5000,
+        how_many: int = 1000,
     ):
         """
         Creates a new Monte Carlo instance.
