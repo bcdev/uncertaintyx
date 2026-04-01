@@ -2,31 +2,34 @@
 
 # Uncertaintyx
 
-In an algorithm-driven measurement context, the “measurement models”
-are not static laboratory instruments but complex, evolving data-processing
+In an algorithm-driven measurement context, the “measurement models” are
+not static laboratory instruments but complex, evolving data-processing
 codes. In this setting, the classical [GUM](https://doi.org/10.59161/JCGMGUM-1-2023)
 framework—built on assumptions of a fixed analytical model, a fixed data
-flow, and manually maintained analytical Jacobians—offers limited
-practical guidance. The true forward map is defined by the current state
-of the code, which changes as algorithms, implementations, and data
-dependencies evolve. Algorithmic differentiation (AD) provides a more
-flexible foundation: it derives local linearizations directly from the
-implementation whenever needed, ensuring that sensitivity information
-remains consistent with the code itself. Combined with random sampling
-methods for strongly nonlinear behavior, AD enables uncertainty propagation
-to be formulated in terms of algorithmically differentiable programs.
-AD frameworks represent inputs, outputs, sensitivities, and uncertainties
-as dynamic tensor-valued objects, freeing the uncertainty calculus from
-reliance on fixed closed-form formulas. Moreover, AD can enable sensitivities
-and uncertainties to be used within data‑processing codes themselves,
+flow, and manually maintained analytical Jacobians—offers limited practical
+guidance. The true forward map is defined by the current state of the code,
+which evolves as algorithms, implementations, and data dependencies change.
+
+Algorithmic differentiation (AD) provides a more flexible foundation: it
+derives local linearizations directly from the implementation whenever
+needed, ensuring that sensitivity information remains consistent with
+the code itself. Combined with random sampling methods for strongly 
+nonlinear behaviour, AD enables uncertainty propagation to be formulated
+in terms of algorithmically differentiable programs.
+
+As the computational backbone of much of modern machine learning, AD
+frameworks represent inputs, outputs, and sensitivities as dynamic
+tensor-valued objects, freeing the uncertainty calculus from reliance on
+fixed closed-form formulas. Moreover, AD allows sensitivities and
+uncertainties to be integrated **within** data‑processing codes themselves,
 turning them from external annotations into active elements of
 computational workflows.
 
 > [!NOTE]
-> The concept presented here grew out of earlier project-specific
-> implementations of AD-based uncertainty propagation for multi-mission
-> remote sensing calibration workflows underpinning fundamental Earth
-> climate data records.
+> The concept presented here grew out of earlier, project‑specific
+> implementations of AD‑based uncertainty propagation. These implementations
+> enabled multi‑mission remote sensing calibration workflows that
+> underpin fundamental Earth climate data records.
 
 ## Synopsis
 
