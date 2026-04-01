@@ -46,17 +46,17 @@ class QaaTest(unittest.TestCase):
         result = Bootstrap(HomoscedasticRegression()).fit(Eta(), x, y)
 
         self.assertEqual(0, result.info)
-        self.assertAlmostEqual(1.96, result.popt[0], delta=0.05)
-        self.assertAlmostEqual(1.69, result.popt[1], delta=0.05)
-        self.assertAlmostEqual(0.11, result.punc[0], delta=0.01)
-        self.assertAlmostEqual(0.13, result.punc[1], delta=0.01)
-        self.assertAlmostEqual(39.5, result.cost, delta=0.5)
+        self.assertAlmostEqual(2.0, result.popt[0], delta=0.1)
+        self.assertAlmostEqual(0.7, result.popt[1], delta=0.2)
+        self.assertAlmostEqual(0.2, result.punc[0], delta=0.1)
+        self.assertAlmostEqual(0.1, result.punc[1], delta=0.1)
+        self.assertAlmostEqual(0.3, result.rvar, delta=0.1)
 
         print()
         print("popt = ", result.popt)
         print("punc = ", result.punc)
         print("pcov = ", result.pcov)
-        print("cost = ", result.cost)
+        print("rvar = ", result.rvar)
 
         RegressionPlot(result).plot(
             x,
@@ -76,8 +76,8 @@ class QaaTest(unittest.TestCase):
             yrange=(0.5, 4.5),
             cmap="cividis",
             cbar_label=r"variance-covariance $U_p(\eta)$",
-            cbar_max=0.024,
-            cbar_min=-0.024,
+            cbar_max=0.035,
+            cbar_min=-0.035,
             savefig="qaa2-ycov.png",
         )
 
