@@ -2,13 +2,7 @@
 #  License: MIT
 """
 This module provides functions and empirical model functions used
-in the Quasi-Analytical Algorithm (QAA). For details refer to:
-
-Melin & Sclep (2015). Band shifting for ocean color multi-spectral
-reflectance data. https://doi.org/10.1364/OE.23.002262.
-
-Lee et al. (2010). An Update of the Quasi-Analytical Algorithm.
-https://www.ioccg.org/groups/Software_OCA/QAA_v5.pdf.
+in the Quasi-Analytical Algorithm (QAA).
 """
 
 import jax.numpy as jnp
@@ -46,7 +40,8 @@ class Rrs(ToM):
 
 class E(ToM):
     """
-    Empirical model function to fit data in Lee et al. (2010, Figure 2).
+    Empirical model function to fit data in Lee et al. (2010, Figure 2)
+    for the :math:`\eta` coefficient.
     """
 
     def __init__(self):
@@ -65,7 +60,8 @@ class E(ToM):
 
 class S(ToM):
     """
-    Empirical model function to fit data in Lee et al. (2010, Figure 3).
+    Empirical model function to fit data in Lee et al. (2010, Figure 3)
+    for the :math:`S` coefficient.
     """
 
     def __init__(self):
