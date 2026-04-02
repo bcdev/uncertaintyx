@@ -247,8 +247,8 @@ class Qaa(ToM):
         self, x: np.ndarray | None = None, y: np.ndarray | None = None
     ) -> np.ndarray:
         pars = dict(
-            r0=1.7000,
-            r1=0.5200,
+            r0=0.5200,
+            r1=1.7000,
             g0=0.0890,
             g1=0.1245,
             h0=-1.146,
