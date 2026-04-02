@@ -57,9 +57,7 @@ class ODR(Fitting):
             """Transpose for ODRPACK compliance."""
             return np.moveaxis(g, -1, 0) if g.ndim > 1 else g
 
-        def r(
-            _: ndarray, shape: tuple = (), copy: bool = False
-        ) -> ndarray:
+        def r(_: ndarray, shape: tuple = (), copy: bool = False) -> ndarray:
             """Ravel for ODRPACK compliance."""
             return (
                 np.reshape(_, shape=(-1,) + shape, copy=copy)
@@ -67,9 +65,7 @@ class ODR(Fitting):
                 else _
             )
 
-        def u(
-            _: ndarray, shape: tuple, copy: bool = False
-        ) -> ndarray:
+        def u(_: ndarray, shape: tuple, copy: bool = False) -> ndarray:
             """Unravel for ODRPACK compliance."""
             return (
                 np.reshape(_, shape=shape, copy=copy)
@@ -156,6 +152,7 @@ class HomoscedasticRegression(Fitting):
         return ODR().fit(f, x, y)
         """
         return ODR().fit(f, x, y)
+
 
 class HomoHeteroscedasticRegression(Fitting):
     """
