@@ -209,7 +209,7 @@ class Qaa(ToM):
             denote the model parameter vector, let
 
             .. math::
-                y = (\lambda, R_\mathrm{rs}(\lambda),
+                x = (\lambda, R_\mathrm{rs}(\lambda),
                 a_\mathrm{w}(\lambda),
                 b_\mathrm{bw}(\lambda))
                 \in \mathbb{R}^{4 \times m}
