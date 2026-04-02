@@ -42,18 +42,18 @@ class Qaa(ToM):
         b55x: int = 0
         b670: int = 0
 
-        def _r(R, c1=0.52, c2=1.70):  # noqa: N806
+        def _r(R, r0=0.52, r1=1.70):  # noqa: N806
             r"""
             Returns the spectral remote sensing reflectance
             :math:`r_{\mathrm{rs}}(\lambda)` just below the
             surface.
 
             :param R: :math:`R_{\mathrm{rs}}(\lambda)`
-            :param c1: A coefficient.
-            :param c2: A coefficient.
+            :param r0: A coefficient.
+            :param r1: A coefficient.
             :returns: :math:`r_{\mathrm{rs}}(\lambda)`.
             """
-            return R / (c1 + c2 * R)
+            return R / (r0 + r1 * R)
 
         def _u(r, g0=0.0890, g1=0.1245):
             r"""
@@ -136,28 +136,29 @@ class Qaa(ToM):
             """
             return (u * a) / (1.0 - u) - bw
 
-        def _e(i, e1=2.0, e2=1.2, e3=0.9):
+        def _e(i, e0=2.0, e1=1.2, e2=0.9):
             """
             Returns the coefficient :math:`\eta`.
 
             :param i: The blue to green spectral index.
+            :param e0: A coefficient.
             :param e1: A coefficient.
             :param e2: A coefficient.
             :return: The coefficient :math:`\eta`.
             """
-            return e1 * (1.0 - e2 * jnp.exp(-e3 * i))
+            return e0 * (1.0 - e1 * jnp.exp(-e2 * i))
 
-        def _s(i, s1=0.015, s2=0.002, s3=0.600):
+        def _s(i, s0=0.015, s1=0.002, s2=0.600):
             r"""
             Returns the coefficient :math:`S`.
 
             :param i: The blue to green spectral index.
+            :param s0: A coefficient (:math:`\mathrm{nm}^{-1}`).
             :param s1: A coefficient (:math:`\mathrm{nm}^{-1}`).
-            :param s2: A coefficient (:math:`\mathrm{nm}^{-1}`).
-            :param s3: A coefficient.
+            :param s2: A coefficient.
             :returns: The coefficient :math:`S` (:math:`\mathrm{nm}^{-1}`).
             """
-            return s1 + s2 / (s3 + i)
+            return s0 + s1 / (s2 + i)
 
         def _z(i):
             r"""
@@ -169,13 +170,44 @@ class Qaa(ToM):
             return 0.74 + 0.2 / (0.8 + i)
 
         def f(p, x):
-            c1, c2, g0, g1, h0, h1, h2, e1, e2, e3, s1, s2, s3 = p
+            r"""
+            The QAA model function.
+
+            Let :math:`k` be the number of model parameters and let
+            :math:`m` denote the number of spectral wavebands. Let
+
+            .. math::
+                p = (r_0, r_1, g_0, g_1, h_0, h_1, h_2,
+                \eta_0, \eta_1, \eta_2, s_0, s_1, s_2)
+                \in \mathbb{R}^{k}
+
+            denote the model parameters, let
+
+            .. math::
+                x = (\lambda, R_\mathrm{rs}(\lambda),
+                a_\mathrm{w}(\lambda),
+                b_\mathrm{bw}(\lambda))
+                \in \mathbb{R}^{4 \times m}
+
+            denote the inputs of the model, and let
+
+            .. math::
+                y = (a_\mathrm{dg}(\lambda), a_\mathrm{ph}(\lambda))
+                \in \mathbb{R}^{2 \times m}
+
+            denote its outputs. Then:
+
+            :param p: The parameters :math:`p \in \mathbb{R}^{k}`.
+            :param x: :math:`x \in \mathbb{R}^{4 \times m}`.
+            :returns: :math:`y \in \mathbb{R}^{2 \times m}`.
+            """
+            r0, r1, g0, g1, h0, h1, h2, e0, e1, e2, s1, s2, s3 = p
             W = x[0]  # noqa: N806
             R = x[1]  # noqa: N806
             aw = x[2]
             bw = x[3]
             # 1
-            r = _r(R, c1, c2)
+            r = _r(R, r0, r1)
             u = _u(r, g0, g1)
             # 2
             a = jnp.where(
@@ -191,7 +223,7 @@ class Qaa(ToM):
             )
             # 4
             i = r[b443] / r[b55x]
-            e = _e(i, e1, e2, e3)
+            e = _e(i, e0, e1, e2)
             # 5
             bbp = b * jnp.where(
                 R[b670] < 0.0015,
@@ -215,19 +247,19 @@ class Qaa(ToM):
         self, x: np.ndarray | None = None, y: np.ndarray | None = None
     ) -> np.ndarray:
         pars = dict(
-            c1=1.7000,
-            c2=0.5200,
+            r0=1.7000,
+            r1=0.5200,
             g0=0.0890,
             g1=0.1245,
             h0=-1.146,
             h1=-1.366,
             h2=-0.469,
-            e1=2.0000,
-            e2=1.2000,
-            e3=0.9000,
-            s1=0.0150,
-            s2=0.0020,
-            s3=0.6000,
+            e0=2.0000,
+            e1=1.2000,
+            e2=0.9000,
+            s0=0.0150,
+            s1=0.0020,
+            s2=0.6000,
         )
         return np.array([p for _, p in pars.items()])
 
