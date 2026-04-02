@@ -9,7 +9,9 @@ import pandas as pd
 
 from uncertaintyx.fit.randomsampling import Bootstrap
 from uncertaintyx.fit.regression import HomoscedasticRegression
+from uncertaintyx.interface.core import M
 from uncertaintyx.oceancolour.qaa import E
+from uncertaintyx.oceancolour.qaa import Qaa
 from uncertaintyx.oceancolour.qaa import S
 from uncertaintyx.plot.plots import MatrixPlot
 from uncertaintyx.plot.plots import RegressionPlot
@@ -125,6 +127,28 @@ class QaaTest(unittest.TestCase):
             cbar_min=0.0e-05,
             savefig="qaa3-ycov.png",
         )
+
+    def test_qaa(self):
+        qaa = Qaa()
+        self.assertIsInstance(qaa, M)
+
+        W = np.array(  # noqa: N806
+            [412.0, 443.0, 489.0, 510.0, 555.0, 670.0]
+        )
+        R = np.array(  # noqa: N806
+            [0.00450, 0.00410, 0.00402, 0.00295, 0.00169, 0.00018]
+        )
+        aw = np.array(
+            [0.00473, 0.00635, 0.01500, 0.03250, 0.05950, 0.04390]
+        )
+        bw = np.array(
+            [0.00340, 0.00250, 0.00158, 0.00133, 0.00090, 0.00000]
+        )
+        x = np.expand_dims(np.stack([W, R, aw, bw]), axis=0)
+        p = qaa.estimate()
+        y = qaa.eval(p, x)
+
+        print("y = ", y)
 
 
 if __name__ == "__main__":
