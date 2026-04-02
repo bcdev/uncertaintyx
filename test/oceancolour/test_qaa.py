@@ -9,7 +9,7 @@ import pandas as pd
 
 from uncertaintyx.fit.randomsampling import Bootstrap
 from uncertaintyx.fit.regression import HomoscedasticRegression
-from uncertaintyx.oceancolour.qaa import Eta
+from uncertaintyx.oceancolour.qaa import E
 from uncertaintyx.oceancolour.qaa import S
 from uncertaintyx.plot.plots import MatrixPlot
 from uncertaintyx.plot.plots import RegressionPlot
@@ -43,7 +43,7 @@ class QaaTest(unittest.TestCase):
         """
         x, y = read_data("test.resources", "fig2.csv")
 
-        result = Bootstrap(HomoscedasticRegression()).fit(Eta(), x, y)
+        result = Bootstrap(HomoscedasticRegression()).fit(E(), x, y)
 
         self.assertEqual(0, result.info)
         self.assertAlmostEqual(2.0, result.popt[0], delta=0.1)

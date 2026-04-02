@@ -44,8 +44,7 @@ class Rrs(ToM):
     ) -> np.ndarray:
         return np.array([1.70, 0.52])
 
-
-class Eta(ToM):
+class E(ToM):
     """
     Empirical model function to fit data in Lee et al. (2010, Figure 2).
     """
