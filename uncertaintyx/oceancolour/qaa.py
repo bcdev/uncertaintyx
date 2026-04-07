@@ -16,15 +16,21 @@ class Qaa(ToM):
     The Quasi-Analytical Algorithm (QAA).
 
     Let :math:`\lambda` denote spectral wavelength expressed in nm. Then
-    The QAA algorithm computes detrital matter and gelbstoff absorption
-    coefficients :math:`a_{\mathrm{dg}}(\lambda)` and phytoplankton
-    absorption coefficients :math:`a_{\mathrm{ph}}(\lambda)` from remote
-    sensing reflectance :math:`R_{\mathrm{rs}}(\lambda)` and absorption
-    and back-scattering coefficients :math:`a_{\mathrm{w}}(\lambda)` and
-    :math:`b_{\mathrm{bw}}(\lambda)` of pure water, respectively.
-    Coefficients are expressed in units of :math:`\mathrm{m}^{-1}`.
+    the QAA algorithm computes inherent optical properties
 
-    For details refer to:
+    - total absorption :math:`a(\lambda)`,
+    - absorption by detritus and gelbstoff :math:`a_{\mathrm{dg}}(\lambda)`,
+    - absorption by phytoplankton :math:`a_{\mathrm{ph}}(\lambda)`, and
+    - back-scattering by particulate matter :math:`b_{\mathrm{bp}}(\lambda)`
+
+    from
+
+    - remote sensing reflectance :math:`R_{\mathrm{rs}}(\lambda)`,
+    - absorption by pure seawater :math:`a_{\mathrm{w}}(\lambda)`, and
+    - back-scattering by pure seawater :math:`b_{\mathrm{bw}}(\lambda)`
+
+    All inherent absorption and back-scattering coefficients are expressed
+    in units of :math:`\mathrm{m}^{-1}`. For details refer to:
 
     Lee et al. (2010). An Update of the Quasi-Analytical Algorithm.
     https://www.ioccg.org/groups/Software_OCA/QAA_v5.pdf.
@@ -41,8 +47,9 @@ class Qaa(ToM):
         i412: int = 0,
         i443: int = 1,
         i490: int = 2,
-        i55x: int = 4,
+        i555: int = 4,
         i670: int = 5,
+        jit: bool = True,
     ):
         """
         Creates a new QAA model function.
@@ -50,8 +57,9 @@ class Qaa(ToM):
         :param i412: The index :math:`i_{412}` of a waveband near 412 nm.
         :param i443: The index :math:`i_{443}` of a waveband near 443 nm.
         :param i490: The index :math:`i_{490}` of a waveband near 490 nm.
-        :param i55x: The index :math:`i_{555}` of a waveband near 555 nm.
+        :param i555: The index :math:`i_{555}` of a waveband near 555 nm.
         :param i670: The index :math:`i_{670}` of a waveband near 670 nm.
+        :param jit: Switches JIT compilation on and off (for debugging).
         """
 
         def _r(R, r0=0.52, r1=1.70):  # noqa: N806
@@ -95,13 +103,13 @@ class Qaa(ToM):
             def g(r):
                 i = r[i670] / r[i490]  # red to green spectral index
                 return jnp.log10(
-                    (r[i443] + r[i490]) / (r[i55x] + 5.0 * r[i670] * i)
+                    (r[i443] + r[i490]) / (r[i555] + 5.0 * r[i670] * i)
                 )
 
             def h(x, h0, h1, h2):
                 return jnp.power(10.0, h0 + (h1 + h2 * x) * x)
 
-            return aw[i55x] + h(g(r), h0, h1, h2)
+            return aw[i555] + h(g(r), h0, h1, h2)
 
         def _a_2(R, aw):  # noqa: N806
             r"""
@@ -132,9 +140,8 @@ class Qaa(ToM):
             """
             x = jnp.exp(s * (442.5 - 415.5))
             e = jnp.exp(s * (W - W[i443]))
-            return (
-                (a[i412] - aw[i412] - z * (a[i443] - aw[i443])) / (x - z)
-            ) / e
+            adg = (a[i412] - aw[i412] - z * (a[i443] - aw[i443])) / (x - z)
+            return adg / e
 
         def _b(u, a, bw):
             r"""
@@ -190,20 +197,18 @@ class Qaa(ToM):
             with nomial wavelengths :math:`\lambda_1, \dots, \lambda_m`.
             The band set must include spectral wavelengths:
 
-            .. math::
-                \lambda_{i_{412}} \simeq 412~\mathrm{nm},
-                \lambda_{i_{443}} \simeq 443~\mathrm{nm},
-                \lambda_{i_{490}} \simeq 490~\mathrm{nm},
+            - :math:`\lambda_{i_{412}} \simeq 412~\mathrm{nm}`,
+            - :math:`\lambda_{i_{443}} \simeq 443~\mathrm{nm}`,
+            - :math:`\lambda_{i_{490}} \simeq 490~\mathrm{nm}`,
+            - :math:`\lambda_{i_{555}} \simeq 555~\mathrm{nm}`, and
+            - :math:`\lambda_{i_{670}} \simeq 670~\mathrm{nm}`.
 
-                \lambda_{i_{555}} \simeq 555~\mathrm{nm},
-                \lambda_{i_{670}} \simeq 670~\mathrm{nm}.
-
-            The input band set may include more than these bands; outputs
+            The input set may include more than these wavebands; outputs
             are spectrally inter- and extrapolated. Let further
 
             .. math::
                 p = (r_0, r_1, g_0, g_1, h_0, h_1, h_2,
-                \eta_0, \eta_1, \eta_2, s_0, s_1, s_2)
+                \eta_0, \eta_1, \eta_2, s_0, s_1, s_2, t)
                 \in \mathbb{R}^{k}
 
             denote the model parameter vector, let
@@ -211,22 +216,24 @@ class Qaa(ToM):
             .. math::
                 x = (\lambda, R_\mathrm{rs}(\lambda),
                 a_\mathrm{w}(\lambda),
-                b_\mathrm{bw}(\lambda))
+                b_\mathrm{bw}(\lambda))^{\mathrm{T}}
                 \in \mathbb{R}^{4 \times m}
 
             denote the matrix of model inputs, and let
 
             .. math::
-                y = (a_\mathrm{dg}(\lambda), a_\mathrm{ph}(\lambda))
-                \in \mathbb{R}^{2 \times m}
+                y = (a(\lambda),
+                a_\mathrm{dg}(\lambda), a_\mathrm{ph}(\lambda),
+                b_\mathrm{bp}(\lambda))^{\mathrm{T}}
+                \in \mathbb{R}^{4 \times m}
 
             denote the matrix of its outputs. Then:
 
             :param p: The parameters :math:`p \in \mathbb{R}^{k}`.
             :param x: :math:`x \in \mathbb{R}^{4 \times m}`.
-            :returns: :math:`y \in \mathbb{R}^{2 \times m}`.
+            :returns: :math:`y \in \mathbb{R}^{4 \times m}`.
             """
-            r0, r1, g0, g1, h0, h1, h2, e0, e1, e2, s0, s1, s2 = p
+            r0, r1, g0, g1, h0, h1, h2, e0, e1, e2, s0, s1, s2, t1 = p
             W = x[0]  # noqa: N806
             R = x[1]  # noqa: N806
             aw = x[2]
@@ -236,23 +243,23 @@ class Qaa(ToM):
             u = _u(r, g0, g1)
             # 2
             a = jnp.where(
-                R[i670] < 0.0015,
+                R[i670] < t1,
                 _a_1(r, aw, h0, h1, h2),
                 _a_2(R, aw),
             )
             # 3
             b = jnp.where(
-                R[i670] < 0.0015,
-                _b(u[i55x], a, bw[i55x]),
+                R[i670] < t1,
+                _b(u[i555], a, bw[i555]),
                 _b(u[i670], a, bw[i670]),
             )
             # 4
-            i = r[i443] / r[i55x]
+            i = r[i443] / r[i555]
             e = _e(i, e0, e1, e2)
             # 5
             bbp = b * jnp.where(
-                R[i670] < 0.0015,
-                jnp.power(W[i55x] / W, e),
+                R[i670] < t1,
+                jnp.power(W[i555] / W, e),
                 jnp.power(W[i670] / W, e),
             )
             # 6
@@ -264,9 +271,9 @@ class Qaa(ToM):
             adg = _adg(W, aw, a, s, z)
             aph = a - adg - aw
 
-            return jnp.stack([adg, aph])
+            return jnp.stack([a, adg, aph, bbp])
 
-        super().__init__(f)
+        super().__init__(f, jit)
 
     def estimate(
         self,
