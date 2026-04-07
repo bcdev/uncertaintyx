@@ -135,7 +135,10 @@ class Exponential(ToM):
         super().__init__(f)
 
     def estimate(
-        self, x: np.ndarray | None = None, y: np.ndarray | None = None
+        self,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        **kwargs,
     ) -> np.ndarray:
         return np.array([1.0, 1.0, 0.0])
 
@@ -154,6 +157,9 @@ class Linear(ToM):
         super().__init__(f)
 
     def estimate(
-        self, x: np.ndarray | None = None, y: np.ndarray | None = None
+        self,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        **kwargs,
     ) -> np.ndarray:
         return np.array([1.0, 0.0])

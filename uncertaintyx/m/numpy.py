@@ -72,7 +72,10 @@ class Exponential(ToM):
         return a * b * np.exp(b * x)
 
     def estimate(
-        self, x: np.ndarray | None = None, y: np.ndarray | None = None
+        self,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        **kwargs,
     ) -> np.ndarray:
         return np.array([1.0, 1.0, 0.0])
 
@@ -98,6 +101,9 @@ class Linear(ToM):
         return np.full_like(x, a)
 
     def estimate(
-        self, x: np.ndarray | None = None, y: np.ndarray | None = None
+        self,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        **kwargs,
     ) -> np.ndarray:
         return np.array([1.0, 0.0])
