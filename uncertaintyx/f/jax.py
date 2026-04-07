@@ -54,6 +54,16 @@ def vec(f: Callable[[Array], Array], x: Array) -> Array:
     return jax.vmap(f)(x)
 
 
+def jac_no_jit(f: Callable[[Array], Array], x: Array) -> Array:
+    """Noncompiled version of :meth:`jac` for debugging."""
+    return jax.vmap(jax.jacrev(f))(x)
+
+
+def vec_no_jit(f: Callable[[Array], Array], x: Array) -> Array:
+    """Noncompiled version of :meth:`vec` for debugging."""
+    return jax.vmap(f)(x)
+
+
 class ToF(F):
     r"""
     Adapts a pure function
@@ -66,22 +76,24 @@ class ToF(F):
     of natural numbers) to the function interface ``F``.
     """
 
-    def __init__(self, f: Callable[[Array], Array]):
+    def __init__(self, f: Callable[[Array], Array], jit: bool = True):
         """
         Creates a new instance of this class.
 
         :param f: The function :math:`f`.
+        :param jit: Switches JIT compilation on and off (for debugging).
         """
-        self._f = jax.jit(f)
+        self._f = jax.jit(f) if jit else f
+        self._jit = jit
 
     def eval(self, x: np.ndarray) -> np.ndarray:
         x_j = jnp.asarray(x)
-        y_j = vec(self._f, x_j)
+        y_j = vec(self._f, x_j) if self._jit else vec_no_jit(self._f, x_j)
         return np.asarray(y_j)
 
     def jac(self, x: np.ndarray) -> np.ndarray:
         x_j = jnp.asarray(x)
-        g_j = jac(self._f, x_j)
+        g_j = jac(self._f, x_j) if self._jit else jac_no_jit(self._f, x_j)
         return np.asarray(g_j)
 
     @property
