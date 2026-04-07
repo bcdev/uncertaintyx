@@ -205,13 +205,22 @@ class Qaa(ToM):
 
             The input set may include more than these wavebands; outputs
             are spectrally inter- and extrapolated. Let further
+            :math:`p \in \mathbb{R}^{k}` comprise the following
+            parameters:
 
-            .. math::
-                p = (r_0, r_1, g_0, g_1, h_0, h_1, h_2,
-                \eta_0, \eta_1, \eta_2, s_0, s_1, s_2, t)
-                \in \mathbb{R}^{k}
+            - :math:`r_1, r_2`: remote sensing reflectance conversion
+              coefficients,
+            - :math:`g_0, g_1`: Gordon et al. (1988) coefficients,
+            - :math:`h_0, h_1, h_2`: polynomial coefficients,
+            - :math:`\eta_0, \eta_1, \eta_2`: :math:`\eta` exponent model
+              coefficients,
+            - :math:`s_0, s_1, s_2`: :math:`S` exponent model coefficients,
+              and
+            - :math:`t`: threshold value on :math:`R_{\mathrm{rs}}` at
+              :math:`lambda = 670~\mathrm{nm}` to branch between case 1
+              and 2 waters,
 
-            denote the model parameter vector, let
+            and let
 
             .. math::
                 x = (\lambda, R_\mathrm{rs}(\lambda),
