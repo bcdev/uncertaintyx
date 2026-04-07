@@ -77,6 +77,27 @@ def vec_x(f: Callable[[Array, Array], Array], p: Array, x: Array) -> Array:
     return jax.vmap(f, in_axes=(None, 0))(p, x)
 
 
+def jac_p_no_jit(
+    f: Callable[[Array, Array], Array], p: Array, x: Array
+) -> Array:
+    """Noncompiled version of :meth:`jac_p` for debugging."""
+    return jax.jacfwd(f, argnums=0)(p, x)
+
+
+def jac_x_no_jit(
+    f: Callable[[Array, Array], Array], p: Array, x: Array
+) -> Array:
+    """Noncompiled version of :meth:`jac_x` for debugging."""
+    return jax.vmap(jax.jacrev(f, argnums=1), in_axes=(None, 0))(p, x)
+
+
+def vec_x_no_jit(
+    f: Callable[[Array, Array], Array], p: Array, x: Array
+) -> Array:
+    """Noncompiled version of :meth:`vec_x` for debugging."""
+    return jax.vmap(f, in_axes=(None, 0))(p, x)
+
+
 class ToM(M, ABC):
     r"""
     Adapts a pure function
@@ -90,30 +111,44 @@ class ToM(M, ABC):
     of natural numbers) to the model function interface ``M``.
     """
 
-    def __init__(self, f: Callable[[Array, Array], Array]):
+    def __init__(self, f: Callable[[Array, Array], Array], jit: bool = True):
         """
         Creates a new instance of this class.
 
         :param f: The function :math:`f`.
+        :param jit: Switches JIT compilation on and off (for debugging).
         """
-        self._f = jax.jit(f)
+        self._f = jax.jit(f) if jit else f
+        self._jit = jit
 
     def eval(self, p: np.ndarray, x: np.ndarray) -> np.ndarray:
         p_j = jnp.asarray(p)
         x_j = jnp.asarray(x)
-        y_j = vec_x(self._f, p_j, x_j)
+        y_j = (
+            vec_x(self._f, p_j, x_j)
+            if self._jit
+            else vec_x_no_jit(self._f, p_j, x_j)
+        )
         return np.asarray(y_j)
 
     def jac_p(self, p: np.ndarray, x: np.ndarray) -> np.ndarray:
         p_j = jnp.asarray(p)
         x_j = jnp.asarray(x)
-        g_j = jac_p(self._f, p_j, x_j)
+        g_j = (
+            jac_p(self._f, p_j, x_j)
+            if self._jit
+            else jac_p_no_jit(self._f, p_j, x_j)
+        )
         return np.asarray(g_j)
 
     def jac_x(self, p: np.ndarray, x: np.ndarray) -> np.ndarray:
         p_j = jnp.asarray(p)
         x_j = jnp.asarray(x)
-        g_j = jac_x(self._f, p_j, x_j)
+        g_j = (
+            jac_x(self._f, p_j, x_j)
+            if self._jit
+            else jac_x_no_jit(self._f, p_j, x_j)
+        )
         return np.asarray(g_j)
 
     @property
