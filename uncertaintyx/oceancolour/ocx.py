@@ -161,7 +161,10 @@ class OCi(ToM):
         super().__init__(f)
 
     def estimate(
-        self, x: np.ndarray | None = None, y: np.ndarray | None = None
+        self,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        **kwargs,
     ) -> np.ndarray:
         """Returns the OCI default parameter values (Hu et al., 2019)."""
         return np.array([-0.4287, 230.47])
@@ -224,7 +227,10 @@ class Olci(OCx):
         super().__init__(5)
 
     def estimate(
-        self, x: np.ndarray | None = None, y: np.ndarray | None = None
+        self,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        **kwargs,
     ) -> np.ndarray:
         """Returns the OC4 default parameter values for OLCI."""
         return np.array([0.42540, -3.21679, 2.86907, -0.62628, -1.09333])

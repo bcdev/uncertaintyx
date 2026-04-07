@@ -269,7 +269,10 @@ class Qaa(ToM):
         super().__init__(f)
 
     def estimate(
-        self, x: np.ndarray | None = None, y: np.ndarray | None = None
+        self,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        **kwargs,
     ) -> np.ndarray:
         pars = dict(
             r0=0.5200,
@@ -285,7 +288,15 @@ class Qaa(ToM):
             s0=0.0150,
             s1=0.0020,
             s2=0.6000,
+            t1=0.0015,
         )
+        match kwargs.get("preset", None):
+            case "case1":
+                pars["t1"] = np.inf
+            case "case2":
+                pars["t1"] = 0.0
+            case _:
+                pass
         return np.array([p for _, p in pars.items()])
 
 
@@ -304,7 +315,10 @@ class E(ToM):
         super().__init__(f)
 
     def estimate(
-        self, x: np.ndarray | None = None, y: np.ndarray | None = None
+        self,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        **kwargs,
     ) -> np.ndarray:
         return np.array([2.0, 0.9])
 
@@ -324,6 +338,9 @@ class S(ToM):
         super().__init__(f)
 
     def estimate(
-        self, x: np.ndarray | None = None, y: np.ndarray | None = None
+        self,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        **kwargs,
     ) -> np.ndarray:
         return np.array([0.015, 0.002, 0.6])
