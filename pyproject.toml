@@ -57,7 +57,7 @@ test = [
 lint = [
     "black",
     "flake8",
-    "jupyterlab-black",
+    "ruff",
 ]
 
 
