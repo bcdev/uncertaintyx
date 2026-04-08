@@ -46,7 +46,7 @@ class QAA(ToM):
        :header: Symbol, Description, Unit
 
        :math:`a(\lambda)`, Total absorption, m-1
-       :math:`a_{\mathrm{dg}}(\lambda)`, Detritus and gelbstoff absorption, m-1
+       :math:`a_{\mathrm{dg}}(\lambda)`, Detritus & gelbstoff absorption, m-1
        :math:`a_{\mathrm{ph}}(\lambda)`, Phytoplankton absorption, m-1
        :math:`b_{\mathrm{bp}}(\lambda)`, Particulate back-scattering, m-1
 
