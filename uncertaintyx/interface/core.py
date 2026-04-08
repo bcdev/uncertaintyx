@@ -240,16 +240,14 @@ class M(ABC):
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
-        **kwargs,
+        preset: str | None = None,
     ) -> np.ndarray:
         r"""
         Returns an initial estimate of the model parameters.
 
-        Implementations may define keyword-only arguments to select
-        parameter presets.
-
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
+        :param preset: The name of a specific parameter preset.
         :returns: An initial estimate of :math:`p \in \mathbb{R}^{k}`.
         """
 
