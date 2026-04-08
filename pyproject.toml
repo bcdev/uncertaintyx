@@ -70,8 +70,7 @@ line-length = 78
 
 [tool.coverage.report]
 exclude_also = [
-    "@nb.guvectorize",
-    "@nb.vectorize",
+    "# no coverage",
 ]
 
 [tool.coverage.run]
