@@ -2,20 +2,19 @@
 #  License: MIT
 
 """
-This package provides test data.
+Test data package.
 
-The following files provide excerpts from Lee et al. (2015):
+The following files are provided:
 
-- a.csv: total absorption
-- adg.csv: absorption by detritus and gelbstoff
-- aph.csv: absorption by phytoplankton
-- rrr.csv: remote sensing reflectance
+.. csv-table::
+   :header: Name, Description, Reference
 
-The following data were kindly provided by Zhong Ping Lee (2026,
-personal communication):
-
-- fig2.csv: plot data for Lee et al. (2010, Figure 2)
-- fig3.csv: plot data for Lee et al. (2010, Figure 3)
+   a.csv, Total absorption (m-1), Lee et al. (2015)
+   adg.csv, Absorption by detritus and gelbstoff (m-1), Lee et al. (2015)
+   aph.csv, Absorption by phytoplankton (m-1), Lee et al. (2015)
+   rrs.csv, Remote sensing reflectance (sr-1), Lee et al. (2015)
+   fig2.csv, Plot data, Lee et al. (2010; Figure 2)
+   fig3.csv, Plot data, Lee et al. (2010; Figure 3)
 
 References:
 
