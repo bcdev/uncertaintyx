@@ -5,6 +5,8 @@ This module provides functions and empirical model functions used
 in the Quasi-Analytical Algorithm (QAA).
 """
 
+from typing import Literal
+
 import jax.numpy as jnp
 import numpy as np
 
@@ -325,25 +327,25 @@ class QAA(ToM):
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
-        **kwargs,
+        preset: Literal["case1", "case2"] | None = None,
     ) -> np.ndarray:
-        pars = dict(
-            r0=0.5200,
-            r1=1.7000,
-            g0=0.0890,
-            g1=0.1245,
-            h0=-1.1459,
-            h1=-1.3658,
-            h2=-0.4693,
-            e0=2.0000,
-            e1=1.2000,
-            e2=0.9000,
-            s0=0.0150,
-            s1=0.0020,
-            s2=0.6000,
-            t1=0.0015,
-        )
-        match kwargs.get("preset", None):
+        pars = {
+            "r0": 0.5200,
+            "r1": 1.7000,
+            "g0": 0.0890,
+            "g1": 0.1245,
+            "h0": -1.1459,
+            "h1": -1.3658,
+            "h2": -0.4693,
+            "e0": 2.0000,
+            "e1": 1.2000,
+            "e2": 0.9000,
+            "s0": 0.0150,
+            "s1": 0.0020,
+            "s2": 0.6000,
+            "t1": 0.0015,
+        }
+        match preset:
             case "case1":
                 pars["t1"] = np.inf
             case "case2":
@@ -371,7 +373,7 @@ class E(ToM):
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
-        **kwargs,
+        preset: str | None = None,
     ) -> np.ndarray:
         return np.array([2.0, 0.9])
 
@@ -394,6 +396,6 @@ class S(ToM):
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
-        **kwargs,
+        preset: str | None = None,
     ) -> np.ndarray:
         return np.array([0.015, 0.002, 0.6])

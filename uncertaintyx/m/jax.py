@@ -173,7 +173,7 @@ class Exponential(ToM):
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
-        **kwargs,
+        preset: str | None = None,
     ) -> np.ndarray:
         return np.array([1.0, 1.0, 0.0])
 
@@ -195,6 +195,6 @@ class Linear(ToM):
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
-        **kwargs,
+        preset: str | None = None,
     ) -> np.ndarray:
         return np.array([1.0, 0.0])
