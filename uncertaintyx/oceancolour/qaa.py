@@ -11,7 +11,7 @@ import numpy as np
 from ..m.jax import ToM
 
 
-class Qaa(ToM):
+class QAA(ToM):
     """
     The Quasi-Analytical Algorithm (QAA).
 

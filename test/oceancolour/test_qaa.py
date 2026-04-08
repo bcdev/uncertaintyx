@@ -5,16 +5,36 @@ import unittest
 from importlib import resources
 
 import numpy as np
-import numpy.testing
 import pandas as pd
 
 from uncertaintyx.fit.randomsampling import Bootstrap
 from uncertaintyx.fit.regression import HomoscedasticRegression
 from uncertaintyx.oceancolour.qaa import E
-from uncertaintyx.oceancolour.qaa import Qaa
+from uncertaintyx.oceancolour.qaa import QAA
 from uncertaintyx.oceancolour.qaa import S
 from uncertaintyx.plot.plots import MatrixPlot
 from uncertaintyx.plot.plots import RegressionPlot
+
+AW = np.array([[0.00473, 0.00635, 0.01500, 0.03250, 0.05950, 0.43900]])
+"""
+Test data for absorption by pure seawater (m-1).
+
+Reference: https://www.ioccg.org/groups/Software_OCA/QAA_v6.xlsm
+"""
+
+BW = np.array([[0.00340, 0.00250, 0.00158, 0.00133, 0.00090, 0.00034]])
+"""
+Test data for back-scattering by pure seawater (m-1).
+
+Reference: https://www.ioccg.org/groups/Software_OCA/QAA_v6.xlsm
+"""
+
+W = np.array([[412.0, 443.0, 489.0, 510.0, 555.0, 670.0]])
+"""
+Test data for precise wavelengths of spectral wavebands (nm).
+
+Reference: https://www.ioccg.org/groups/Software_OCA/QAA_v6.xlsm
+"""
 
 
 def read_plot_data(
@@ -35,13 +55,15 @@ def read_plot_data(
     return x, y
 
 
-def read_test_data(package: str, filename: str) -> np.ndarray:
+def read_test_data(
+    package: str, filename: str
+) -> tuple[np.ndarray, int, int]:
     """
-    Returns resource data.
+    Returns resource data table.
 
     :param package: The package name.
     :param filename: The filename.
-    :returns: The x and y figure data.
+    :returns: The data table.
     """
     with resources.path(package, filename) as resource:
         column = []
@@ -49,7 +71,8 @@ def read_test_data(package: str, filename: str) -> np.ndarray:
             df = pd.read_csv(r, sep=";")
             for name, _ in df.items():
                 column.append(df[name].values)
-    return np.stack(column, axis=-1).squeeze()
+            data = np.stack(column, axis=-1)
+    return data, data.shape[0], data.shape[1]
 
 
 class QaaTest(unittest.TestCase):
@@ -149,19 +172,14 @@ class QaaTest(unittest.TestCase):
 
     def test_qaa_single_batch_case_1(self):
         """
-        Test case: https://www.ioccg.org/groups/Software_OCA/QAA_v6.xlsm
+        Reference: https://www.ioccg.org/groups/Software_OCA/QAA_v6.xlsm
         """
         R = np.array(  # noqa: N806
-            [0.00450, 0.00410, 0.00402, 0.00295, 0.00169, 0.00018]
+            [[0.00450, 0.00410, 0.00402, 0.00295, 0.00169, 0.00018]]
         )
-        W = np.array(  # noqa: N806
-            [412.0, 443.0, 489.0, 510.0, 555.0, 670.0]
-        )
-        aw = np.array([0.00473, 0.00635, 0.01500, 0.03250, 0.05960, 0.43900])
-        bw = np.array([0.00340, 0.00250, 0.00158, 0.00133, 0.00090, 0.00034])
 
-        f = Qaa()
-        x = np.expand_dims(np.stack([W, R, aw, bw]), axis=0)
+        f = QAA()
+        x = np.stack([W, R, AW, BW], axis=1)
         p = f.estimate(preset="case1")
         y = f.eval(p, x)
 
@@ -181,19 +199,14 @@ class QaaTest(unittest.TestCase):
 
     def test_qaa_single_batch_case_2(self):
         """
-        Test case: https://www.ioccg.org/groups/Software_OCA/QAA_v6.xlsm
+        Reference: https://www.ioccg.org/groups/Software_OCA/QAA_v6.xlsm
         """
         R = np.array(  # noqa: N806
-            [0.00450, 0.00410, 0.00402, 0.00295, 0.00169, 0.00018]
+            [[0.00450, 0.00410, 0.00402, 0.00295, 0.00169, 0.00018]]
         )
-        W = np.array(  # noqa: N806
-            [412.0, 443.0, 489.0, 510.0, 555.0, 670.0]
-        )
-        aw = np.array([0.00473, 0.00635, 0.01500, 0.03250, 0.05960, 0.43900])
-        bw = np.array([0.00340, 0.00250, 0.00158, 0.00133, 0.00090, 0.00034])
 
-        f = Qaa()
-        x = np.expand_dims(np.stack([W, R, aw, bw]), axis=0)
+        f = QAA()
+        x = np.stack([W, R, AW, BW], axis=1)
         p = f.estimate(preset="case2")
         y = f.eval(p, x)
 
@@ -215,35 +228,28 @@ class QaaTest(unittest.TestCase):
 
     def test_qaa_multiple_batches(self):
         """
-        Test case: https://www.ioccg.org/groups/Software_OCA/QAA_v6.xlsm
+        Reference: https://www.ioccg.org/groups/Software_OCA/QAA_v6.xlsm
         """
-        R = read_test_data("test.resources", "rrs.csv")  # noqa: N806
-        M, m = R.shape  # noqa: N806
-
-        W = np.broadcast_to(  # noqa: N806
-            np.array([412.0, 443.0, 489.0, 510.0, 555.0, 670.0]),
-            (M, m),
+        R, M, m = read_test_data("test.resources", "rrs.csv")  # noqa: N806
+        f = QAA()
+        x = np.stack(
+            [
+                np.broadcast_to(W, (M, m)),
+                R,
+                np.broadcast_to(AW, (M, m)),
+                np.broadcast_to(BW, (M, m)),
+            ],
+            axis=1,
         )
-        aw = np.broadcast_to(
-            np.array([0.00473, 0.00635, 0.01500, 0.03250, 0.05950, 0.43900]),
-            (M, m),
-        )
-        bw = np.broadcast_to(
-            np.array([0.00340, 0.00250, 0.00158, 0.00133, 0.00090, 0.00034]),
-            (M, m),
-        )
-
-        f = Qaa()
-        x = np.stack([W, R, aw, bw], axis=1)
         p = f.estimate()
         y = f.eval(p, x)
 
-        a_ref = read_test_data("test.resources", "a.csv")
+        A, _, n = read_test_data("test.resources", "a.csv")  # noqa: N806
         a = y[:, 0, :]
         for i in range(M):
-            for j in range(m - 1):
+            for j in range(n):
                 self.assertAlmostEqual(
-                    a_ref[i, j],
+                    A[i, j],
                     a[i, j],
                     delta=0.015,
                     msg=f"{i}, {j}: assertion failed",
