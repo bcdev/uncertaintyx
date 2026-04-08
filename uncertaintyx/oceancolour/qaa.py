@@ -60,9 +60,9 @@ class QAA(ToM):
        :math:`r_1`, Reflectance conversion coefficient, 1.7000,
        :math:`g_0`, Gordon coefficient, 0.0890,
        :math:`g_1`, Gordon coefficient, 0.1245,
-       :math:`h_0`, Polynomial coefficient, 1.1460,
-       :math:`h_1`, Polynomial coefficient, 1.3660,
-       :math:`h_2`, Polynomial coefficient, 0.4690,
+       :math:`h_0`, Polynomial coefficient, -1.1459,
+       :math:`h_1`, Polynomial coefficient, -1.3658,
+       :math:`h_2`, Polynomial coefficient, -0.4693,
        :math:`\eta_0`, Coefficient, 2.0000,
        :math:`\eta_1`, Coefficient, 1.2000,
        :math:`\eta_2`, Coefficient, 0.9000,
@@ -148,7 +148,7 @@ class QAA(ToM):
             """
             return (jnp.sqrt(g0**2 + 4.0 * g1 * r) - g0) / (2.0 * g1)
 
-        def _a_1(r, aw, h0=1.146, h1=1.366, h2=0.469):
+        def _a_1(r, aw, h0=-1.1459, h1=-1.3658, h2=-0.4693):
             r"""
             Returns the total absorption coefficient of Case 1 water
             at :math:`\lambda_{0} = 555~\text{nm}`.
@@ -170,7 +170,7 @@ class QAA(ToM):
             def h(x, h0, h1, h2):
                 return jnp.power(10.0, h0 + (h1 + h2 * x) * x)
 
-            return aw[i555] + 1.0 / h(g(r), h0, h1, h2)
+            return aw[i555] + h(g(r), h0, h1, h2)
 
         def _a_2(R, aw):  # noqa: N806
             r"""
@@ -275,7 +275,7 @@ class QAA(ToM):
 
             denote its outputs. Then:
 
-            :param p: The model parameters :math:`p \in \mathbb{R}^{k}`.
+            :param p: The parameters :math:`p \in \mathbb{R}^{k}`.
             :param x: :math:`x \in \mathbb{R}^{4 \times m}`.
             :returns: :math:`y \in \mathbb{R}^{4 \times m}`.
             """
@@ -332,9 +332,9 @@ class QAA(ToM):
             r1=1.7000,
             g0=0.0890,
             g1=0.1245,
-            h0=1.146,
-            h1=1.366,
-            h2=0.469,
+            h0=-1.1459,
+            h1=-1.3658,
+            h2=-0.4693,
             e0=2.0000,
             e1=1.2000,
             e2=0.9000,

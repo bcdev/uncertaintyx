@@ -15,7 +15,7 @@ from uncertaintyx.oceancolour.qaa import S
 from uncertaintyx.plot.plots import MatrixPlot
 from uncertaintyx.plot.plots import RegressionPlot
 
-AW = np.array([[0.00473, 0.00635, 0.01500, 0.03250, 0.05950, 0.43900]])
+AW = np.array([[0.00473, 0.00635, 0.01500, 0.03250, 0.05960, 0.43900]])
 """
 Test data for absorption by pure seawater (m-1).
 
@@ -184,18 +184,18 @@ class QaaTest(unittest.TestCase):
         y = f.eval(p, x)
 
         a = y[0, 0]
-        self.assertAlmostEqual(0.0620, a[0], delta=0.0001)
-        self.assertAlmostEqual(0.0540, a[1], delta=0.0001)
-        self.assertAlmostEqual(0.0401, a[2], delta=0.0001)
-        self.assertAlmostEqual(0.0482, a[3], delta=0.0001)
-        self.assertAlmostEqual(0.0649, a[4], delta=0.0001)
+        self.assertAlmostEqual(0.06198, a[0], delta=0.0001)
+        self.assertAlmostEqual(0.05400, a[1], delta=0.0001)
+        self.assertAlmostEqual(0.04008, a[2], delta=0.0001)
+        self.assertAlmostEqual(0.04816, a[3], delta=0.0001)
+        self.assertAlmostEqual(0.06491, a[4], delta=0.0001)
 
         bbp = y[0, 3]
-        self.assertAlmostEqual(0.0024, bbp[0], delta=0.0001)
-        self.assertAlmostEqual(0.0021, bbp[1], delta=0.0001)
-        self.assertAlmostEqual(0.0018, bbp[2], delta=0.0001)
-        self.assertAlmostEqual(0.0016, bbp[3], delta=0.0001)
-        self.assertAlmostEqual(0.0014, bbp[4], delta=0.0001)
+        self.assertAlmostEqual(0.00237, bbp[0], delta=0.0001)
+        self.assertAlmostEqual(0.00209, bbp[1], delta=0.0001)
+        self.assertAlmostEqual(0.00177, bbp[2], delta=0.0001)
+        self.assertAlmostEqual(0.00164, bbp[3], delta=0.0001)
+        self.assertAlmostEqual(0.00142, bbp[4], delta=0.0001)
 
     def test_qaa_single_batch_case_2(self):
         """
@@ -211,24 +211,25 @@ class QaaTest(unittest.TestCase):
         y = f.eval(p, x)
 
         a = y[0, 0]
-        self.assertAlmostEqual(0.0707, a[0], delta=0.0002)
-        self.assertAlmostEqual(0.0624, a[1], delta=0.0002)
-        self.assertAlmostEqual(0.0473, a[2], delta=0.0002)
-        self.assertAlmostEqual(0.0573, a[3], delta=0.0002)
-        self.assertAlmostEqual(0.0785, a[4], delta=0.0002)
-        self.assertAlmostEqual(0.4441, a[5], delta=0.0002)
+        self.assertAlmostEqual(0.07072, a[0], delta=0.0002)
+        self.assertAlmostEqual(0.06244, a[1], delta=0.0002)
+        self.assertAlmostEqual(0.04733, a[2], delta=0.0002)
+        self.assertAlmostEqual(0.05729, a[3], delta=0.0002)
+        self.assertAlmostEqual(0.07853, a[4], delta=0.0002)
+        self.assertAlmostEqual(0.44407, a[5], delta=0.0002)
 
         bbp = y[0, 3]
-        self.assertAlmostEqual(0.0032, bbp[0], delta=0.0001)
-        self.assertAlmostEqual(0.0028, bbp[1], delta=0.0001)
-        self.assertAlmostEqual(0.0024, bbp[2], delta=0.0001)
-        self.assertAlmostEqual(0.0022, bbp[3], delta=0.0001)
-        self.assertAlmostEqual(0.0019, bbp[4], delta=0.0001)
-        self.assertAlmostEqual(0.0014, bbp[5], delta=0.0001)
+        self.assertAlmostEqual(0.00319, bbp[0], delta=0.0001)
+        self.assertAlmostEqual(0.00281, bbp[1], delta=0.0001)
+        self.assertAlmostEqual(0.00237, bbp[2], delta=0.0001)
+        self.assertAlmostEqual(0.00220, bbp[3], delta=0.0001)
+        self.assertAlmostEqual(0.00190, bbp[4], delta=0.0001)
+        self.assertAlmostEqual(0.00137, bbp[5], delta=0.0001)
 
     def test_qaa_multiple_batches(self):
         """
-        Reference: https://www.ioccg.org/groups/Software_OCA/QAA_v6.xlsm
+        Test with tolerance increased because there is a logical flaw in
+        the reference Excel sheet (TBC).
         """
         R, M, m = read_test_data("test.resources", "rrs.csv")  # noqa: N806
         f = QAA()
