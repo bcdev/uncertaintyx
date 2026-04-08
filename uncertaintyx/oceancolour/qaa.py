@@ -12,25 +12,86 @@ from ..m.jax import ToM
 
 
 class QAA(ToM):
-    """
-    The Quasi-Analytical Algorithm (QAA).
+    r"""
+    The Quasi-Analytical Algorithm (QAA) to compute inherent
+    optical properties.
 
-    Let :math:`\lambda` denote spectral wavelength expressed in nm. Then
-    the QAA algorithm computes inherent optical properties
+    Let :math:`m \ge 5` denote the number of spectral wavebands
+    with nomial wavelengths :math:`\lambda = (\lambda_1, \dots, \lambda_m`).
+    QAA uses a minimum band set consisting of:
+    :math:`\lambda_{i_{412}} \simeq 412~\mathrm{nm}`,
+    :math:`\lambda_{i_{443}} \simeq 443~\mathrm{nm}`,
+    :math:`\lambda_{i_{490}} \simeq 490~\mathrm{nm}`,
+    :math:`\lambda_{i_{555}} \simeq 555~\mathrm{nm}`, and
+    :math:`\lambda_{i_{670}} \simeq 670~\mathrm{nm}`.
 
-    - total absorption :math:`a(\lambda)`,
-    - absorption by detritus and gelbstoff :math:`a_{\mathrm{dg}}(\lambda)`,
-    - absorption by phytoplankton :math:`a_{\mathrm{ph}}(\lambda)`, and
-    - back-scattering by particulate matter :math:`b_{\mathrm{bp}}(\lambda)`
+    The input band set may include more than this minimal set;
+    outputs are spectrally inter- and extrapolated.
 
-    from
+    QAA requires inputs, which are available from either remote
+    sensing observations or scientific literature:
 
-    - remote sensing reflectance :math:`R_{\mathrm{rs}}(\lambda)`,
-    - absorption by pure seawater :math:`a_{\mathrm{w}}(\lambda)`, and
-    - back-scattering by pure seawater :math:`b_{\mathrm{bw}}(\lambda)`
+    .. csv-table::
+       :header: Symbol, Description, Unit
 
-    All inherent absorption and back-scattering coefficients are expressed
-    in units of :math:`\mathrm{m}^{-1}`. For details refer to:
+       :math:`\lambda`, Spectral wavelengths, nm
+       :math:`R_{\mathrm{rs}}(\lambda)`, Remote sensing reflectance, sr-1
+       :math:`a_{\mathrm{w}}(\lambda)`, Pure seawater absorption, m-1
+       :math:`b_{\mathrm{bw}}(\lambda)`, Pure seawater back-scattering, m-1
+
+    Under the same notation, QAA returns the following inherent
+    optical properties:
+
+    .. csv-table::
+       :header: Symbol, Description, Unit
+
+       :math:`a(\lambda)`, Total absorption, m-1
+       :math:`a_{\mathrm{dg}}(\lambda)`, Detritus and gelbstoff absorption, m-1
+       :math:`a_{\mathrm{ph}}(\lambda)`, Phytoplankton absorption, m-1
+       :math:`b_{\mathrm{bp}}(\lambda)`, Particulate back-scattering, m-1
+
+    QAA uses several configurable parameters, hereafter referred to by
+    the model parameter vector :math:`p \in \mathbb{R}^{k}`:
+
+    .. csv-table::
+       :header: Symbol, Description, Value, Unit
+
+       :math:`r_0`, Reflectance conversion coefficient, 0.5200, sr-1
+       :math:`r_1`, Reflectance conversion coefficient, 1.7000,
+       :math:`g_0`, Gordon coefficient, 0.0890,
+       :math:`g_1`, Gordon coefficient, 0.1245,
+       :math:`h_0`, Polynomial coefficient, 1.1460,
+       :math:`h_1`, Polynomial coefficient, 1.3660,
+       :math:`h_2`, Polynomial coefficient, 0.4690,
+       :math:`\eta_0`, Coefficient, 2.0000,
+       :math:`\eta_1`, Coefficient, 1.2000,
+       :math:`\eta_2`, Coefficient, 0.9000,
+       :math:`s_0`, Coefficient, 0.0150, nm-1
+       :math:`s_1`, Coefficient, 0.0002, nm-1
+       :math:`s_2`, Coefficient, 0.6000,
+       :math:`t_1`, Threshold to separate Case 1 and 2 water, 0.0015, sr-1
+
+    QAA requires inputs supplied in batches :math:`X` of size :math:M`
+    and consisting of samples:
+
+       .. math::
+           x = ((\lambda_1, \dots, \lambda_m),
+           R_\mathrm{rs}(\lambda_1, \dots, \lambda_m),
+           a_\mathrm{w}(\lambda_1, \dots, \lambda_m),
+           b_\mathrm{bw}(\lambda_1, \dots, \lambda_m))
+           \in \mathbb{R}^{4 \times m}
+
+    QAA returns outputs are returned in batches :math:`Y` of the same
+    size and consisting of samples:
+
+       .. math::
+           y = (a(\lambda_1, \dots, \lambda_m),
+           a_\mathrm{dg}(\lambda_1, \dots, \lambda_m),
+           a_\mathrm{ph}(\lambda_1, \dots, \lambda_m),
+           b_\mathrm{bp}(\lambda_1, \dots, \lambda_m))
+           \in \mathbb{R}^{4 \times m}
+
+    For details refer to:
 
     Lee et al. (2010). An Update of the Quasi-Analytical Algorithm.
     https://www.ioccg.org/groups/Software_OCA/QAA_v5.pdf.
@@ -87,10 +148,10 @@ class QAA(ToM):
             """
             return (jnp.sqrt(g0**2 + 4.0 * g1 * r) - g0) / (2.0 * g1)
 
-        def _a_1(r, aw, h0=-1.146, h1=-1.366, h2=-0.469):
+        def _a_1(r, aw, h0=1.146, h1=1.366, h2=0.469):
             r"""
-            Returns the total absorption coefficient of Case 1-like water
-            at :math:`\lambda_{0} = 55x~\text{nm}`.
+            Returns the total absorption coefficient of Case 1 water
+            at :math:`\lambda_{0} = 555~\text{nm}`.
 
             :param r: :math:`r_{\mathrm{rs}}(\lambda)`.
             :param aw: :math:`a_{\mathrm{w}}(\lambda)`.
@@ -101,7 +162,7 @@ class QAA(ToM):
             """
 
             def g(r):
-                i = r[i670] / r[i490]  # red to green spectral index
+                i = r[i670] / r[i490]
                 return jnp.log10(
                     (r[i443] + r[i490]) / (r[i555] + 5.0 * r[i670] * i)
                 )
@@ -109,11 +170,11 @@ class QAA(ToM):
             def h(x, h0, h1, h2):
                 return jnp.power(10.0, h0 + (h1 + h2 * x) * x)
 
-            return aw[i555] + h(g(r), h0, h1, h2)
+            return aw[i555] + 1.0 / h(g(r), h0, h1, h2)
 
         def _a_2(R, aw):  # noqa: N806
             r"""
-            Returns the total absorption coefficient of Case 2-like water
+            Returns the total absorption coefficient of Case 2 water
             at :math:`\lambda_{0} = 670~\text{nm}`.
 
             :param R: :math:`R_{\mathrm{rs}}(\lambda)`.
@@ -172,8 +233,8 @@ class QAA(ToM):
             Returns the coefficient :math:`S`.
 
             :param i: The blue to green spectral index.
-            :param s0: A coefficient (:math:`\mathrm{nm}^{-1}`).
-            :param s1: A coefficient (:math:`\mathrm{nm}^{-1}`).
+            :param s0: A coefficient.
+            :param s1: A coefficient.
             :param s2: A coefficient.
             :returns: The coefficient :math:`S` (:math:`\mathrm{nm}^{-1}`).
             """
@@ -194,51 +255,27 @@ class QAA(ToM):
 
             Let :math:`k` be the number of model parameters and let
             :math:`m \ge 5` denote the number of spectral wavebands
-            with nomial wavelengths :math:`\lambda_1, \dots, \lambda_m`.
-            The band set must include spectral wavelengths:
-
-            - :math:`\lambda_{i_{412}} \simeq 412~\mathrm{nm}`,
-            - :math:`\lambda_{i_{443}} \simeq 443~\mathrm{nm}`,
-            - :math:`\lambda_{i_{490}} \simeq 490~\mathrm{nm}`,
-            - :math:`\lambda_{i_{555}} \simeq 555~\mathrm{nm}`, and
-            - :math:`\lambda_{i_{670}} \simeq 670~\mathrm{nm}`.
-
-            The input set may include more than these wavebands; outputs
-            are spectrally inter- and extrapolated. Let further
-            :math:`p \in \mathbb{R}^{k}` comprise the following
-            parameters:
-
-            - :math:`r_1, r_2`: remote sensing reflectance conversion
-              coefficients,
-            - :math:`g_0, g_1`: Gordon et al. (1988) coefficients,
-            - :math:`h_0, h_1, h_2`: polynomial coefficients,
-            - :math:`\eta_0, \eta_1, \eta_2`: :math:`\eta` exponent model
-              coefficients,
-            - :math:`s_0, s_1, s_2`: :math:`S` exponent model coefficients,
-              and
-            - :math:`t`: threshold value on :math:`R_{\mathrm{rs}}` at
-              :math:`lambda = 670~\mathrm{nm}` to branch between case 1
-              and 2 waters,
-
-            and let
+            with nomial wavelengths
+            :math:`\lambda = (\lambda_1, \dots, \lambda_m)`.
+            Further let
 
             .. math::
                 x = (\lambda, R_\mathrm{rs}(\lambda),
                 a_\mathrm{w}(\lambda),
-                b_\mathrm{bw}(\lambda))^{\mathrm{T}}
+                b_\mathrm{bw}(\lambda))
                 \in \mathbb{R}^{4 \times m}
 
-            denote the matrix of model inputs, and let
+            denote the function inputs, and let
 
             .. math::
                 y = (a(\lambda),
                 a_\mathrm{dg}(\lambda), a_\mathrm{ph}(\lambda),
-                b_\mathrm{bp}(\lambda))^{\mathrm{T}}
+                b_\mathrm{bp}(\lambda))
                 \in \mathbb{R}^{4 \times m}
 
-            denote the matrix of its outputs. Then:
+            denote its outputs. Then:
 
-            :param p: The parameters :math:`p \in \mathbb{R}^{k}`.
+            :param p: The model parameters :math:`p \in \mathbb{R}^{k}`.
             :param x: :math:`x \in \mathbb{R}^{4 \times m}`.
             :returns: :math:`y \in \mathbb{R}^{4 \times m}`.
             """
@@ -295,9 +332,9 @@ class QAA(ToM):
             r1=1.7000,
             g0=0.0890,
             g1=0.1245,
-            h0=-1.146,
-            h1=-1.366,
-            h2=-0.469,
+            h0=1.146,
+            h1=1.366,
+            h2=0.469,
             e0=2.0000,
             e1=1.2000,
             e2=0.9000,
