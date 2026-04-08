@@ -69,7 +69,7 @@ class QAA(ToM):
        :math:`\eta_1`, Coefficient, 1.2000,
        :math:`\eta_2`, Coefficient, 0.9000,
        :math:`s_0`, Coefficient, 0.0150, nm-1
-       :math:`s_1`, Coefficient, 0.0002, nm-1
+       :math:`s_1`, Coefficient, 0.0020, nm-1
        :math:`s_2`, Coefficient, 0.6000,
        :math:`t_1`, Threshold to separate Case 1 and 2 water, 0.0015, sr-1
 
