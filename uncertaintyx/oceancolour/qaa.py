@@ -73,20 +73,20 @@ class QAA(ToM):
     and consisting of samples:
 
        .. math::
-           x = ((\lambda_1, \dots, \lambda_m),
-           R_\mathrm{rs}(\lambda_1, \dots, \lambda_m),
-           a_\mathrm{w}(\lambda_1, \dots, \lambda_m),
-           b_\mathrm{bw}(\lambda_1, \dots, \lambda_m))
+           x = (\lambda,
+           R_\mathrm{rs}(\lambda),
+           a_\mathrm{w}(\lambda),
+           b_\mathrm{bw}(\lambda))
            \in \mathbb{R}^{4 \times m}
 
-    QAA returns outputs in batches :math:`Y` of the same
-    size and consisting of samples:
+    QAA returns outputs in batches :math:`Y` of the same size 
+    and consisting of samples:
 
        .. math::
-           y = (a(\lambda_1, \dots, \lambda_m),
-           a_\mathrm{dg}(\lambda_1, \dots, \lambda_m),
-           a_\mathrm{ph}(\lambda_1, \dots, \lambda_m),
-           b_\mathrm{bp}(\lambda_1, \dots, \lambda_m))
+           y = (a(\lambda),
+           a_\mathrm{dg}(\lambda),
+           a_\mathrm{ph}(\lambda),
+           b_\mathrm{bp}(\lambda))
            \in \mathbb{R}^{4 \times m}
 
     For details refer to:
