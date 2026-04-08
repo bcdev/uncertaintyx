@@ -24,6 +24,5 @@ dependencies:
   #
   # Lint
   - black
-  - black-jupyter
   - flake8
   - ruff
