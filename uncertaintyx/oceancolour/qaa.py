@@ -20,12 +20,8 @@ class QAA(ToM):
 
     Let :math:`m \ge 5` denote the number of spectral wavebands
     with nomial wavelengths :math:`\lambda = (\lambda_1, \dots, \lambda_m`).
-    QAA uses a minimum band set consisting of:
-    :math:`\lambda_{i_{412}} \simeq 412~\mathrm{nm}`,
-    :math:`\lambda_{i_{443}} \simeq 443~\mathrm{nm}`,
-    :math:`\lambda_{i_{490}} \simeq 490~\mathrm{nm}`,
-    :math:`\lambda_{i_{555}} \simeq 555~\mathrm{nm}`, and
-    :math:`\lambda_{i_{670}} \simeq 670~\mathrm{nm}`.
+    QAA uses a minimum band set consisting of wavebands centered
+    near 412 nm, 443 nm, 490 nm, 555 nm, and 670 nm.
 
     The input band set may include more than this minimal set;
     outputs are spectrally inter- and extrapolated.
