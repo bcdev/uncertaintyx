@@ -17,6 +17,7 @@ from torch import Tensor
 from ..interface.core import M
 
 
+@torch.compile
 def jac_p(f, p: Tensor, x: Tensor) -> Tensor:
     r"""
     Evaluates the Jacobian :math:`(G_p f)(p, X)` with respect
@@ -42,6 +43,7 @@ def jac_p(f, p: Tensor, x: Tensor) -> Tensor:
     return torch.func.jacfwd(f, argnums=0)(p, x)
 
 
+@torch.compile
 def jac_x(f, p: Tensor, x: Tensor) -> Tensor:
     r"""
     Evaluates the Jacobian :math:`(G_x f)(p, X)` with respect
@@ -61,6 +63,7 @@ def jac_x(f, p: Tensor, x: Tensor) -> Tensor:
     )
 
 
+@torch.compile
 def vec_x(
     f: Callable[[Tensor, Tensor], Tensor], p: Tensor, x: Tensor
 ) -> Tensor:
@@ -77,6 +80,29 @@ def vec_x(
     return torch.vmap(f, in_dims=(None, 0))(p, x)
 
 
+def jac_p_no_jit(  # no coverage
+    f, p: Tensor, x: Tensor
+) -> Tensor:
+    """Noncompiled version of :meth:`jac_p` for debugging."""
+    return torch.func.jacfwd(f, argnums=0)(p, x)
+
+
+def jac_x_no_jit(  # no coverage
+    f, p: Tensor, x: Tensor
+) -> Tensor:
+    """Noncompiled version of :meth:`jac_x` for debugging."""
+    return torch.vmap(torch.func.jacrev(f, argnums=1), in_dims=(None, 0))(
+        p, x
+    )
+
+
+def vec_x_no_jit(  # no coverage
+    f: Callable[[Tensor, Tensor], Tensor], p: Tensor, x: Tensor
+) -> Tensor:
+    """Noncompiled version of :meth:`vec_x` for debugging."""
+    return torch.vmap(f, in_dims=(None, 0))(p, x)
+
+
 class ToM(M, ABC):
     r"""
     Adapts a pure function
@@ -90,30 +116,46 @@ class ToM(M, ABC):
     of natural numbers) to the model function interface ``M``.
     """
 
-    def __init__(self, f: Callable[[Tensor, Tensor], Tensor]):
+    def __init__(
+        self, f: Callable[[Tensor, Tensor], Tensor], jit: bool = True
+    ):
         """
         Creates a new instance of this class.
 
         :param f: The function :math:`f`.
+        :param jit: Switches JIT compilation on and off (for debugging).
         """
-        self._f = f
+        self._f = torch.compile(f) if jit else f
+        self._jit = jit
 
     def eval(self, p: np.ndarray, x: np.ndarray) -> np.ndarray:
         p_t = torch.from_numpy(p)
         x_t = torch.from_numpy(x)
-        y_t = vec_x(self._f, p_t, x_t)
+        y_t = (
+            vec_x(self._f, p_t, x_t)
+            if self._jit
+            else vec_x_no_jit(self._f, p_t, x_t)
+        )
         return y_t.detach().numpy()
 
     def jac_p(self, p: np.ndarray, x: np.ndarray) -> np.ndarray:
         p_t = torch.from_numpy(p).requires_grad_(True)
         x_t = torch.from_numpy(x)
-        g_t = jac_p(self._f, p_t, x_t)
+        g_t = (
+            jac_p(self._f, p_t, x_t)
+            if self._jit
+            else jac_x_no_jit(self._f, p_t, x_t)
+        )
         return g_t.detach().numpy()
 
     def jac_x(self, p: np.ndarray, x: np.ndarray) -> np.ndarray:
         p_t = torch.from_numpy(p)
         x_t = torch.from_numpy(x).requires_grad_(True)
-        g_t = jac_x(self._f, p_t, x_t)
+        g_t = (
+            jac_x(self._f, p_t, x_t)
+            if self._jit
+            else jac_x_no_jit(self._f, p_t, x_t)
+        )
         return g_t.detach().numpy()
 
     @property
