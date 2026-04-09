@@ -149,7 +149,7 @@ class RegressionPlot(Plotting):
             y_opt - y_unp,
             "--",
             color=self._colors[2],
-            label="regression standard uncertainty",
+            label="standard uncertainty of regression",
         )
         ax.plot(x, y_opt + y_unp, "--", color=self._colors[2])
         ax.plot(
@@ -157,7 +157,7 @@ class RegressionPlot(Plotting):
             y_opt - y_unc,
             "-.",
             color=self._colors[3],
-            label="prediction standard uncertainty",
+            label="standard uncertainty of residuals",
         )
         ax.plot(x, y_opt + y_unc, "-.", color=self._colors[3])
         ax.legend()
