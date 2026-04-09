@@ -79,8 +79,8 @@ class QAA(ToM):
            b_\mathrm{bw}(\lambda))
            \in \mathbb{R}^{4 \times m}
 
-    QAA returns outputs in batches :math:`Y` of the same size 
-    and consisting of samples:
+    QAA returns outputs in batches :math:`Y` of the same size and
+    consisting of samples:
 
        .. math::
            y = (a(\lambda),
