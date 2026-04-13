@@ -63,8 +63,7 @@ class Bootstrap(Fitting):
     ):
         r"""
         Fits the parameters of a model function to :math:`M`
-        samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
-        of data.
+        samples :math:`(x_i, y_i)` of data.
 
         :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
@@ -186,8 +185,7 @@ class MonteCarlo(Fitting):
     ):
         r"""
         Fits the parameters of a model function to :math:`M`
-        samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
-        of data.
+        samples :math:`(x_i, y_i)` of data.
 
         :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
