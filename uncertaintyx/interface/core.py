@@ -508,8 +508,7 @@ class Fitting(ABC):
     def fit(self, f: M, x: np.ndarray, y: np.ndarray, **kwargs) -> Result:
         r"""
         Fits the parameters of a model function to :math:`M`
-        samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
-        of data.
+        samples :math:`(x_i, y_i)` of data.
 
         Under the same notation and remarks as :class:`M`:
 
