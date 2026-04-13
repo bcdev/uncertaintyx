@@ -18,13 +18,13 @@ from jax import Array
 from ..interface.core import M
 
 
-@jax.jit(static_argnums=0)
-def jac_p(f: Callable[[Array, Array], Array], p: Array, x: Array) -> Array:
+@jax.jit(static_argnums=(0, 3))
+def jac_p(
+    f: Callable[[Array, Array], Array], p: Array, x: Array, rev: bool = True
+) -> Array:
     r"""
     Evaluates the Jacobian :math:`(G_p f)(p, X)` with respect
     to model parameters :math:`p`.
-
-    Conducted in forward mode.
 
     Let :math:`k, m, n` be shapes (natural numbers or tuples
     of natural numbers) and let
@@ -39,27 +39,35 @@ def jac_p(f: Callable[[Array, Array], Array], p: Array, x: Array) -> Array:
     :param f: The function :math:`f`.
     :param p: :math:`p \in \mathbb{R}^{k}`.
     :param x: :math:`X \in \mathbb{R}^{M \times m}`.
+    :param rev: Use reverse mode.
     :returns: :math:`(G_p f)(p, X) \in \mathbb{R}^{M \times n \times k}`.
     """
-    return jax.jacfwd(f, argnums=0)(p, x)
+    return jax.vmap(jac(f, 0, rev), in_axes=(None, 0))(p, x)
 
 
-@jax.jit(static_argnums=0)
-def jac_x(f: Callable[[Array, Array], Array], p: Array, x: Array) -> Array:
+@jax.jit(static_argnums=(0, 3))
+def jac_x(
+    f: Callable[[Array, Array], Array], p: Array, x: Array, rev: bool = True
+) -> Array:
     r"""
     Evaluates the Jacobian :math:`(G_x f)(p, X)` with respect
     to inputs.
-
-    Conducted in reverse mode.
 
     Under the same notation as :meth:`jac_p`:
 
     :param f: The function :math:`f`.
     :param p: :math:`p \in \mathbb{R}^{k}`.
     :param x: :math:`X \in \mathbb{R}^{M \times m}`.
+    :param x: :math:`X \in \mathbb{R}^{M \times m}`.
+    :param rev: Use reverse mode.
     :returns: :math:`(G_x f)(p, X) \in \mathbb{R}^{M \times n \times m}`.
     """
-    return jax.vmap(jax.jacrev(f, argnums=1), in_axes=(None, 0))(p, x)
+    return jax.vmap(jac(f, 1, rev), in_axes=(None, 0))(p, x)
+
+
+def jac(f: Callable[[Array, Array], Array], arg: int, rev: bool = True):
+    """Returns the Jacobian (does not belong to public API)."""
+    return jax.jacrev(f, argnums=arg) if rev else jax.jacfwd(f, argnums=arg)
 
 
 @jax.jit(static_argnums=0)
@@ -78,17 +86,17 @@ def vec_x(f: Callable[[Array, Array], Array], p: Array, x: Array) -> Array:
 
 
 def jac_p_no_jit(  # no coverage
-    f: Callable[[Array, Array], Array], p: Array, x: Array
+    f: Callable[[Array, Array], Array], p: Array, x: Array, rev: bool = True
 ) -> Array:
     """Noncompiled version of :meth:`jac_p` for debugging."""
-    return jax.jacfwd(f, argnums=0)(p, x)
+    return jax.vmap(jac(f, 0, rev), in_axes=(None, 0))(p, x)
 
 
 def jac_x_no_jit(  # no coverage
-    f: Callable[[Array, Array], Array], p: Array, x: Array
+    f: Callable[[Array, Array], Array], p: Array, x: Array, rev: bool = True
 ) -> Array:
     """Noncompiled version of :meth:`jac_x` for debugging."""
-    return jax.vmap(jax.jacrev(f, argnums=1), in_axes=(None, 0))(p, x)
+    return jax.vmap(jac(f, 1, rev), in_axes=(None, 0))(p, x)
 
 
 def vec_x_no_jit(  # no coverage
@@ -111,15 +119,25 @@ class ToM(M, ABC):
     of natural numbers) to the model function interface ``M``.
     """
 
-    def __init__(self, f: Callable[[Array, Array], Array], jit: bool = True):
+    def __init__(
+        self,
+        f: Callable[[Array, Array], Array],
+        rev_p: bool = True,
+        rev_x: bool = True,
+        jit: bool = True,
+    ):
         """
         Creates a new instance of this class.
 
         :param f: The function :math:`f`.
+        :param rev_p: Use reverse mode for the :math:`p`-Jacobian.
+        :param rev_x: Use reverse mode for the :math:`x`-Jacobian.
         :param jit: Switches JIT compilation on and off (for debugging).
         """
         self._f = jax.jit(f) if jit else f
         self._jit = jit
+        self._rev_p = rev_p
+        self._rev_x = rev_x
 
     def eval(self, p: np.ndarray, x: np.ndarray) -> np.ndarray:
         p_j = jnp.asarray(p)
@@ -135,9 +153,9 @@ class ToM(M, ABC):
         p_j = jnp.asarray(p)
         x_j = jnp.asarray(x)
         g_j = (
-            jac_p(self._f, p_j, x_j)
+            jac_p(self._f, p_j, x_j, self._rev_p)
             if self._jit
-            else jac_p_no_jit(self._f, p_j, x_j)
+            else jac_p_no_jit(self._f, p_j, x_j, self._rev_p)
         )
         return np.asarray(g_j)
 
@@ -145,9 +163,9 @@ class ToM(M, ABC):
         p_j = jnp.asarray(p)
         x_j = jnp.asarray(x)
         g_j = (
-            jac_x(self._f, p_j, x_j)
+            jac_x(self._f, p_j, x_j, self._rev_x)
             if self._jit
-            else jac_x_no_jit(self._f, p_j, x_j)
+            else jac_x_no_jit(self._f, p_j, x_j, self._rev_x)
         )
         return np.asarray(g_j)
 
