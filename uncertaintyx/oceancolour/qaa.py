@@ -317,7 +317,7 @@ class QAA(ToM):
 
             return jnp.stack([a, adg, aph, bbp])
 
-        super().__init__(f, jit)
+        super().__init__(f, rev_p=False, rev_x=False, jit=jit)
 
     def estimate(
         self,

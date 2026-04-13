@@ -17,12 +17,10 @@ from jax import Array
 from ..interface.core import F
 
 
-@jax.jit(static_argnums=0)
-def jac(f: Callable[[Array], Array], x: Array) -> Array:
+@jax.jit(static_argnums=(0, 2))
+def jac(f: Callable[[Array], Array], x: Array, rev: bool = True) -> Array:
     r"""
     Evaluates the Jacobian :math:`(G_x f)(X)`.
-
-    Conducted in reverse mode.
 
     Let :math:`m, n` be shapes (natural numbers or tuples
     of natural numbers) and let
@@ -35,9 +33,10 @@ def jac(f: Callable[[Array], Array], x: Array) -> Array:
 
     :param f: The function :math:`f`.
     :param x: :math:`X \in \mathbb{R}^{M \times m}`.
+    :param rev: Use reverse mode.
     :returns: :math:`(G_x f)(X) \in \mathbb{R}^{M \times n \times m}`.
     """
-    return jax.vmap(jax.jacrev(f))(x)
+    return jax.vmap(jax.jacrev(f) if rev else jax.jacfwd(f))(x)
 
 
 @jax.jit(static_argnums=0)
@@ -55,10 +54,10 @@ def vec(f: Callable[[Array], Array], x: Array) -> Array:
 
 
 def jac_no_jit(  # no coverage
-    f: Callable[[Array], Array], x: Array
+    f: Callable[[Array], Array], x: Array, rev: bool = True
 ) -> Array:
     """Noncompiled version of :meth:`jac` for debugging."""
-    return jax.vmap(jax.jacrev(f))(x)
+    return jax.vmap(jax.jacrev(f) if rev else jax.jacfwd(f))(x)
 
 
 def vec_no_jit(  # no coverage
@@ -80,14 +79,18 @@ class ToF(F):
     of natural numbers) to the function interface ``F``.
     """
 
-    def __init__(self, f: Callable[[Array], Array], jit: bool = True):
+    def __init__(
+        self, f: Callable[[Array], Array], rev: bool = True, jit: bool = True
+    ):
         """
         Creates a new instance of this class.
 
         :param f: The function :math:`f`.
+        :param rev: Use reverse mode for the Jacobian.
         :param jit: Switches JIT compilation on and off (for debugging).
         """
         self._f = jax.jit(f) if jit else f
+        self._rev = rev
         self._jit = jit
 
     def eval(self, x: np.ndarray) -> np.ndarray:
@@ -97,7 +100,11 @@ class ToF(F):
 
     def jac(self, x: np.ndarray) -> np.ndarray:
         x_j = jnp.asarray(x)
-        g_j = jac(self._f, x_j) if self._jit else jac_no_jit(self._f, x_j)
+        g_j = (
+            jac(self._f, x_j, self._rev)
+            if self._jit
+            else jac_no_jit(self._f, x_j, self._rev)
+        )
         return np.asarray(g_j)
 
     @property

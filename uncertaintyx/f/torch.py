@@ -16,11 +16,9 @@ from torch import Tensor
 from ..interface.core import F
 
 
-def jac(f: Callable[[Tensor], Tensor], x: Tensor) -> Tensor:
+def jac(f: Callable[[Tensor], Tensor], x: Tensor, rev: bool = True) -> Tensor:
     r"""
     Evaluates the Jacobian :math:`(G_x f)(X)`.
-
-    Conducted in reverse mode.
 
     Let :math:`m, n` be shapes (natural numbers or tuples
     of natural numbers) and let
@@ -33,9 +31,12 @@ def jac(f: Callable[[Tensor], Tensor], x: Tensor) -> Tensor:
 
     :param f: The function :math:`f`.
     :param x: :math:`X \in \mathbb{R}^{M \times m}`.
+    :param rev: Use reverse mode.
     :returns: :math:`(G_x f)(X) \in \mathbb{R}^{M \times n \times m}`.
     """
-    return torch.vmap(torch.func.jacrev(f))(x)
+    return torch.vmap(torch.func.jacrev(f) if rev else torch.func.jacfwd(f))(
+        x
+    )
 
 
 def vec(f: Callable[[Tensor], Tensor], x: Tensor) -> Tensor:
@@ -52,10 +53,12 @@ def vec(f: Callable[[Tensor], Tensor], x: Tensor) -> Tensor:
 
 
 def jac_no_jit(  # no coverage
-    f: Callable[[Tensor], Tensor], x: Tensor
+    f: Callable[[Tensor], Tensor], x: Tensor, rev: bool = True
 ) -> Tensor:
     """Noncompiled version of :meth:`jac` for debugging."""
-    return torch.vmap(torch.func.jacrev(f))(x)
+    return torch.vmap(torch.func.jacrev(f) if rev else torch.func.jacfwd(f))(
+        x
+    )
 
 
 def vec_no_jit(  # no coverage
@@ -77,14 +80,21 @@ class ToF(F):
     of natural numbers) to the function interface ``F``.
     """
 
-    def __init__(self, f: Callable[[Tensor], Tensor], jit: bool = True):
+    def __init__(
+        self,
+        f: Callable[[Tensor], Tensor],
+        rev: bool = True,
+        jit: bool = True,
+    ):
         """
         Creates a new instance of this class.
 
         :param f: The function :math:`f`.
+        :param rev: Use reverse mode for the Jacobian.
         :param jit: Switches JIT compilation on and off (for debugging).
         """
         self._f = torch.compile(f) if jit else f
+        self._rev = rev
         self._jit = jit
 
     def eval(self, x: np.ndarray) -> np.ndarray:
@@ -94,7 +104,11 @@ class ToF(F):
 
     def jac(self, x: np.ndarray) -> np.ndarray:
         x_t = torch.from_numpy(x).requires_grad_(True)
-        g_t = jac(self._f, x_t) if self._jit else jac_no_jit(self._f, x_t)
+        g_t = (
+            jac(self._f, x_t, self._rev)
+            if self._jit
+            else jac_no_jit(self._f, x_t, self._rev)
+        )
         return g_t.detach().numpy()
 
     @property
