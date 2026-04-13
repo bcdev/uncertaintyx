@@ -7,6 +7,7 @@ from importlib import resources
 import numpy as np
 import pandas as pd
 
+from uncertaintyx.fit.eiv.jax import EVM
 from uncertaintyx.fit.randomsampling import Bootstrap
 from uncertaintyx.fit.regression import HomoscedasticRegression
 from uncertaintyx.oceancolour.qaa import E
@@ -87,10 +88,10 @@ class QaaTest(unittest.TestCase):
         """
         x, y = read_plot_data("test.resources", "fig2.csv")
 
-        result = Bootstrap(HomoscedasticRegression()).fit(E(), x, y)
+        result = Bootstrap(HomoscedasticRegression(EVM())).fit(E(), x, y)
 
         self.assertEqual(0, result.info)
-        self.assertAlmostEqual(2.0, result.popt[0], delta=0.1)
+        self.assertAlmostEqual(2.0, result.popt[0], delta=0.2)
         self.assertAlmostEqual(0.7, result.popt[1], delta=0.2)
         self.assertAlmostEqual(0.2, result.punc[0], delta=0.1)
         self.assertAlmostEqual(0.1, result.punc[1], delta=0.1)
@@ -132,20 +133,20 @@ class QaaTest(unittest.TestCase):
         """
         x, y = read_plot_data("test.resources", "fig3.csv")
 
-        result = Bootstrap(HomoscedasticRegression()).fit(S(), x, y)
+        result = Bootstrap(HomoscedasticRegression(EVM())).fit(S(), x, y)
 
         self.assertEqual(0, result.info)
         self.assertAlmostEqual(0.017, result.popt[0], delta=0.001)
-        self.assertAlmostEqual(0.0, result.popt[1], delta=0.02)
-        self.assertAlmostEqual(0.0, result.popt[2], delta=5.0)
+        self.assertAlmostEqual(0.000, result.popt[1], delta=0.02)
+        self.assertAlmostEqual(0.000, result.popt[2], delta=5.0)
         self.assertAlmostEqual(0.001, result.punc[0], delta=0.001)
-        self.assertAlmostEqual(0.011, result.cost, delta=0.002)
+        self.assertAlmostEqual(1.5e-05, result.rvar, delta=0.1e-05)
 
         print()
         print("popt = ", result.popt)
         print("punc = ", result.punc)
         print("pcov = ", result.pcov)
-        print("cost = ", result.cost)
+        print("rvar = ", result.rvar)
 
         RegressionPlot(result).plot(
             x,
