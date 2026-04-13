@@ -5,6 +5,7 @@ import unittest
 
 import numpy as np
 
+from uncertaintyx.fit.eiv.jax import EVM
 from uncertaintyx.fit.randomsampling import Bootstrap
 from uncertaintyx.fit.randomsampling import MonteCarlo
 from uncertaintyx.fit.regression import HeteroHomoscedasticRegression
@@ -34,7 +35,7 @@ class RegressionTest(unittest.TestCase):
         y = x + rng.normal(0.0, u, n)
         x = x + rng.normal(0.0, u, n)
 
-        result = Bootstrap(HomoscedasticRegression()).fit(Linear(), x, y)
+        result = Bootstrap(HomoscedasticRegression(EVM())).fit(Linear(), x, y)
 
         self.assertEqual(0, result.info)
         self.assertAlmostEqual(1.0, result.popt[0], delta=0.1)
@@ -86,7 +87,7 @@ class RegressionTest(unittest.TestCase):
         y = x + rng.normal(0.0, u, n)
         x = x + rng.normal(0.0, u, n)
 
-        result = Bootstrap(HomoHeteroscedasticRegression()).fit(
+        result = Bootstrap(HomoHeteroscedasticRegression(EVM())).fit(
             Linear(), x, y, u=u
         )
 
@@ -140,7 +141,7 @@ class RegressionTest(unittest.TestCase):
         y = x + rng.normal(0.0, u, n)
         x = x + rng.normal(0.0, u, n)
 
-        result = Bootstrap(HeteroHomoscedasticRegression()).fit(
+        result = Bootstrap(HeteroHomoscedasticRegression(EVM())).fit(
             Linear(), x, y, u=u
         )
 
@@ -186,14 +187,14 @@ class RegressionTest(unittest.TestCase):
         generated test data with known uncertainties of x and y.
         """
         n = 100
-        x = np.linspace(0.0, 100.0, n)
+        x = np.linspace(0.0, 100.0, n).reshape((n, 1))
         u = 1.0 + np.sqrt(x)
 
         rng = np.random.default_rng(42)
-        y = x + rng.normal(0.0, u, n)
-        x = x + rng.normal(0.0, u, n)
+        y = x + rng.normal(0.0, u, (n, 1))
+        x = x + rng.normal(0.0, u, (n, 1))
 
-        result = MonteCarlo(HeteroscedasticRegression()).fit(
+        result = MonteCarlo(HeteroscedasticRegression(EVM())).fit(
             Linear(), x, y, ux=u, uy=u
         )
 

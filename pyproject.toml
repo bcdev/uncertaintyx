@@ -37,10 +37,10 @@ license = { file = "LICENSE", content-type = "text/plain" }
 requires-python = ">=3.11,<3.14"
 dependencies = [
     "jax",
-    "jaxopt",
     "matplotlib",
     "numpy",
     "odrpack",
+    "optax",
     "pandas",
     "seaborn",
     "torch",

@@ -7,10 +7,10 @@ dependencies:
   #
   # Imports
   - jax
-  - jaxopt
   - matplotlib
   - numpy
   - odrpack
+  - optax
   - pandas
   - pytorch
   - seaborn
