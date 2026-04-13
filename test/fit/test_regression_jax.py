@@ -187,12 +187,12 @@ class RegressionTest(unittest.TestCase):
         generated test data with known uncertainties of x and y.
         """
         n = 100
-        x = np.linspace(0.0, 100.0, n).reshape((n, 1))
+        x = np.linspace(0.0, 100.0, n)
         u = 1.0 + np.sqrt(x)
 
         rng = np.random.default_rng(42)
-        y = x + rng.normal(0.0, u, (n, 1))
-        x = x + rng.normal(0.0, u, (n, 1))
+        y = x + rng.normal(0.0, u, n)
+        x = x + rng.normal(0.0, u, n)
 
         result = MonteCarlo(HeteroscedasticRegression(EVM())).fit(
             Linear(), x, y, ux=u, uy=u
