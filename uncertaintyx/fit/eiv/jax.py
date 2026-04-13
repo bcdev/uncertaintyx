@@ -86,7 +86,7 @@ class EVM(Fitting):
             jnp.asarray(x),
             jnp.asarray(y),
             jnp.asarray(ux) if ux is not None else jnp.ones_like(x),
-            jnp.asarray(uy) if uy is not None else jnp.ones_like(x),
+            jnp.asarray(uy) if uy is not None else jnp.ones_like(y),
             max_iter,
         )
         popt = np.asarray(popt)
