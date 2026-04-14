@@ -13,17 +13,18 @@ from ..interface.core import Result
 
 class HomoscedasticRegression(Fitting):
     """
-    Unit variance orthogonal distance regression.
+    Unit variance errors‑in‑variables regression.
 
     Use this regression when uncertainties of both x and y are
-    unknown or negligible.
+    unknown. Use the bootstrap method to propagate uncertainty
+    of x and y to model parameters.
     """
 
     def __init__(self, eiv: Fitting):
         """
         Creates a new regression instance.
 
-        :param eiv: The errors‑in‑variables fitting method.
+        :param eiv: The errors‑in‑variables method.
         """
         self._eiv = eiv
 
@@ -46,7 +47,7 @@ class HomoscedasticRegression(Fitting):
 
 class HomoHeteroscedasticRegression(Fitting):
     """
-    Mixed orthogonal distance regression.
+    Mixed errors‑in‑variables regression.
 
     Use this regression when uncertainties of x are unknown
     but uncertainties of y are known. Use the bootstrap method
@@ -57,7 +58,7 @@ class HomoHeteroscedasticRegression(Fitting):
         """
         Creates a new regression instance.
 
-        :param eiv: The errors‑in‑variables fitting method.
+        :param eiv: The errors‑in‑variables method.
         """
         self._eiv = eiv
 
@@ -86,7 +87,7 @@ class HomoHeteroscedasticRegression(Fitting):
 
 class HeteroHomoscedasticRegression(Fitting):
     """
-    Mixed orthogonal distance regression.
+    Mixed errors‑in‑variables regression.
 
     Use this regression when uncertainties of x are known but
     uncertainties of y are unknown. Use the bootstrap method
@@ -97,7 +98,7 @@ class HeteroHomoscedasticRegression(Fitting):
         """
         Creates a new regression instance.
 
-        :param eiv: The errors‑in‑variables fitting method.
+        :param eiv: The errors‑in‑variables method.
         """
         self._eiv = eiv
 
@@ -126,19 +127,20 @@ class HeteroHomoscedasticRegression(Fitting):
 
 class HeteroscedasticRegression(Fitting):
     """
-    General orthogonal distance regression.
+    General errors‑in‑variables regression.
 
-    Use this regression when uncertainties of x and y are known.
-    Use the Monte Carlo method to propagate uncertainties when
-    the model function is not linear within the range of errors
-    or errors are not distributed normally.
+    Use this regression when uncertainties of both x and y are
+    known. Use the Monte Carlo method to propagate uncertainty
+    of x and y to model parameters when the model function is
+    significantly nonlinear within the range of errors or the
+    error distribution is significantly nonnormal.
     """
 
     def __init__(self, eiv: Fitting):
         """
         Creates a new regression instance.
 
-        :param eiv: The errors‑in‑variables fitting method.
+        :param eiv: The errors‑in‑variables method.
         """
         self._eiv = eiv
 
