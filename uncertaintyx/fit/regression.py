@@ -40,7 +40,6 @@ class HomoscedasticRegression(Fitting):
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param max_iter: The maximum number of iterations conducted.
         :returns: The fit result.
-        return ODR().fit(f, x, y)
         """
         return self._eiv.fit(f, x, y)
 
