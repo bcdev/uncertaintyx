@@ -28,12 +28,12 @@ class RegressionTest(unittest.TestCase):
         generated test data with unknown uncertainties.
         """
         n = 100
-        x = np.linspace(0.0, 100.0, n)
+        x = np.linspace(0.0, 100.0, n).reshape((n, 1))
         u = 1.0 + np.sqrt(x)
 
         rng = np.random.default_rng(42)
-        y = x + rng.normal(0.0, u, n)
-        x = x + rng.normal(0.0, u, n)
+        y = x + rng.normal(0.0, u, (n, 1))
+        x = x + rng.normal(0.0, u, (n, 1))
 
         result = Bootstrap(HomoscedasticRegression(EIV())).fit(Linear(), x, y)
 
@@ -80,12 +80,12 @@ class RegressionTest(unittest.TestCase):
         known uncertainties of y.
         """
         n = 100
-        x = np.linspace(0.0, 100.0, n)
+        x = np.linspace(0.0, 100.0, n).reshape((n, 1))
         u = 1.0 + np.sqrt(x)
 
         rng = np.random.default_rng(42)
-        y = x + rng.normal(0.0, u, n)
-        x = x + rng.normal(0.0, u, n)
+        y = x + rng.normal(0.0, u, (n, 1))
+        x = x + rng.normal(0.0, u, (n, 1))
 
         result = Bootstrap(HomoHeteroscedasticRegression(EIV())).fit(
             Linear(), x, y, u=u
@@ -134,12 +134,12 @@ class RegressionTest(unittest.TestCase):
         and unknown uncertainties of y.
         """
         n = 100
-        x = np.linspace(0.0, 100.0, n)
+        x = np.linspace(0.0, 100.0, n).reshape((n, 1))
         u = 1.0 + np.sqrt(x)
 
         rng = np.random.default_rng(42)
-        y = x + rng.normal(0.0, u, n)
-        x = x + rng.normal(0.0, u, n)
+        y = x + rng.normal(0.0, u, (n, 1))
+        x = x + rng.normal(0.0, u, (n, 1))
 
         result = Bootstrap(HeteroHomoscedasticRegression(EIV())).fit(
             Linear(), x, y, u=u
@@ -187,12 +187,12 @@ class RegressionTest(unittest.TestCase):
         generated test data with known uncertainties of x and y.
         """
         n = 100
-        x = np.linspace(0.0, 100.0, n)
+        x = np.linspace(0.0, 100.0, n).reshape((n, 1))
         u = 1.0 + np.sqrt(x)
 
         rng = np.random.default_rng(42)
-        y = x + rng.normal(0.0, u, n)
-        x = x + rng.normal(0.0, u, n)
+        y = x + rng.normal(0.0, u, (n, 1))
+        x = x + rng.normal(0.0, u, (n, 1))
 
         result = MonteCarlo(HeteroscedasticRegression(EIV())).fit(
             Linear(), x, y, ux=u, uy=u
