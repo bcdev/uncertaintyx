@@ -89,7 +89,8 @@ def evm(
             C = jnp.reshape(  # noqa: N806
                 uy + upc(x.ndim, G, ux), d.shape + d.shape
             )
-            b = cho_solve(cho_factor(C), d)
+            L = cho_factor(C)  # noqa: N806
+            b = cho_solve(L, d)
         return 0.5 * jnp.sum(d * b)
 
     def loss(p: Array) -> Array:
