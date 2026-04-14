@@ -52,7 +52,7 @@ class EIV(Fitting):
 
         def t(g: np.ndarray) -> np.ndarray:
             """Transpose for external API compliance."""
-            return np.moveaxis(g, -1, 0) if g.ndim > 1 else g
+            return np.moveaxis(g, 0, -1) if g.ndim > 1 else g
 
         def r(
             _: np.ndarray, shape: tuple = (), copy: bool = False
