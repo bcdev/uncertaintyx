@@ -7,7 +7,7 @@ from importlib import resources
 import numpy as np
 import pandas as pd
 
-from uncertaintyx.fit.eiv.jax import EIV
+from uncertaintyx.fit.eiv.numpy import EIV
 from uncertaintyx.fit.randomsampling import Bootstrap
 from uncertaintyx.fit.regression import HomoscedasticRegression
 from uncertaintyx.oceancolour.qaa import E
@@ -51,8 +51,8 @@ def read_plot_data(
     with resources.path(package, filename) as resource:
         with open(resource) as r:
             df = pd.read_csv(r, sep=";")
-            x = df["X"].values
-            y = df["Y"].values
+            x = df["X"].values.reshape((-1, 1))
+            y = df["Y"].values.reshape((-1, 1))
     return x, y
 
 
