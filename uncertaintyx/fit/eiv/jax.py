@@ -5,10 +5,12 @@ from typing import Callable
 
 import jax
 import jax.numpy as jnp
-import jax.scipy as jcp
 import numpy as np
-import optax
 from jax import Array
+from jax.numpy.linalg import norm
+from jax.scipy.linalg import cho_factor
+from jax.scipy.linalg import cho_solve
+from optax import lbfgs
 
 from ...interface.core import Fitting
 from ...interface.core import M
@@ -16,7 +18,7 @@ from ...interface.core import Result
 from ...m.jax import jac
 
 
-@jax.jit(static_argnums=(0,))
+@jax.jit(static_argnums=(0, 1))
 def evm(
     f: Callable[[Array, Array], Array],
     p: Array,
@@ -24,11 +26,14 @@ def evm(
     y: Array,
     ux: Array,
     uy: Array,
-    max_iter: int = 100,
-    obj_g: Any = 1.0e-06,
-) -> tuple[int, Array, Any, Array, Array, bool]:
+    *,
+    max_i: int = 100,
+    obj_g: Any = 1.0E-06,
+) -> tuple[Any, ...]:
     r"""
-    Implementation of the effective variance method (EVM) with L-BFGS.
+    Implementation of the effective variance method (EVM) with
+    a limited-memory Broyden-Fletcher-Goldfarb-Shanno (L-BFGS)
+    minimizer.
 
     Under the same notation as :class:`EIV`:
 
@@ -38,9 +43,9 @@ def evm(
     :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
     :param ux: Uncertainty :math:`U(X) \in \mathbb{R}^{M \times m}`.
     :param uy: Uncertainty :math:`U(Y) \in \mathbb{R}^{M \times n}`.
-    :param max_iter: The maximum number of iterations permitted.
-    :param obj_g: The gradient objective to achieve.
-    :returns: A tuple carrying the state of the optimization.
+    :param max_i: The maximum number of iterations permitted.
+    :param max_g: The maximum gradient permitted.
+    :returns: The minimization loop state.
     """
 
     def sample_loss(
@@ -55,40 +60,34 @@ def evm(
         :param ux: :math:`U(x) \in \mathbb{R}^{m \times m}`.
         :param uy: :math:`U(y) \in \mathbb{R}^{n \times n}`.
 
-        :returns: The loss.
+        :returns: The sample loss.
         """
 
-        def up_full(d: int, u: Array) -> Array:
+        def upc(d: int, u: Array) -> Array:
             """Uncertainty propagation."""
             dims = tuple(range(-d, 0))
             return jnp.tensordot(
-                jnp.tensordot(g, u, axes=(dims, dims)), g, axes=(dims, dims)
+                jnp.tensordot(G, u, axes=(dims, dims)), G, axes=(dims, dims)
             )
 
-        def up_diag(d: int, u: Array) -> Array:
+        def upd(d: int, u: Array) -> Array:
             """Uncertainty propagation."""
             dims = tuple(range(-d, 0))
             return jnp.sum(
-                jnp.tensordot(g, u, axes=(dims, dims)) * g, axis=dims
+                jnp.tensordot(G, u, axes=(dims, dims)) * G, axis=dims
             )
 
-        g = jac(f, 1, y.size < x.size)(p, x)
-        d = jnp.reshape(f(p, x) - y, -1)
+        d = f(p, x) - y
+        G = g(p, x)  # noqa: N806
         if ux.shape == x.shape and uy.shape == y.shape:
-            v = jnp.reshape(uy + up_diag(x.ndim, ux), -1)  # noqa: N806
+            v = uy + upd(x.ndim, ux)
             b = d / v
-        elif uy.shape == y.shape:
-            V = jnp.diag(uy.reshape(-1)) + jnp.reshape(  # noqa: N806
-                up_full(x.ndim, ux), d.shape + d.shape
-            )
-            L = jcp.linalg.cho_factor(V)  # noqa: N806
-            b = jcp.linalg.cho_solve(L, d)  # noqa
         else:
+            d = d.reshape(-1)
             V = jnp.reshape(  # noqa: N806
-                uy + up_full(x.ndim, ux), d.shape + d.shape
+                uy + upc(x.ndim, ux), d.shape + d.shape
             )
-            L = jcp.linalg.cho_factor(V)  # noqa: N806
-            b = jcp.linalg.cho_solve(L, d)  # noqa
+            b = cho_solve(cho_factor(V), d)
         return 0.5 * jnp.sum(d * b)
 
     def loss(p: Array) -> Array:
@@ -96,31 +95,29 @@ def evm(
         The batch loss function.
 
         :param p: The parameters.
-        :returns: The loss.
+        :returns: The batch loss.
         """
         losses = jax.vmap(sample_loss, in_axes=(None, 0, 0, 0, 0))(
             p, x, y, ux, uy
         )
         return jnp.sum(losses)
 
-    def cond(carry: tuple[int, Array, Any, Array, Array, bool]) -> Array:
+    def cond(carry: tuple[Any, ...]) -> Array:
         """
         The function to check loop continuation.
 
-        :param carry: The tuple carrying the loop state.
-        :returns: The loop continuation status.
+        :param carry: The loop state carrier.
+        :returns: A Boolean.
         """
         i, _, _, _, _, converged = carry
-        return jnp.logical_and(i < max_iter, jnp.logical_not(converged))
+        return jnp.logical_and(i < max_i, jnp.logical_not(converged))
 
-    def body(
-        carry: tuple[int, Array, Any, Array, Array, bool],
-    ) -> tuple[int, Array, Any, Array, Array, bool]:
+    def body(carry: tuple[Any, ...]) -> tuple[Any, ...]:
         """
         The loop body function.
 
-        :param carry: The tuple carrying the loop state.
-        :returns: The updated loop state.
+        :param carry: The loop state carrier.
+        :returns: The updated loop state carrier.
         """
         i, popt, state, cost, grad, _ = carry
         u, state = optim.update(
@@ -128,10 +125,11 @@ def evm(
         )
         popt = optax.apply_updates(popt, u)
         cost, grad = cost_and_grad(popt, state=state)
-        converged = jnp.linalg.norm(grad, ord=jnp.inf) < obj_g  # noqa
+        converged = norm(grad, ord=jnp.inf) < max_g  # noqa
         return i + 1, popt, state, cost, grad, converged
 
-    optim = optax.lbfgs()
+    g = jac(f, 1, y.size < x.size)
+    optim = lbfgs()
     state = optim.init(p)
     cost_and_grad = optax.value_and_grad_from_state(loss)
     cost, grad = cost_and_grad(p, state=state)
@@ -192,7 +190,8 @@ class EIV(Fitting):
             jnp.asarray(y),
             jnp.asarray(ux * ux) if ux is not None else jnp.ones_like(x),
             jnp.asarray(uy * uy) if uy is not None else jnp.ones_like(y),
-            max_iter,
+            max_i=max_iter,
+            **kwargs,
         )
         popt = np.asarray(popt)
         punc = np.zeros_like(popt)
