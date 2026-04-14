@@ -70,7 +70,7 @@ def jac(f: Callable[[Array, Array], Array], arg: int, rev: bool = True):
     return jax.jacrev(f, argnums=arg) if rev else jax.jacfwd(f, argnums=arg)
 
 
-@jax.jit(static_argnums=0)
+@jax.jit(static_argnums=(0,))
 def vec_x(f: Callable[[Array, Array], Array], p: Array, x: Array) -> Array:
     r"""
     Evaluates :math:`f(p, X)`.
