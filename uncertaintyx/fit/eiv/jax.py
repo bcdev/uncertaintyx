@@ -63,7 +63,7 @@ def evm(
         """
 
         def g(p: Array, x: Array) -> Array:
-            """The Jacobian function."""
+            """The Jacobian."""
             return jax.jacrev(f, argnums=1)(p, x) if y.size < x.size else jax.jacfwd(f, argnums=1)(p, x)
 
         def upc(d: int, G: Array, u: Array) -> Array:
@@ -83,7 +83,8 @@ def evm(
         d = f(p, x) - y
         G = g(p, x)  # noqa: N806
         if uy.shape == y.shape:
-            b = d / (uy + upd(x.ndim, G, ux))
+            V = uy + upd(x.ndim, G, ux)  # noqa: N806
+            b = d / V
         else:
             d = d.reshape(-1)
             C = jnp.reshape(  # noqa: N806
