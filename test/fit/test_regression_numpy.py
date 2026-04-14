@@ -5,7 +5,7 @@ import unittest
 
 import numpy as np
 
-from uncertaintyx.fit.eiv.numpy import ODR
+from uncertaintyx.fit.eiv.numpy import EIV
 from uncertaintyx.fit.randomsampling import Bootstrap
 from uncertaintyx.fit.randomsampling import MonteCarlo
 from uncertaintyx.fit.regression import HeteroHomoscedasticRegression
@@ -35,7 +35,7 @@ class RegressionTest(unittest.TestCase):
         y = x + rng.normal(0.0, u, n)
         x = x + rng.normal(0.0, u, n)
 
-        result = Bootstrap(HomoscedasticRegression(ODR())).fit(Linear(), x, y)
+        result = Bootstrap(HomoscedasticRegression(EIV())).fit(Linear(), x, y)
 
         self.assertEqual(0, result.info)
         self.assertAlmostEqual(1.0, result.popt[0], delta=0.1)
@@ -87,7 +87,7 @@ class RegressionTest(unittest.TestCase):
         y = x + rng.normal(0.0, u, n)
         x = x + rng.normal(0.0, u, n)
 
-        result = Bootstrap(HomoHeteroscedasticRegression(ODR())).fit(
+        result = Bootstrap(HomoHeteroscedasticRegression(EIV())).fit(
             Linear(), x, y, u=u
         )
 
@@ -141,7 +141,7 @@ class RegressionTest(unittest.TestCase):
         y = x + rng.normal(0.0, u, n)
         x = x + rng.normal(0.0, u, n)
 
-        result = Bootstrap(HeteroHomoscedasticRegression(ODR())).fit(
+        result = Bootstrap(HeteroHomoscedasticRegression(EIV())).fit(
             Linear(), x, y, u=u
         )
 
@@ -194,7 +194,7 @@ class RegressionTest(unittest.TestCase):
         y = x + rng.normal(0.0, u, n)
         x = x + rng.normal(0.0, u, n)
 
-        result = MonteCarlo(HeteroscedasticRegression(ODR())).fit(
+        result = MonteCarlo(HeteroscedasticRegression(EIV())).fit(
             Linear(), x, y, ux=u, uy=u
         )
 
