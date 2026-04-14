@@ -39,7 +39,7 @@ def jac(f: Callable[[Array], Array], x: Array, rev: bool = True) -> Array:
     return jax.vmap(jax.jacrev(f) if rev else jax.jacfwd(f))(x)
 
 
-@jax.jit(static_argnums=0)
+@jax.jit(static_argnums=(0,))
 def vec(f: Callable[[Array], Array], x: Array) -> Array:
     r"""
     Evaluates :math:`f(X)`.
