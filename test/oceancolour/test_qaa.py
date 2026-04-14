@@ -7,7 +7,7 @@ from importlib import resources
 import numpy as np
 import pandas as pd
 
-from uncertaintyx.fit.eiv.jax import EVM
+from uncertaintyx.fit.eiv.jax import EIV
 from uncertaintyx.fit.randomsampling import Bootstrap
 from uncertaintyx.fit.regression import HomoscedasticRegression
 from uncertaintyx.oceancolour.qaa import E
@@ -88,7 +88,7 @@ class QaaTest(unittest.TestCase):
         """
         x, y = read_plot_data("test.resources", "fig2.csv")
 
-        result = Bootstrap(HomoscedasticRegression(EVM())).fit(E(), x, y)
+        result = Bootstrap(HomoscedasticRegression(EIV())).fit(E(), x, y)
 
         self.assertEqual(0, result.info)
         self.assertAlmostEqual(2.0, result.popt[0], delta=0.2)
@@ -133,7 +133,7 @@ class QaaTest(unittest.TestCase):
         """
         x, y = read_plot_data("test.resources", "fig3.csv")
 
-        result = Bootstrap(HomoscedasticRegression(EVM())).fit(S(), x, y)
+        result = Bootstrap(HomoscedasticRegression(EIV())).fit(S(), x, y)
 
         self.assertEqual(0, result.info)
         self.assertAlmostEqual(0.017, result.popt[0], delta=0.001)
