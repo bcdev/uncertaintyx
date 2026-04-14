@@ -5,7 +5,7 @@ import unittest
 
 import numpy as np
 
-from uncertaintyx.fit.eiv.numpy import EIV
+from uncertaintyx.fit.eiv.jax import EIV
 from uncertaintyx.fit.randomsampling import Bootstrap
 from uncertaintyx.fit.randomsampling import MonteCarlo
 from uncertaintyx.fit.regression import HeteroHomoscedasticRegression
