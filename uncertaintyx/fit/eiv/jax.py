@@ -15,10 +15,9 @@ from optax import lbfgs
 from ...interface.core import Fitting
 from ...interface.core import M
 from ...interface.core import Result
-from ...m.jax import jac
 
 
-@jax.jit(static_argnums=(0, 1))
+@jax.jit(static_argnums=(0,))
 def evm(
     f: Callable[[Array, Array], Array],
     p: Array,
@@ -63,14 +62,18 @@ def evm(
         :returns: The sample loss.
         """
 
-        def upc(d: int, u: Array) -> Array:
+        def g(p: Array, x: Array) -> Array:
+            """The Jacobian function."""
+            return jax.jacrev(f, argnums=1)(p, x) if y.size < x.size else jax.jacfwd(f, argnums=1)(p, x)
+
+        def upc(d: int, G: Array, u: Array) -> Array:
             """Uncertainty propagation."""
             dims = tuple(range(-d, 0))
             return jnp.tensordot(
                 jnp.tensordot(G, u, axes=(dims, dims)), G, axes=(dims, dims)
             )
 
-        def upd(d: int, u: Array) -> Array:
+        def upd(d: int, G: Array, u: Array) -> Array:
             """Uncertainty propagation."""
             dims = tuple(range(-d, 0))
             return jnp.sum(
@@ -79,15 +82,14 @@ def evm(
 
         d = f(p, x) - y
         G = g(p, x)  # noqa: N806
-        if ux.shape == x.shape and uy.shape == y.shape:
-            v = uy + upd(x.ndim, ux)
-            b = d / v
+        if uy.shape == y.shape:
+            b = d / (uy + upd(x.ndim, G, ux))
         else:
             d = d.reshape(-1)
-            V = jnp.reshape(  # noqa: N806
-                uy + upc(x.ndim, ux), d.shape + d.shape
+            C = jnp.reshape(  # noqa: N806
+                uy + upc(x.ndim, G, ux), d.shape + d.shape
             )
-            b = cho_solve(cho_factor(V), d)
+            b = cho_solve(cho_factor(C), d)
         return 0.5 * jnp.sum(d * b)
 
     def loss(p: Array) -> Array:
