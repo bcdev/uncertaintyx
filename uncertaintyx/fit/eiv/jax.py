@@ -145,7 +145,6 @@ def evm(
         converged = norm(grad, ord=jnp.inf) < max_g  # noqa
         return i + 1, popt, state, cost, grad, converged
 
-    g = jac(f, 1, y.size < x.size)
     optim = lbfgs()
     state = optim.init(p)
     cost_and_grad = optax.value_and_grad_from_state(loss)
