@@ -36,6 +36,8 @@ class HomoscedasticRegression(Fitting):
         samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
         of data.
 
+        Under the same notation and remarks as :class:`M`:
+
         :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
@@ -75,10 +77,12 @@ class HomoHeteroscedasticRegression(Fitting):
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
 
+        Under the same notation and remarks as :class:`M`:
+
         :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
-        :param u: Uncertainties :math:`u(X) \in \mathbb{R}^{M \times m}`.
+        :param u: Standard uncertainties :math:`u(X)`.
         :param max_iter: The maximum number of iterations conducted.
         :returns: The fit result.
         """
@@ -115,10 +119,12 @@ class HeteroHomoscedasticRegression(Fitting):
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
 
+        Under the same notation and remarks as :class:`M`:
+
         :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
-        :param u: Uncertainties :math:`u(Y) \in \mathbb{R}^{M \times n}`.
+        :param u: Standard uncertainties :math:`u(Y)`.
         :param max_iter: The maximum number of iterations conducted.
         :returns: The fit result.
         """
@@ -158,11 +164,13 @@ class HeteroscedasticRegression(Fitting):
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
 
+        Under the same notation and remarks as :class:`M`:
+
         :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
-        :param ux: Uncertainties :math:`u(X) \in \mathbb{R}^{M \times m}`.
-        :param uy: Uncertainties :math:`u(Y) \in \mathbb{R}^{M \times n}`.
+        :param ux: Standard uncertainties :math:`u(X)`.
+        :param uy: Standard uncertainties :math:`u(Y)`.
         :param max_iter: The maximum number of iterations conducted.
         :returns: The fit result.
         """

@@ -38,13 +38,17 @@ class Bootstrap(Fitting):
         """
         Creates a new bootstrap instance.
 
-        Concrete implementations of :class:`Fitting` supplied as argument
-        may accept keyword-only parameters for uncertainty propagation:
+        Concrete implementations of :class:`Fitting` supplied as
+        argument may accept keyword-only parameters for propagation
+        of standard uncertainties::
 
-        fit(f, x, y, *, u: np.ndarray, **kwargs)
-        fit(f, x, y, *, ux: np.ndarray, **kwargs)
-        fit(f, x, y, *, uy: np.ndarray, **kwargs)
-        fit(f, x, y, *, ux: np.ndarray, uy: np.ndarray, **kwargs)
+            fit(f, x, y, *, u: np.ndarray, **kwargs)
+            fit(f, x, y, *, ux: np.ndarray, **kwargs)
+            fit(f, x, y, *, uy: np.ndarray, **kwargs)
+            fit(f, x, y, *, ux: np.ndarray, uy: np.ndarray, **kwargs)
+
+        Implementations must not accept different keyword-only
+        parameters for standard uncertainties.
 
         :param fitting: The fitting method.
         :param seed: The random seed used for the bootstrap.
@@ -64,6 +68,8 @@ class Bootstrap(Fitting):
         r"""
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
+
+        Under the same notation and remarks as :class:`M`:
 
         :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
@@ -159,11 +165,14 @@ class MonteCarlo(Fitting):
         """
         Creates a new Monte Carlo instance.
 
-        Concrete implementations of :class:`Fitting` supplied as argument
-        must accept `ux` and `uy` keyword-only parameters for uncertainty
-        propagation:
+        Concrete implementations of :class:`Fitting` supplied as
+        argument must accept `ux` and `uy` keyword-only parameters
+        for uncertainty propagation::
 
-        fit(f, x, y, *, ux: np.ndarray, uy: np.ndarray, **kwargs)
+            fit(f, x, y, *, ux: np.ndarray, uy: np.ndarray, **kwargs)
+
+        Implementations must not accept different keyword-only
+        parameters for standard uncertainties.
 
         :param fitting: The fitting method.
         :param perturbator: To randomly perturb x and y values.
@@ -187,11 +196,13 @@ class MonteCarlo(Fitting):
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
 
+        Under the same notation and remarks as :class:`M`:
+
         :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
-        :param ux: Uncertainties :math:`u(X) \in \mathbb{R}^{M \times m}`.
-        :param uy: Uncertainties :math:`u(Y) \in \mathbb{R}^{M \times n}`.
+        :param ux: Standard uncertainties :math:`u(X)`.
+        :param uy: Standard uncertainties :math:`u(Y)`.
         :returns: The fit result.
         """
 

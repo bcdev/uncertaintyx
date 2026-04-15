@@ -486,7 +486,7 @@ class Result:
     def rvar(self) -> Any:
         r"""
         Returns the irreducible residual variance
-        :math:`v \in \mathbb{R}^{n}`.
+        :math:`u^2 \in \mathbb{R}^{n}`.
         """
         return self._rvar
 
@@ -509,6 +509,15 @@ class Fitting(ABC):
         r"""
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
+
+        Concrete implementations of :class:`Fitting` supplied as
+        argument may accept keyword-only parameters for propagation
+        of standard uncertainties::
+
+            fit(f, x, y, *, u: np.ndarray, **kwargs)
+            fit(f, x, y, *, ux: np.ndarray, **kwargs)
+            fit(f, x, y, *, uy: np.ndarray, **kwargs)
+            fit(f, x, y, *, ux: np.ndarray, uy: np.ndarray, **kwargs)
 
         Under the same notation and remarks as :class:`M`:
 
@@ -533,7 +542,7 @@ class Perturbing(ABC):
         :math:`x \in \mathbb{R}^{m}`.
 
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
-        :param u: Uncertainty :math:`u(X) \in \mathbb{R}^{M \times n}`.
+        :param u: Standard uncertainties :math:`u(X)`.
         :returns: Perturbed samples :math:`X' \in \mathbb{R}^{M \times m}`.
         """
 
@@ -544,7 +553,7 @@ class Perturbing(ABC):
         :math:`y \in \mathbb{R}^{n}`.
 
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
-        :param u: Uncertainty :math:`u(Y) \in \mathbb{R}^{M \times n}`.
+        :param u: Standard uncertainties :math:`u(Y)`.
         :returns: Perturbed samples :math:`Y' \in \mathbb{R}^{M \times n}`.
         """
 
