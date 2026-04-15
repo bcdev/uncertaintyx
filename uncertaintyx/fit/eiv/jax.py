@@ -27,7 +27,7 @@ def evm_fit(
     ux: Array,
     uy: Array,
     *,
-    diagonalize: bool = False,
+    diagonalize: bool = True,
     max_i: int = 100,
     max_g: Any = 1.0E-06,
 ) -> tuple[Any, ...]:
