@@ -1,4 +1,4 @@
-![Matrix plot](assets/img/qaa3-ycov.png)
+![Matrix plot](assets/img/qaa2-ycov.png)
 
 # Uncertaintyx
 
