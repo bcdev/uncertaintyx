@@ -6,6 +6,7 @@ from typing import Callable
 import jax
 import jax.numpy as jnp
 import numpy as np
+import optax
 from jax import Array
 from jax.numpy.linalg import norm
 from jax.scipy.linalg import cho_factor
