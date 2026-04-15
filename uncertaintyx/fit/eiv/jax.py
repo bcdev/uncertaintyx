@@ -21,6 +21,7 @@ DEFAULT_MAX_G: Any = 1.0e-08
 DEFAULT_MAX_I: int = 100
 """The maximum number of iterations permitted."""
 
+
 @jax.jit(static_argnums=(0,), static_argnames=("diagonalize",))
 def evm_fit(
     f: Callable[[Array, Array], Array],
