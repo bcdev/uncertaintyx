@@ -5,13 +5,11 @@ from typing import Callable
 
 import jax
 import jax.numpy as jnp
+import jax.numpy.linalg as jli
+import jax.scipy.linalg as jla
 import numpy as np
 import optax
 from jax import Array
-from jax.numpy.linalg import norm
-from jax.scipy.linalg import cho_factor
-from jax.scipy.linalg import cho_solve
-from optax import lbfgs
 
 from ...interface.core import Fitting
 from ...interface.core import M
@@ -26,10 +24,11 @@ def evm_fit(
     y: Array,
     ux: Array,
     uy: Array,
+    up: Array | None = None,
     *,
-    diagonalize: bool = True,
     max_i: int = 100,
-    max_g: Any = 1.0e-06,
+    max_g: Any = 1.0e-08,
+    diagonalize: bool = True,
 ) -> tuple[Any, ...]:
     r"""
     Implementation of the effective variance method (EVM) with
@@ -46,6 +45,9 @@ def evm_fit(
         U(Y) \in \mathbb{R}^{M \times n \times n}, \quad
         U(Y) \in \mathbb{R}^{M \times n},
 
+        U(p) \in \mathbb{R}^{k \times k}, \quad
+        U(p) \in \mathbb{R}^{k},
+
     Otherwise, under the same notation as :class:`EIV`:
 
     :param f: The model function.
@@ -54,25 +56,25 @@ def evm_fit(
     :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
     :param ux: Uncertainty tensor :math:`U(X)`, full or diagonal.
     :param uy: Uncertainty tensor :math:`U(Y)`, full or diagonal.
-    :param diagonalize: Propagate full input uncertainty, use only
-    the output diagonal.
+    :param up: Uncertainty tensor :math:`U(p)`, full or diagonal.
     :param max_i: The maximum number of iterations permitted.
     :param max_g: The maximum gradient permitted.
+    :param diagonalize: Use only diagonal of uncertainty propagation output.
     :returns: The minimization loop state.
     """
 
-    def g(p: Array, x: Array) -> Array:
+    def g(q: Array, x: Array) -> Array:
         r"""
         The sample Jacobian.
 
-        :param p: The parameters.
+        :param q: The parameters.
         :param x: A sample :math:`x \in \mathbb{R}^{m}`
-        :returns: :math:`(G_x f)(p, x) \in \mathbb{R}^{n \times m}`
+        :returns: :math:`(G_x f)(q, x) \in \mathbb{R}^{n \times m}`
         """
         return (
-            jax.jacrev(f, argnums=1)(p, x)
+            jax.jacrev(f, argnums=1)(q, x)
             if y.size < x.size
-            else jax.jacfwd(f, argnums=1)(p, x)
+            else jax.jacfwd(f, argnums=1)(q, x)
         )
 
     def upc(d: int, G: Array, U: Array) -> Array:  # noqa: N806
@@ -101,11 +103,11 @@ def evm_fit(
         dims = tuple(range(-d, 0))
         return jnp.sum(jnp.tensordot(G, U, axes=(dims, dims)) * G, axis=dims)
 
-    def loss(p: Array, x: Array, y: Array, ux: Array, uy: Array) -> Array:
+    def loss(q: Array, x: Array, y: Array, ux: Array, uy: Array) -> Array:
         r"""
         The sample loss function.
 
-        :param p: The parameters.
+        :param q: The parameters.
         :param x: The sample :math:`x \in \mathbb{R}^{m}`.
         :param y: The sample :math:`y \in \mathbb{R}^{n}`.
         :param ux: :math:`U(x) \in \mathbb{R}^{m \times m}`.
@@ -113,8 +115,8 @@ def evm_fit(
 
         :returns: The sample loss.
         """
-        d = f(p, x) - y
-        G = g(p, x)  # noqa: N806
+        d = f(q, x) - y
+        G = g(q, x)  # noqa: N806
         if diagonalize:
             U = (  # noqa: N806
                 jnp.diag(uy.reshape((y.size, y.size))).reshape(y.shape)
@@ -123,26 +125,42 @@ def evm_fit(
             ) + upd(x.ndim, G, ux)
             b = d / U
         else:
-            d = d.reshape(-1)
+            d = d.reshape(y.size)
             U = (  # noqa: N806
                 uy.reshape((y.size, y.size))
                 if uy.ndim != y.ndim
                 else jnp.diag(uy.reshape(y.size))
             ) + upc(x.ndim, G, ux).reshape((y.size, y.size))
-            L = cho_factor(U)  # noqa: N806
-            b = cho_solve(L, d)
+            L = jla.cho_factor(U)  # noqa: N806
+            b = jla.cho_solve(L, d)
         return 0.5 * jnp.sum(d * b)
 
-    def S(p: Array) -> Array:  # noqa: N806
+    def prior(q: Array) -> Array:
+        """
+        The prior loss function.
+
+        :param q: The parameters.
+        :returns: The prior loss.
+        """
+        d = jnp.reshape(q - p, p.size)
+        b = (
+            jli.pinv(up.reshape(p.size, p.size)) @ d
+            if up.ndim != p.ndim
+            else jnp.where(up > 0.0, 1.0 / up, 0.0) * d
+        )
+        return 0.5 * jnp.sum(d * b)
+
+    def S(q: Array) -> Array:  # noqa: N806
         """
         The misfit function to minimize.
 
-        :param p: The parameters.
+        :param q: The parameters.
         :returns: The misfit.
         """
-        return jnp.sum(
-            jax.vmap(loss, in_axes=(None, 0, 0, 0, 0))(p, x, y, ux, uy)
+        term = jnp.sum(
+            jax.vmap(loss, in_axes=(None, 0, 0, 0, 0))(q, x, y, ux, uy)
         )
+        return term if up is None else term + prior(q)
 
     def cond(carry: tuple[Any, ...]) -> Array:
         """
@@ -167,10 +185,10 @@ def evm_fit(
         )
         popt = optax.apply_updates(popt, u)
         cost, grad = cost_and_grad(popt, state=state)
-        converged = norm(grad, ord=jnp.inf) < max_g  # noqa
+        converged = jli.norm(grad, ord=jnp.inf) < max_g  # noqa
         return i + 1, popt, state, cost, grad, converged
 
-    optim = lbfgs()
+    optim = optax.lbfgs()
     state = optim.init(p)
     cost_and_grad = optax.value_and_grad_from_state(S)
     cost, grad = cost_and_grad(p, state=state)
@@ -209,6 +227,7 @@ class EIV(Fitting):
         *,
         ux: np.ndarray | None = None,
         uy: np.ndarray | None = None,
+        up: np.ndarray | None = None,
         max_iter: int = 100,
         **kwargs,
     ) -> Result:
@@ -223,6 +242,7 @@ class EIV(Fitting):
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param ux: Standard uncertainties :math:`u(X)`.
         :param uy: Standard uncertainties :math:`u(Y)`.
+        :param up: Standard uncertainties :math:`u(p)`.
         :param max_iter: The maximum number of iterations conducted.
         :returns: The fit result.
         """
@@ -233,6 +253,7 @@ class EIV(Fitting):
             jnp.asarray(y),
             jnp.square(ux) if ux is not None else jnp.ones_like(x),
             jnp.square(uy) if uy is not None else jnp.ones_like(y),
+            jnp.square(up) if up is not None else None,
             max_i=max_iter,
             **kwargs,
         )

@@ -28,9 +28,7 @@ class HomoscedasticRegression(Fitting):
         """
         self._eiv = eiv
 
-    def fit(
-        self, f: M, x: np.ndarray, y: np.ndarray, *, max_iter: int = 100
-    ) -> Result:
+    def fit(self, f: M, x: np.ndarray, y: np.ndarray, **kwargs) -> Result:
         r"""
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
@@ -41,10 +39,9 @@ class HomoscedasticRegression(Fitting):
         :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
-        :param max_iter: The maximum number of iterations conducted.
         :returns: The fit result.
         """
-        return self._eiv.fit(f, x, y)
+        return self._eiv.fit(f, x, y, **kwargs)
 
 
 class HomoHeteroscedasticRegression(Fitting):
@@ -71,7 +68,7 @@ class HomoHeteroscedasticRegression(Fitting):
         y: np.ndarray,
         *,
         u: np.ndarray,
-        max_iter: int = 100,
+        **kwargs,
     ) -> Result:
         r"""
         Fits the parameters of a model function to :math:`M`
@@ -83,10 +80,9 @@ class HomoHeteroscedasticRegression(Fitting):
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param u: Standard uncertainties :math:`u(X)`.
-        :param max_iter: The maximum number of iterations conducted.
         :returns: The fit result.
         """
-        return self._eiv.fit(f, x, y, uy=u)
+        return self._eiv.fit(f, x, y, uy=u, **kwargs)
 
 
 class HeteroHomoscedasticRegression(Fitting):
@@ -113,7 +109,7 @@ class HeteroHomoscedasticRegression(Fitting):
         y: np.ndarray,
         *,
         u: np.ndarray,
-        max_iter: int = 100,
+        **kwargs,
     ) -> Result:
         r"""
         Fits the parameters of a model function to :math:`M`
@@ -125,10 +121,9 @@ class HeteroHomoscedasticRegression(Fitting):
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param u: Standard uncertainties :math:`u(Y)`.
-        :param max_iter: The maximum number of iterations conducted.
         :returns: The fit result.
         """
-        return self._eiv.fit(f, x, y, ux=u)
+        return self._eiv.fit(f, x, y, ux=u, **kwargs)
 
 
 class HeteroscedasticRegression(Fitting):
@@ -158,7 +153,7 @@ class HeteroscedasticRegression(Fitting):
         *,
         ux: np.ndarray,
         uy: np.ndarray,
-        max_iter: int = 100,
+        **kwargs,
     ) -> Result:
         r"""
         Fits the parameters of a model function to :math:`M`
@@ -171,7 +166,6 @@ class HeteroscedasticRegression(Fitting):
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param ux: Standard uncertainties :math:`u(X)`.
         :param uy: Standard uncertainties :math:`u(Y)`.
-        :param max_iter: The maximum number of iterations conducted.
         :returns: The fit result.
         """
-        return self._eiv.fit(f, x, y, ux=ux, uy=uy)
+        return self._eiv.fit(f, x, y, ux=ux, uy=uy, **kwargs)
