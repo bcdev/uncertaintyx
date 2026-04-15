@@ -124,19 +124,19 @@ def evm_fit(
         d = f(q, x) - y
         G = g(q, x)  # noqa: N806
         if diagonalize:
-            U = (  # noqa: N806
+            U = upd(x.ndim, G, ux) + (  # noqa: N806
                 uy
                 if uy.ndim == y.ndim
-                else jnp.diag(uy.reshape((y.size, y.size))).reshape(y.shape)
-            ) + upd(x.ndim, G, ux)
+                else jnp.diag(uy.reshape((d.size, -1))).reshape(d.shape)
+            )
             b = d / U
         else:
-            d = d.reshape(y.size)
-            U = (  # noqa: N806
-                jnp.diag(uy.reshape(y.size))
+            d = d.reshape(-1)
+            U = upc(x.ndim, G, ux).reshape((d.size, -1)) + (  # noqa: N806
+                jnp.diag(uy.reshape(-1))
                 if uy.ndim == y.ndim
-                else uy.reshape((y.size, y.size))
-            ) + upc(x.ndim, G, ux).reshape((y.size, y.size))
+                else uy.reshape((d.size, -1))
+            )
             L = jla.cho_factor(U)  # noqa: N806
             b = jla.cho_solve(L, d)
         return 0.5 * jnp.sum(d * b)
@@ -148,11 +148,11 @@ def evm_fit(
         :param q: The parameters.
         :returns: The prior loss.
         """
-        d = jnp.reshape(q - p, p.size)
+        d = jnp.reshape(q - p, -1)
         b = (
             jnp.where(up > 0.0, 1.0 / up, 0.0) * d
             if up.ndim == p.ndim
-            else jli.pinv(up.reshape(p.size, p.size)) @ d
+            else jli.pinv(up.reshape(d.size, -1)) @ d
         )
         return 0.5 * jnp.sum(d * b)
 
