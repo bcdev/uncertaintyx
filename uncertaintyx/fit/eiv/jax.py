@@ -29,7 +29,7 @@ def evm_fit(
     *,
     diagonalize: bool = True,
     max_i: int = 100,
-    max_g: Any = 1.0E-06,
+    max_g: Any = 1.0e-06,
 ) -> tuple[Any, ...]:
     r"""
     Implementation of the effective variance method (EVM) with
