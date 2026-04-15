@@ -119,17 +119,17 @@ def evm_fit(
         G = g(q, x)  # noqa: N806
         if diagonalize:
             U = (  # noqa: N806
-                jnp.diag(uy.reshape((y.size, y.size))).reshape(y.shape)
-                if uy.ndim != y.ndim
-                else uy
+                uy
+                if uy.ndim == y.ndim
+                else jnp.diag(uy.reshape((y.size, y.size))).reshape(y.shape)
             ) + upd(x.ndim, G, ux)
             b = d / U
         else:
             d = d.reshape(y.size)
             U = (  # noqa: N806
-                uy.reshape((y.size, y.size))
-                if uy.ndim != y.ndim
-                else jnp.diag(uy.reshape(y.size))
+                jnp.diag(uy.reshape(y.size))
+                if uy.ndim == y.ndim
+                else uy.reshape((y.size, y.size))
             ) + upc(x.ndim, G, ux).reshape((y.size, y.size))
             L = jla.cho_factor(U)  # noqa: N806
             b = jla.cho_solve(L, d)
@@ -144,9 +144,9 @@ def evm_fit(
         """
         d = jnp.reshape(q - p, p.size)
         b = (
-            jli.pinv(up.reshape(p.size, p.size)) @ d
-            if up.ndim != p.ndim
-            else jnp.where(up > 0.0, 1.0 / up, 0.0) * d
+            jnp.where(up > 0.0, 1.0 / up, 0.0) * d
+            if up.ndim == p.ndim
+            else jli.pinv(up.reshape(p.size, p.size)) @ d
         )
         return 0.5 * jnp.sum(d * b)
 
