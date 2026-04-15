@@ -18,7 +18,7 @@ from ...interface.core import M
 from ...interface.core import Result
 
 
-@jax.jit(static_argnums=(0,))
+@jax.jit(static_argnums=(0,), static_argnames=("diagonalize",))
 def evm_fit(
     f: Callable[[Array, Array], Array],
     p: Array,
