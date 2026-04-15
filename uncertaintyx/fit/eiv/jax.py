@@ -34,14 +34,26 @@ def evm(
     a limited-memory Broyden-Fletcher-Goldfarb-Shanno (L-BFGS)
     minimizer.
 
-    Under the same notation as :class:`EIV`:
+    This implementation accepts any combination of full-rank
+    or diagonal-rank uncertainty tensors:
+
+    .. math::
+        U(X) \in \mathbb{R}^{M \times m \times m}, \quad
+        U(X) \in \mathbb{R}^{M \times m},
+
+        U(Y) \in \mathbb{R}^{M \times n \times n}, \quad
+        U(Y) \in \mathbb{R}^{M \times n},
+
+    Otherwise, under the same notation as :class:`EIV`:
 
     :param f: The model function.
     :param p: Parameters :math:`p \in \mathbb{R}^{k}`.
     :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
     :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
-    :param ux: Uncertainty :math:`U(X) \in \mathbb{R}^{M \times m}`.
-    :param uy: Uncertainty :math:`U(Y) \in \mathbb{R}^{M \times n}`.
+    :param ux: Uncertainty tensor :math:`U(X)`, full or diagonal.
+    :param uy: Uncertainty tensor :math:`U(Y)`, full or diagonal.
+    :param diagonalize: Propagate full input uncertainty, use only
+    the output diagonal.
     :param max_i: The maximum number of iterations permitted.
     :param max_g: The maximum gradient permitted.
     :returns: The minimization loop state.
@@ -179,11 +191,13 @@ class EIV(Fitting):
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
 
+        Under the same notation and remarks as :class:`M`:
+
         :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
-        :param ux: Uncertainties :math:`u(X) \in \mathbb{R}^{M \times m}`.
-        :param uy: Uncertainties :math:`u(Y) \in \mathbb{R}^{M \times n}`.
+        :param ux: Standard uncertainties :math:`u(X)`.
+        :param uy: Standard uncertainties :math:`u(Y)`.
         :param max_iter: The maximum number of iterations conducted.
         :returns: The fit result.
         """
