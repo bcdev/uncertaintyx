@@ -29,7 +29,7 @@ class Bootstrap(Fitting):
     supplied. While Monte Carlo creates variants by random perturbation,
     bootstrapping creates variants by random sampling with replacement,
     resampling uncertainties, if known, paired with their corresponding
-    data points.
+    data samples.
     """
 
     def __init__(
@@ -48,7 +48,7 @@ class Bootstrap(Fitting):
             fit(f, x, y, *, ux: np.ndarray, uy: np.ndarray, **kwargs)
 
         Implementations must not accept different keyword-only
-        parameters for standard uncertainties.
+        parameters for data standard uncertainties.
 
         :param fitting: The fitting method.
         :param seed: The random seed used for the bootstrap.
@@ -172,7 +172,7 @@ class MonteCarlo(Fitting):
             fit(f, x, y, *, ux: np.ndarray, uy: np.ndarray, **kwargs)
 
         Implementations must not accept different keyword-only
-        parameters for standard uncertainties.
+        parameters for data standard uncertainties.
 
         :param fitting: The fitting method.
         :param perturbator: To randomly perturb x and y values.
