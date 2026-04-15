@@ -19,7 +19,7 @@ from ...interface.core import Result
 
 
 @jax.jit(static_argnums=(0,))
-def evm(
+def evm_fit(
     f: Callable[[Array, Array], Array],
     p: Array,
     x: Array,
@@ -27,8 +27,9 @@ def evm(
     ux: Array,
     uy: Array,
     *,
+    diagonalize: bool = False,
     max_i: int = 100,
-    obj_g: Any = 1.0E-06,
+    max_g: Any = 1.0E-06,
 ) -> tuple[Any, ...]:
     r"""
     Implementation of the effective variance method (EVM) with
@@ -60,9 +61,47 @@ def evm(
     :returns: The minimization loop state.
     """
 
-    def sample_loss(
-        p: Array, x: Array, y: Array, ux: Array, uy: Array
-    ) -> Array:
+    def g(p: Array, x: Array) -> Array:
+        r"""
+        The sample Jacobian.
+
+        :param p: The parameters.
+        :param x: A sample :math:`x \in \mathbb{R}^{m}`
+        :returns: :math:`(G_x f)(p, x) \in \mathbb{R}^{n \times m}`
+        """
+        return (
+            jax.jacrev(f, argnums=1)(p, x)
+            if y.size < x.size
+            else jax.jacfwd(f, argnums=1)(p, x)
+        )
+
+    def upc(d: int, G: Array, U: Array) -> Array:  # noqa: N806
+        """
+        The sample uncertainty propagation.
+
+        :param d: The rank of the input sample tensor.
+        :param G: The sample Jacobian.
+        :param U: The input sample uncertainty tensor.
+        :returns: The propagated uncertainty tensor.
+        """
+        dims = tuple(range(-d, 0))
+        return jnp.tensordot(
+            jnp.tensordot(G, U, axes=(dims, dims)), G, axes=(dims, dims)
+        )
+
+    def upd(d: int, G: Array, U: Array) -> Array:  # noqa: N806
+        r"""
+        The diagonalized sample uncertainty propagation.
+
+        :param d: The rank of the input sample tensor.
+        :param G: The sample Jacobian.
+        :param U: The input sample uncertainty tensor.
+        :returns: The diagonal of the propagated uncertainty tensor.
+        """
+        dims = tuple(range(-d, 0))
+        return jnp.sum(jnp.tensordot(G, U, axes=(dims, dims)) * G, axis=dims)
+
+    def loss(p: Array, x: Array, y: Array, ux: Array, uy: Array) -> Array:
         r"""
         The sample loss function.
 
@@ -74,50 +113,36 @@ def evm(
 
         :returns: The sample loss.
         """
-
-        def g(p: Array, x: Array) -> Array:
-            """The Jacobian."""
-            return jax.jacrev(f, argnums=1)(p, x) if y.size < x.size else jax.jacfwd(f, argnums=1)(p, x)
-
-        def upc(d: int, G: Array, u: Array) -> Array:
-            """Uncertainty propagation."""
-            dims = tuple(range(-d, 0))
-            return jnp.tensordot(
-                jnp.tensordot(G, u, axes=(dims, dims)), G, axes=(dims, dims)
-            )
-
-        def upd(d: int, G: Array, u: Array) -> Array:
-            """Uncertainty propagation."""
-            dims = tuple(range(-d, 0))
-            return jnp.sum(
-                jnp.tensordot(G, u, axes=(dims, dims)) * G, axis=dims
-            )
-
         d = f(p, x) - y
         G = g(p, x)  # noqa: N806
-        if uy.shape == y.shape:
-            V = uy + upd(x.ndim, G, ux)  # noqa: N806
-            b = d / V
+        if diagonalize:
+            U = (  # noqa: N806
+                jnp.diag(uy.reshape((y.size, y.size))).reshape(y.shape)
+                if uy.ndim != y.ndim
+                else uy
+            ) + upd(x.ndim, G, ux)
+            b = d / U
         else:
             d = d.reshape(-1)
-            C = jnp.reshape(  # noqa: N806
-                uy + upc(x.ndim, G, ux), d.shape + d.shape
-            )
-            L = cho_factor(C)  # noqa: N806
+            U = (  # noqa: N806
+                uy.reshape((y.size, y.size))
+                if uy.ndim != y.ndim
+                else jnp.diag(uy.reshape(y.size))
+            ) + upc(x.ndim, G, ux).reshape((y.size, y.size))
+            L = cho_factor(U)  # noqa: N806
             b = cho_solve(L, d)
         return 0.5 * jnp.sum(d * b)
 
-    def loss(p: Array) -> Array:
+    def S(p: Array) -> Array:  # noqa: N806
         """
-        The batch loss function.
+        The misfit function to minimize.
 
         :param p: The parameters.
-        :returns: The batch loss.
+        :returns: The misfit.
         """
-        losses = jax.vmap(sample_loss, in_axes=(None, 0, 0, 0, 0))(
-            p, x, y, ux, uy
+        return jnp.sum(
+            jax.vmap(loss, in_axes=(None, 0, 0, 0, 0))(p, x, y, ux, uy)
         )
-        return jnp.sum(losses)
 
     def cond(carry: tuple[Any, ...]) -> Array:
         """
@@ -138,7 +163,7 @@ def evm(
         """
         i, popt, state, cost, grad, _ = carry
         u, state = optim.update(
-            grad, state, popt, value=cost, grad=grad, value_fn=loss
+            grad, state, popt, value=cost, grad=grad, value_fn=S
         )
         popt = optax.apply_updates(popt, u)
         cost, grad = cost_and_grad(popt, state=state)
@@ -147,7 +172,7 @@ def evm(
 
     optim = lbfgs()
     state = optim.init(p)
-    cost_and_grad = optax.value_and_grad_from_state(loss)
+    cost_and_grad = optax.value_and_grad_from_state(S)
     cost, grad = cost_and_grad(p, state=state)
     carry = (0, p, state, cost, grad, False)
 
@@ -201,13 +226,13 @@ class EIV(Fitting):
         :param max_iter: The maximum number of iterations conducted.
         :returns: The fit result.
         """
-        i, popt, state, cost, g, converged = evm(
+        i, popt, state, cost, g, converged = evm_fit(
             f.f,
             jnp.asarray(f.estimate(x, y)),
             jnp.asarray(x),
             jnp.asarray(y),
-            jnp.asarray(ux * ux) if ux is not None else jnp.ones_like(x),
-            jnp.asarray(uy * uy) if uy is not None else jnp.ones_like(y),
+            jnp.square(ux) if ux is not None else jnp.ones_like(x),
+            jnp.square(uy) if uy is not None else jnp.ones_like(y),
             max_i=max_iter,
             **kwargs,
         )
