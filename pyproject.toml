@@ -76,6 +76,9 @@ exclude_also = [
 [tool.coverage.run]
 omit = [
 ]
+disable_warnings = [
+    "couldnt-parse",
+]
 
 [tool.pytest.ini_options]
 addopts = "-p no:warnings"

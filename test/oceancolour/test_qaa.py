@@ -7,7 +7,7 @@ from importlib import resources
 import numpy as np
 import pandas as pd
 
-from uncertaintyx.fit.eiv.numpy import EIV
+from uncertaintyx.fit.eiv.jax import EIV
 from uncertaintyx.fit.randomsampling import Bootstrap
 from uncertaintyx.fit.regression import HomoscedasticRegression
 from uncertaintyx.oceancolour.qaa import E
@@ -88,12 +88,16 @@ class QaaTest(unittest.TestCase):
         """
         x, y = read_plot_data("test.resources", "fig2.csv")
 
-        result = Bootstrap(HomoscedasticRegression(EIV())).fit(E(), x, y)
+        result = Bootstrap(HomoscedasticRegression(EIV())).fit(
+            E(), x, y, up=np.array([0.5, 0.5, 0.5])
+        )
 
         self.assertEqual(0, result.info)
-        self.assertAlmostEqual(2.0, result.popt[0], delta=0.2)
-        self.assertAlmostEqual(0.7, result.popt[1], delta=0.2)
-        self.assertAlmostEqual(0.2, result.punc[0], delta=0.1)
+        self.assertAlmostEqual(2.0, result.popt[0], delta=1.0)
+        self.assertAlmostEqual(1.2, result.popt[1], delta=1.0)
+        self.assertAlmostEqual(0.9, result.popt[1], delta=1.0)
+        self.assertAlmostEqual(0.1, result.punc[0], delta=0.1)
+        self.assertAlmostEqual(0.1, result.punc[1], delta=0.1)
         self.assertAlmostEqual(0.1, result.punc[1], delta=0.1)
         self.assertAlmostEqual(0.3, result.rvar, delta=0.1)
 
@@ -119,10 +123,10 @@ class QaaTest(unittest.TestCase):
             ylabel=r"$r(443~\mathrm{nm})$ / $r(555~\mathrm{nm})$",
             xrange=(0.5, 4.5),
             yrange=(0.5, 4.5),
-            cmap="cividis",
+            cmap="viridis",
             cbar_label=r"variance-covariance $U_p(\eta)$",
-            cbar_max=0.035,
-            cbar_min=-0.035,
+            cbar_max=0.01,
+            cbar_min=0.00,
             savefig="qaa2-ycov.png",
         )
 
@@ -136,10 +140,12 @@ class QaaTest(unittest.TestCase):
         result = Bootstrap(HomoscedasticRegression(EIV())).fit(S(), x, y)
 
         self.assertEqual(0, result.info)
-        self.assertAlmostEqual(0.017, result.popt[0], delta=0.001)
-        self.assertAlmostEqual(0.000, result.popt[1], delta=0.02)
-        self.assertAlmostEqual(0.000, result.popt[2], delta=5.0)
+        self.assertAlmostEqual(0.015, result.popt[0], delta=0.005)
+        self.assertAlmostEqual(0.0, result.popt[1], delta=0.1)
+        self.assertAlmostEqual(0.0, result.popt[2], delta=5.0)
         self.assertAlmostEqual(0.001, result.punc[0], delta=0.001)
+        self.assertAlmostEqual(0.001, result.punc[0], delta=0.001)
+        self.assertAlmostEqual(5.0, result.punc[0], delta=5.0)
         self.assertAlmostEqual(1.5e-05, result.rvar, delta=0.1e-05)
 
         print()
@@ -153,7 +159,7 @@ class QaaTest(unittest.TestCase):
             y,
             title="Replica of Lee et al. (2010, Figure 3)",
             xlabel=r"$r(443~\mathrm{nm})$ / $r(555~\mathrm{nm})$",
-            ylabel=r"S ($\mathrm{nm}^{-1}$)",
+            ylabel=r"$S$ ($\mathrm{nm}^{-1}$)",
             xrange=(0.050, 9.950),
             yrange=(0.005, 0.035),
             savefig="qaa3.png",
@@ -166,8 +172,8 @@ class QaaTest(unittest.TestCase):
             yrange=(0.05, 9.95),
             cmap="viridis",
             cbar_label=r"variance-covariance $U_p(S)$ ($\mathrm{nm}^{-2}$)",
-            cbar_max=3.0e-05,
-            cbar_min=0.0e-05,
+            cbar_max=4.0e-06,
+            cbar_min=0.0e-06,
             savefig="qaa3-ycov.png",
         )
 

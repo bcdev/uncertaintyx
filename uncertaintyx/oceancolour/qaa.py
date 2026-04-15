@@ -215,7 +215,7 @@ class QAA(ToM):
             return (u * a) / (1.0 - u) - bw
 
         def _e(i, e0=2.0, e1=1.2, e2=0.9):
-            """
+            r"""
             Returns the coefficient :math:`\eta`.
 
             :param i: The blue to green spectral index.
@@ -352,7 +352,7 @@ class QAA(ToM):
 
 
 class E(ToM):
-    """
+    r"""
     Empirical model function to fit data in Lee et al. (2010, Figure 2)
     for the :math:`\eta` coefficient.
     """
@@ -360,8 +360,8 @@ class E(ToM):
     def __init__(self):
         def f(p, x):
             """The model function."""
-            a, c = p
-            return a * (1.0 - 1.2 * jnp.exp(-c * x))
+            a, b, c = p
+            return a * (1.0 - b * jnp.exp(-c * x))
 
         super().__init__(f)
 
@@ -371,11 +371,11 @@ class E(ToM):
         y: np.ndarray | None = None,
         preset: str | None = None,
     ) -> np.ndarray:
-        return np.array([2.0, 0.9])
+        return np.array([2.0, 1.2, 0.9])
 
 
 class S(ToM):
-    """
+    r"""
     Empirical model function to fit data in Lee et al. (2010, Figure 3)
     for the :math:`S` coefficient.
     """
