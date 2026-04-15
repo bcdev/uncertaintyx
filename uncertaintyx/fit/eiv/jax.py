@@ -15,6 +15,11 @@ from ...interface.core import Fitting
 from ...interface.core import M
 from ...interface.core import Result
 
+DEFAULT_MAX_G: Any = 1.0e-08
+"""The maximum gradient permitted."""
+
+DEFAULT_MAX_I: int = 100
+"""The maximum number of iterations permitted."""
 
 @jax.jit(static_argnums=(0,), static_argnames=("diagonalize",))
 def evm_fit(
@@ -26,8 +31,8 @@ def evm_fit(
     uy: Array,
     up: Array | None = None,
     *,
-    max_i: int = 100,
-    max_g: Any = 1.0e-08,
+    max_i: int = DEFAULT_MAX_I,
+    max_g: Any = DEFAULT_MAX_G,
     diagonalize: bool = True,
 ) -> tuple[Any, ...]:
     r"""
