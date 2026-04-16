@@ -57,13 +57,13 @@ class EIV(Fitting):
         """
 
         def t(g: np.ndarray) -> np.ndarray:
-            """Transpose for external API compliance."""
+            """Transpose (permute) axes for external API compliance."""
             return np.moveaxis(g, 0, -1) if g.ndim > 1 else g
 
         def r(
             _: np.ndarray, shape: tuple = (), copy: bool = False
         ) -> np.ndarray:
-            """Ravel for external API compliance."""
+            """Ravel (reshape) for external API compliance."""
             return (
                 np.reshape(_, shape=(-1,) + shape, copy=copy)
                 if _.ndim - 1 > len(shape)
@@ -71,7 +71,7 @@ class EIV(Fitting):
             )
 
         def u(_: np.ndarray, shape: tuple, copy: bool = False) -> np.ndarray:
-            """Unravel for external API compliance."""
+            """Unravel (revert) to original shape."""
             return (
                 np.reshape(_, shape=shape, copy=copy)
                 if _.ndim < len(shape)
@@ -79,7 +79,10 @@ class EIV(Fitting):
             )
 
         def w(u: np.ndarray) -> np.ndarray:
-            """Convert for external API compliance."""
+            """
+            Convert sample uncertainties to inverse variance weights
+            for external API compliance.
+            """
             return 1.0 / np.square(u)
 
         def eval(x: np.ndarray, p: np.ndarray) -> np.ndarray:
@@ -105,8 +108,8 @@ class EIV(Fitting):
 
         res = odrpack.odr_fit(
             f=eval,
-            xdata=r(x, m_r, copy=True).T,
-            ydata=r(y, n_r, copy=True).T,
+            xdata=r(x, m_r).T,
+            ydata=r(y, n_r).T,
             beta0=r(p),
             weight_x=r(w(ux), m_r).T if ux is not None else None,
             weight_y=r(w(uy), n_r).T if uy is not None else None,
