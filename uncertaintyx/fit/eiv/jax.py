@@ -163,10 +163,10 @@ def evm_fit(
         :param q: The parameters.
         :returns: The misfit.
         """
-        term = jnp.sum(
+        losses = jnp.sum(
             jax.vmap(loss, in_axes=(None, 0, 0, 0, 0))(q, x, y, ux, uy)
         )
-        return term if up is None else term + prior(q)
+        return losses if up is None else losses + prior(q)
 
     def cond(carry: tuple[Any, ...]) -> Array:
         """
