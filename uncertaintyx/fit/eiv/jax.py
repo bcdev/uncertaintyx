@@ -92,7 +92,7 @@ def evm(
     :param covar: Use effective covariance, too.
     :returns: The fit result comprising: the optimized parameter
     values, the parameter uncertainty tensor, parameter standard
-    uncertainties, the misfit, and the convergence status.
+    uncertainties, the cost, and the convergence status.
     """
 
     def g(q: Array, x: Array) -> Array:
@@ -183,10 +183,10 @@ def evm(
 
     def S(q: Array) -> Array:  # noqa: N806
         """
-        The misfit function to minimize.
+        The cost (or misfit) function to minimize.
 
         :param q: The parameters.
-        :returns: The misfit.
+        :returns: The cost.
         """
         loss_term = jnp.sum(
             jax.vmap(loss, in_axes=(None, 0, 0, 0, 0))(q, x, y, ux, uy)
@@ -219,7 +219,14 @@ def evm(
         converged = jli.norm(grad, ord=jnp.inf) < max_g  # noqa
         return i + 1, popt, tree, cost, grad, converged
 
-    def optimize(p: Array) -> tuple[Array, ...]:
+    def optimize(p: Array) -> tuple[Array, Array, Array]:
+        """
+        Conducts the optimization.
+
+        :param p: The initial parameter values.
+        :returns: The optimized parameter values, the cost, and the
+        convergence status.
+        """ 
         tree = optimizer.init(p)
         cost, grad = cost_and_grad(p, state=tree)
         init = (0, p, tree, cost, grad, False)
@@ -227,6 +234,13 @@ def evm(
         return popt, cost, converged
 
     def post(p: Array) -> tuple[Array, Array]:
+        """
+        Conducts the post processing.
+        
+        :param p: The optimized parameter values.
+        :returns: The parameter uncertainty tensor and the parameter
+        standard uncertainties.
+        """
         hess = jax.hessian(S)
         pcov = jli.pinv(hess(p).reshape(p.size, -1))
         punc = jnp.sqrt(jnp.diag(pcov)).reshape(p.shape)
@@ -239,7 +253,7 @@ def evm(
     optimizer = optax.lbfgs()
     cost_and_grad = optax.value_and_grad_from_state(S)
     popt, cost, converged = optimize(p)
-    pcov, punc = post(p)
+    pcov, punc = post(popt)
 
     return popt, pcov, punc, cost, converged
 
