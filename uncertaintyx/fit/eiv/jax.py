@@ -187,10 +187,10 @@ def evm(
         :param q: The parameters.
         :returns: The misfit.
         """
-        losses = jnp.sum(
+        loss_term = jnp.sum(
             jax.vmap(loss, in_axes=(None, 0, 0, 0, 0))(q, x, y, ux, uy)
         )
-        return losses if up is None else losses + prior(q)
+        return loss_term if up is None else loss_term + prior(q)
 
     def cond(carry: tuple[Any, ...]) -> Array:
         """
