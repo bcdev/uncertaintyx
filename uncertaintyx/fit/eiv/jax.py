@@ -1,5 +1,27 @@
 #  Copyright (c) Brockmann Consult GmbH, 2026.
 #  License: MIT
+"""
+Errors-in-variables implementation based on the effective
+variance method (EVM). Refer to:
+
+A. Tarantola (2005). Inverse Problem Theory and Methods for
+Model Parameter Estimation. Society for Industrial and Applied
+Mathematics. https://doi.org/10.1137/1.9780898717921
+
+Watson et al. (1984). The effective variance weighting
+for least squares calculations applied to the mass balance
+receptor model. Atmospheric Environment (1967), 18, 1347-1355.
+https://doi.org/10.1016/0004-6981(84)90043-X.
+
+D. York (1968). Least squares fitting of a straight line
+with correlated errors. Earth and Planetary Science Letters,
+5, 320-324. https://doi.org/10.1016/S0012-821X(68)80059-7.
+
+D. York (1966). Least squares fitting of a straight line.
+Canadian Journal of Physics, 44, 1079-1086.
+https://doi.org/10.1139/p66-090.
+"""
+
 from typing import Any
 from typing import Callable
 
@@ -209,20 +231,7 @@ class EIV(Fitting):
     variance method (EVM).
 
     This implementation is intended for large scale problems
-    with up to millions of data points. Refer to:
-
-    Watson et al. (1984). The effective variance weighting
-    for least squares calculations applied to the mass balance
-    receptor model. Atmospheric Environment (1967), 18, 1347-1355.
-    https://doi.org/10.1016/0004-6981(84)90043-X.
-
-    D. York (1968). Least squares fitting of a straight line
-    with correlated errors. Earth and Planetary Science Letters,
-    5, 320-324. https://doi.org/10.1016/S0012-821X(68)80059-7.
-
-    D. York (1966). Least squares fitting of a straight line.
-    Canadian Journal of Physics, 44, 1079-1086.
-    https://doi.org/10.1139/p66-090.
+    with up to millions of data points.
     """
 
     def fit(
