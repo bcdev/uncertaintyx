@@ -161,8 +161,7 @@ def evm(
                 if uy.ndim == y.ndim
                 else uy.reshape((d.size, -1))
             )
-            L = jla.cho_factor(U)  # noqa: N806
-            b = jla.cho_solve(L, d)
+            b = jla.cho_solve(jla.cho_factor(U), d)
         return 0.5 * jnp.sum(d * b)
 
     def prior(q: Array) -> Array:
