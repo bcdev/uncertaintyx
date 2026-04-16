@@ -1,5 +1,17 @@
 #  Copyright (c) Brockmann Consult GmbH, 2026.
 #  License: MIT
+"""
+Errors-in-variables implementation based on orthogonal
+distance regression (ODR). Refer to:
+
+Boggs et al. (1992). User's Reference Guide for ODRPACK
+Version 2.01. Software for Weighted Orthogonal Distance
+Regression. https://doi.org/10.6028/NIST.IR.4834.
+
+Boggs et al. (1989). Algorithm 676: ODRPACK: software for
+weighted orthogonal distance regression. ACM Trans. Math.
+Softw. 15, 348–364. https://doi.org/10.1145/76909.76913.
+"""
 
 import numpy as np
 import odrpack
@@ -16,14 +28,6 @@ class EIV(Fitting):
 
     This implementation is intended for problems with up to
     :math:`10^4` to :math:`10^5` data points. Refer to:
-
-    Boggs et al. (1992). User's Reference Guide for ODRPACK
-    Version 2.01. Software for Weighted Orthogonal Distance
-    Regression. https://doi.org/10.6028/NIST.IR.4834.
-
-    Boggs et al. (1989). Algorithm 676: ODRPACK: software for
-    weighted orthogonal distance regression. ACM Trans. Math.
-    Softw. 15, 348–364. https://doi.org/10.1145/76909.76913.
     """
 
     def fit(
