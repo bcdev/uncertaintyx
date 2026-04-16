@@ -61,7 +61,7 @@ def evm(
     r"""
     Implementation of the effective variance method (EVM) with
     a limited-memory Broyden-Fletcher-Goldfarb-Shanno (L-BFGS)
-    minimizer.
+    optimizer.
 
     This implementation accepts any combination of full-rank
     or diagonal-rank uncertainty tensors:
@@ -210,20 +210,20 @@ def evm(
         :param carry: The loop state carrier.
         :returns: The updated loop state carrier.
         """
-        i, popt, state, cost, grad, _ = carry
-        u, state = mizer.update(
-            grad, state, popt, value=cost, grad=grad, value_fn=S
+        i, popt, tree, cost, grad, _ = carry
+        u, tree = optimizer.update(
+            grad, tree, popt, value=cost, grad=grad, value_fn=S
         )
         popt = optax.apply_updates(popt, u)
-        cost, grad = cost_and_grad(popt, state=state)
+        cost, grad = cost_and_grad(popt, state=tree)
         converged = jli.norm(grad, ord=jnp.inf) < max_g  # noqa
-        return i + 1, popt, state, cost, grad, converged
+        return i + 1, popt, tree, cost, grad, converged
 
-    def optimize(
-        p: Array, state: Any, cost: Array, grad: Array
-    ) -> tuple[Any, ...]:
-        carry = (0, p, state, cost, grad, False)
-        _, popt, _, cost, _, converged = jax.lax.while_loop(cond, body, carry)
+    def optimize(p: Array) -> tuple[Array, ...]:
+        tree = optimizer.init(p)
+        cost, grad = cost_and_grad(p, state=tree)
+        init = (0, p, tree, cost, grad, False)
+        _, popt, _, cost, _, converged = jax.lax.while_loop(cond, body, init)
         return popt, cost, converged
 
     def post(p: Array) -> tuple[Array, Array]:
@@ -236,11 +236,9 @@ def evm(
         ux = jnp.broadcast_to(1.0, x.shape)
     if uy is None:
         uy = jnp.broadcast_to(1.0, y.shape)
-    mizer = optax.lbfgs()
-    state = mizer.init(p)
+    optimizer = optax.lbfgs()
     cost_and_grad = optax.value_and_grad_from_state(S)
-    cost, grad = cost_and_grad(p, state=state)
-    popt, cost, converged = optimize(p, state, cost, grad)
+    popt, cost, converged = optimize(p)
     pcov, punc = post(p)
 
     return popt, pcov, punc, cost, converged
