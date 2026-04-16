@@ -219,9 +219,9 @@ def evm(
         converged = jli.norm(grad, ord=jnp.inf) < max_g  # noqa
         return i + 1, popt, tree, cost, grad, converged
 
-    def optimize(p: Array) -> tuple[Array, Array, Array]:
+    def opti(p: Array) -> tuple[Array, Array, Array]:
         """
-        Conducts the optimization.
+        Optimizes the parameters.
 
         :param p: The initial parameter values.
         :returns: The optimized parameter values, the cost, and the
@@ -235,10 +235,10 @@ def evm(
 
     def post(p: Array) -> tuple[Array, Array]:
         """
-        Conducts the post processing.
+        Computes posterior parameter uncertainty.
         
         :param p: The optimized parameter values.
-        :returns: The parameter uncertainty tensor and the parameter
+        :returns: The posterior parameter uncertainty tensor and parameter
         standard uncertainties.
         """
         hess = jax.hessian(S)
@@ -252,7 +252,7 @@ def evm(
         uy = jnp.broadcast_to(1.0, y.shape)
     optimizer = optax.lbfgs()
     cost_and_grad = optax.value_and_grad_from_state(S)
-    popt, cost, converged = optimize(p)
+    popt, cost, converged = opti(p)
     pcov, punc = post(popt)
 
     return popt, pcov, punc, cost, converged
