@@ -209,7 +209,7 @@ def evm(
         :returns: The updated loop state carrier.
         """
         i, popt, state, cost, grad, _ = carry
-        u, state = optim.update(
+        u, state = mizer.update(
             grad, state, popt, value=cost, grad=grad, value_fn=S
         )
         popt = optax.apply_updates(popt, u)
@@ -217,8 +217,8 @@ def evm(
         converged = jli.norm(grad, ord=jnp.inf) < max_g  # noqa
         return i + 1, popt, state, cost, grad, converged
 
-    optim = optax.lbfgs()
-    state = optim.init(p)
+    mizer = optax.lbfgs()
+    state = mizer.init(p)
     cost_and_grad = optax.value_and_grad_from_state(S)
     cost, grad = cost_and_grad(p, state=state)
     carry = (0, p, state, cost, grad, False)
