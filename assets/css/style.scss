@@ -1,0 +1,18 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+body {
+  // add custom styles here, e.g,
+  // background-color: #cdcdcd;
+}
+
+video {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  min-height: 135px;
+  max-height: 450px;
+  object-fit: scale-down;
+}
