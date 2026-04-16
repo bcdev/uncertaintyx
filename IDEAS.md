@@ -1,9 +1,3 @@
-This document describes ideas for algorithmically differentiated,
-uncertainty‑aware EO algorithms. These ideas are already applied
-to small and medium‑sized problems, while their behaviour and
-scalability for large‑scale computations remain an active topic
-of research and development.
-
 # Framing: metrology and uncertainty
 
 Future satellite missions such as ESA [TRUTHS](https://www.esa.int/Applications/Observing_the_Earth/TRUTHS)
