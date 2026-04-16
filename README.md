@@ -25,7 +25,6 @@ uncertainties to be integrated **within** data‑processing codes themselves,
 turning them from external annotations into active elements of
 computational workflows.
 
-> [!NOTE]
 > The concept presented here grew out of earlier, project‑specific
 > implementations of AD‑based uncertainty propagation. These implementations
 > enabled multi‑mission remote sensing calibration workflows that
@@ -110,7 +109,6 @@ the user’s responsibility. In this role, you serve as the *Thalamus*—the
 interface channelling structured data into the computational core
 of Uncertaintyx. 
 
-> [!NOTE]
 > The batch dimension $M$ enumerates independent samples (e.g.,
 > sensor scans, simulations, ensemble members) but you get to define
 > what “one sample” is: a single pixel value, a spectrum, a scan line,
