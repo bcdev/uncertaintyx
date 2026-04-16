@@ -44,8 +44,8 @@ DEFAULT_MAX_I: int = 100
 """The maximum number of iterations permitted."""
 
 
-@jax.jit(static_argnums=(0,), static_argnames=("diagonalize",))
-def evm_fit(
+@jax.jit(static_argnums=(0,), static_argnames=("covar",))
+def evm(
     f: Callable[[Array, Array], Array],
     p: Array,
     x: Array,
@@ -56,7 +56,7 @@ def evm_fit(
     *,
     max_i: int = DEFAULT_MAX_I,
     max_g: Any = DEFAULT_MAX_G,
-    diagonalize: bool = True,
+    covar: bool = False,
 ) -> tuple[Any, ...]:
     r"""
     Implementation of the effective variance method (EVM) with
@@ -89,7 +89,7 @@ def evm_fit(
     :param up: Uncertainty tensor :math:`U(p)`, full or diagonal.
     :param max_i: The maximum number of iterations permitted.
     :param max_g: The maximum gradient permitted.
-    :param diagonalize: Use only diagonal of uncertainty propagation output.
+    :param covar: Use effective variance-covariance.
     :returns: The minimization loop state.
     """
 
@@ -147,7 +147,7 @@ def evm_fit(
         """
         d = f(q, x) - y
         G = g(q, x)  # noqa: N806
-        if diagonalize:
+        if not covar:
             U = upd(x.ndim, G, ux) + (  # noqa: N806
                 uy
                 if uy.ndim == y.ndim
