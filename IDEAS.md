@@ -6,12 +6,14 @@ of research and development.
 
 # Framing: metrology and uncertainty
 
-Future satellite missions such as TRUTHS and CLARREO will, for the
-first time, allow radiometric calibration that is traceable to SI
-metrological standards. This raises a fundamental question for any
-remote‑sensing activity: if the measurements reach metrological
-quality, can the processing algorithms keep up—or do they throw away
-that precision because uncertainty is not properly propagated?
+Future satellite missions such as ESA [TRUTHS](https://www.esa.int/Applications/Observing_the_Earth/TRUTHS)
+and NASA [CLARREO Pathfinder](https://science.nasa.gov/mission/clarreo-pathfinder/)
+will, for the first time, allow radiometric calibration that is
+traceable to SI metrological standards. This raises a fundamental
+question for any remote‑sensing activity: if the measurements reach
+metrological quality, can the processing algorithms keep up—or do
+they throw away that precision because uncertainty is not properly
+propagated?
 
 Expressing EO algorithm logic in a differentiation‑enabled framework
 automatically tracks how uncertainties in inputs, calibration, and
