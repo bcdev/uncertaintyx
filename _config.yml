@@ -1,0 +1,4 @@
+theme: jekyll-theme-cayman
+title: "Uncertaintyx"
+description: "Tensor-level uncertainty propagation with JAX"
+show_downloads: true
