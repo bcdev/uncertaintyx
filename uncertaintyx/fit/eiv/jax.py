@@ -76,7 +76,9 @@ def evm_fit(
         U(p) \in \mathbb{R}^{k \times k}, \quad
         U(p) \in \mathbb{R}^{k},
 
-    Otherwise, under the same notation as :class:`EIV`:
+    Standard uncertainty is not accepted and must be squared to
+    a variance (diagonal uncertainty tensor) before supplied as
+    argument. Otherwise, under the same notation as :class:`EIV`:
 
     :param f: The model function.
     :param p: Parameters :math:`p \in \mathbb{R}^{k}`.
@@ -261,7 +263,7 @@ class EIV(Fitting):
         :param max_iter: The maximum number of iterations conducted.
         :returns: The fit result.
         """
-        i, popt, state, cost, g, converged = evm_fit(
+        i, popt, state, cost, g, converged = evm(
             f.f,
             jnp.asarray(f.estimate(x, y)),
             jnp.asarray(x),
