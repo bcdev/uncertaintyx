@@ -89,8 +89,10 @@ def evm(
     :param up: Uncertainty tensor :math:`U(p)`, full or diagonal.
     :param max_i: The maximum number of iterations permitted.
     :param max_g: The maximum gradient permitted.
-    :param covar: Use effective variance-covariance.
-    :returns: The minimization loop state.
+    :param covar: Use effective covariance, too.
+    :returns: The fit result comprising: the optimized parameter
+    values, the parameter uncertainty tensor, parameter standard
+    uncertainties, the misfit, and the convergence status.
     """
 
     def g(q: Array, x: Array) -> Array:
@@ -217,13 +219,31 @@ def evm(
         converged = jli.norm(grad, ord=jnp.inf) < max_g  # noqa
         return i + 1, popt, state, cost, grad, converged
 
+    def optimize(
+        p: Array, state: Any, cost: Array, grad: Array
+    ) -> tuple[Any, ...]:
+        carry = (0, p, state, cost, grad, False)
+        _, popt, _, cost, _, converged = jax.lax.while_loop(cond, body, carry)
+        return popt, cost, converged
+
+    def post(p: Array) -> tuple[Array, Array]:
+        hess = jax.hessian(S)
+        pcov = jli.pinv(hess(p).reshape(p.size, -1))
+        punc = jnp.sqrt(jnp.diag(pcov)).reshape(p.shape)
+        return pcov.reshape(p.shape + p.shape), punc.reshape(p.shape)
+
+    if ux is None:
+        ux = jnp.broadcast_to(1.0, x.shape)
+    if uy is None:
+        uy = jnp.broadcast_to(1.0, y.shape)
     mizer = optax.lbfgs()
     state = mizer.init(p)
     cost_and_grad = optax.value_and_grad_from_state(S)
     cost, grad = cost_and_grad(p, state=state)
-    carry = (0, p, state, cost, grad, False)
+    popt, cost, converged = optimize(p, state, cost, grad)
+    pcov, punc = post(p)
 
-    return jax.lax.while_loop(cond, body, carry)  # noqa
+    return popt, pcov, punc, cost, converged
 
 
 class EIV(Fitting):
@@ -262,30 +282,26 @@ class EIV(Fitting):
         :param max_iter: The maximum number of iterations conducted.
         :returns: The fit result.
         """
-        i, popt, state, cost, g, converged = evm(
+        popt, pcov, punc, cost, converged = evm(
             f.f,
             jnp.asarray(f.estimate(x, y)),
             jnp.asarray(x),
             jnp.asarray(y),
-            jnp.square(ux) if ux is not None else jnp.ones_like(x),
-            jnp.square(uy) if uy is not None else jnp.ones_like(y),
+            jnp.square(ux) if ux is not None else None,
+            jnp.square(uy) if uy is not None else None,
             jnp.square(up) if up is not None else None,
             max_i=max_iter,
             **kwargs,
         )
         popt = np.asarray(popt)
-        punc = np.zeros_like(popt)
-        pcov = np.zeros_like(popt, shape=popt.shape + popt.shape)
         rvar = np.var(f.eval(popt, x) - y, axis=0, ddof=popt.size)
-        cost = np.asarray(cost)
-        conv = np.asarray(converged)
 
         return Result(
             f,
             popt=popt,
-            punc=punc,
-            pcov=pcov,
+            punc=np.asarray(punc),
+            pcov=np.asarray(pcov),
             rvar=rvar,
-            cost=cost,
-            info=0 if conv else 1,
+            cost=np.asarray(cost),
+            info=0 if converged.item() else 1,
         )
