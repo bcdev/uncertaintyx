@@ -1,12 +1,23 @@
 #  Copyright (c) Brockmann Consult GmbH, 2026.
 #  License: MIT
 """
-This module provides functions and empirical model functions for
-NASA Ocean Colour algorithms.
+Empirical model functions for NASA Ocean Colour algorithms. Refer to the
+Algorithm Publication Tool (https://doi.org/10.5067/JCQB8QALDOYD).
 
 Refer to Lachlan et al. (2019, https://doi.org/10.3389/feart.2019.00176)
-for propagating radiometric data uncertainties through NASA Ocean Color
+for propagating radiometric data uncertainties through NASA Ocean Colour
 algorithms.
+
+Further references:
+
+Hu et al. (2019). Improving Satellite Global Chlorophyll a Data
+Products Through Algorithm Refinement and Data Recovery. Journal
+of Geophysical Research: Oceans, 124(3), 1524-1543.
+https://doi.org/10.1029/2019JC014941.
+
+O'Reilly and Werdell (2019). Chlorophyll algorithms for ocean
+color sensors - OC4, OC5 & OC6. Remote Sensing of Environment,
+229, 32-47. https://doi.org/10.1016/j.rse.2019.04.021.
 """
 
 from abc import ABC
@@ -75,39 +86,6 @@ class Cb(ToF):
         super().__init__(f)
 
 
-class Ci(ToF):
-    """
-    The chlorophyll index (CI) function.
-
-    For chlorophyll retrievals below 0.25 mg m-3. For details refer
-    to https://doi.org/10.5067/JCQB8QALDOYD.
-    """
-
-    def __init__(self, b, g, r):
-        """Creates a new instance.
-
-        :param b: The blue spectral waveband (nm).
-        :param g: The green spectral waveband (nm).
-        :param r: The red spectral waveband (nm).
-        """
-        self.t = (g - b) / (r - b)
-
-        def f(x):
-            """
-            Returns the ocean colour index.
-
-            :param x: Remote sensing reflectance, shape (n_wavebands, ...).
-            The last waveband refers to green.
-            :returns: The ocean colour index.
-            """
-            B = x[0]  # noqa: N806
-            G = x[1]  # noqa: N806
-            R = x[2]  # noqa: N806
-            return G - (B + (R - B) * self.t)
-
-        super().__init__(f)
-
-
 class Mbr(ToF):
     """The maximum band ratio function."""
 
@@ -128,35 +106,42 @@ class Mbr(ToF):
         super().__init__(f)
 
 
-class OCi(ToM):
-    """
-    NASA's ocean colour chlorophyll index (OCI) model function.
-
-    Needs values of chlorophyll index (:class:`Ci`) as input. Used
-    for chlorophyll retrievals below 0.25 mg m-3. For details refer
-    to https://doi.org/10.5067/JCQB8QALDOYD. Further references:
-
-    Hu et al. (2019). Improving Satellite Global Chlorophyll a Data
-    Products Through Algorithm Refinement and Data Recovery. Journal
-    of Geophysical Research: Oceans, 124(3), 1524-1543.
-    https://doi.org/10.1029/2019JC014941.
-
-    O'Reilly and Werdell (2019). Chlorophyll algorithms for ocean
-    color sensors - OC4, OC5 & OC6. Remote Sensing of Environment,
-    229, 32-47. https://doi.org/10.1016/j.rse.2019.04.021.
-    """
+class OCI(ToM):
+    """NASA's ocean colour chlorophyll index (OCI) model function."""
 
     def __init__(self):
+        """Creates a new model function instance."""
+
         def f(p, x):
-            """
+            r"""
             The model function.
 
-            :param p: The model parameters, shape (2,).
-            :param x: The ocean colour index.
-            :returns: The chlorophyll concentration.
+            Let :math:`p = (a_0, a_1) \in \mathbb{R}^{2}` be the model
+            parameters and let :math:`\lambda = (\lambda_\mathrm{b},
+            \lambda_\mathrm{g}, \lambda_\mathrm{r}) \in \mathbb{R}^{3}`
+            denote the central wavelengths of wavebands in the blue,
+            green and red, respectively. Further let
+
+            .. math::
+                x = (\lambda, R_\mathrm{rs}(\lambda))
+                \in \mathbb{R}^{2 \times 3}
+
+            denote the function inputs. Then:
+
+            :param p: The parameters :math:`p \in \mathbb{R}^{2}`.
+            :param x: The inputs :math:`x \in \mathbb{R}^{2 \times 3}`.
+            :returns: The chlorophyll concentration (mg m-3).
             """
             a0, a1 = p
-            return jnp.power(10.0, a0 + a1 * x)
+            b = x[0, 0]
+            g = x[1, 0]
+            r = x[2, 0]
+            B = x[1, 0]  # noqa: N806
+            G = x[1, 1]  # noqa: N806
+            R = x[1, 2]  # noqa: N806
+            c = G - (B + (R - B) * (g - b) / (r - b))
+
+            return jnp.power(10.0, a0 + a1 * c)
 
         super().__init__(f)
 
@@ -176,17 +161,7 @@ class OCx(ToM, ABC):
 
     Needs values of maximum common logarithm of remote sensing
     reflectance band ratios (:class:`Mbr`) as input. Used for
-    chlorophyll retrievals above 0.35 mg m-3. For details refer
-    to https://doi.org/10.5067/JCQB8QALDOYD. Further references:
-
-    Hu et al. (2019). Improving Satellite Global Chlorophyll a Data
-    Products Through Algorithm Refinement and Data Recovery. Journal
-    of Geophysical Research: Oceans, 124(3), 1524-1543.
-    https://doi.org/10.1029/2019JC014941.
-
-    O'Reilly and Werdell (2019). Chlorophyll algorithms for ocean
-    color sensors - OC4, OC5 & OC6. Remote Sensing of Environment,
-    229, 32-47. https://doi.org/10.1016/j.rse.2019.04.021.
+    chlorophyll retrievals above 0.35 mg m-3.
     """
 
     n: Literal[2, 3, 4, 5, 6]
