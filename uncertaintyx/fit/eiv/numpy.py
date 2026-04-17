@@ -27,7 +27,7 @@ class EIV(Fitting):
     distance regression (ODR).
 
     This implementation is intended for problems with up to
-    :math:`10^4` to :math:`10^5` data points. Refer to:
+    :math:`10^4` to :math:`10^5` data points.
     """
 
     def fit(
