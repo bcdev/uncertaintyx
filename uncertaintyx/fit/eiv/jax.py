@@ -243,7 +243,7 @@ def evm(
         """
         hess = jax.hessian(S)
         pcov = jli.pinv(hess(p).reshape(p.size, -1))
-        punc = jnp.sqrt(jnp.diag(pcov)).reshape(p.shape)
+        punc = jnp.sqrt(jnp.diag(pcov))
         return pcov.reshape(p.shape + p.shape), punc.reshape(p.shape)
 
     if ux is None:
