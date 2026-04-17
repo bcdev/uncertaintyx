@@ -135,7 +135,7 @@ class OCI(ToM):
         return np.array([-0.4287, 230.47])
 
 
-class OCX(ToM, ABC):
+class OCX(ToM):
     """NASA's OCX family of chlorophyll model functions."""
 
     n: Literal[2, 3, 4, 5, 6]
