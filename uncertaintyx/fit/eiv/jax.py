@@ -254,7 +254,7 @@ def evm(
     popt, cost, converged = opti(p)
     pcov, punc = post(popt)
 
-    return popt, pcov, punc, cost, converged.any()
+    return popt, pcov, punc, cost, converged.item()
 
 
 class EIV(Fitting):
