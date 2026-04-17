@@ -86,26 +86,6 @@ class Cb(ToF):
         super().__init__(f)
 
 
-class Mbr(ToF):
-    """The maximum band ratio function."""
-
-    def __init__(self):
-        def f(x):
-            """
-            Returns the common logarithm of the maximum band ratio.
-
-            :param x: Remote sensing reflectance, shape (n_wavebands, ...).
-            The last waveband refers to green.
-            :returns: The common logarithm of the maximum band ratio,
-            shape(...).
-            """
-            B = jnp.maximum.reduce(x[:-1])  # noqa: N806
-            G = x[-1]  # noqa: N806
-            return jnp.log10(B / G)
-
-        super().__init__(f)
-
-
 class OCI(ToM):
     """NASA's ocean colour chlorophyll index (OCI) model function."""
 
@@ -155,57 +135,56 @@ class OCI(ToM):
         return np.array([-0.4287, 230.47])
 
 
-class OCx(ToM, ABC):
-    """
-    NASA's OCx family of chlorophyll model functions.
-
-    Needs values of maximum common logarithm of remote sensing
-    reflectance band ratios (:class:`Mbr`) as input. Used for
-    chlorophyll retrievals above 0.35 mg m-3.
-    """
+class OCX(ToM, ABC):
+    """NASA's OCX family of chlorophyll model functions."""
 
     n: Literal[2, 3, 4, 5, 6]
     """The number of polynomial coefficients."""
 
     def __init__(self, n: Literal[2, 3, 4, 5, 6]):
-        """
-        Creates a new model function instance.
-
-        :param n: The number of polynomial coefficients.
-        """
-        self.n = n
+        """Creates a new model function instance."""
 
         def f(p, x):
-            """
+            r"""
             The model function.
 
-            :param p: The model parameters, shape (n_parameters,).
-            :param x: The common logarithm of maximum band ratios.
-            :returns: The chlorophyll concentration.
+            Let :math:`p = (p_0, \dots p_4) \in \mathbb{R}^{5}` be the
+            model parameters and let :math:`\lambda = (\lambda_1,\dots
+            \lambda_\mathrm{m}) \in \mathbb{R}^{m}` denote the central
+            wavelengths of :math:`m-1 \ge 2` wavebands in the blue, and
+            a single waveband :math:`\lambda_{m}` in the green.
+            Further let
+
+            .. math::
+                x = R_\mathrm{rs}(\lambda) \in \mathbb{R}^{m}
+
+            denote the function inputs. Then:
+
+            :param p: The parameters :math:`p \in \mathbb{R}^{5}`.
+            :param x: The inputs :math:`x \in \mathbb{R}^{m}`.
+            :returns: The chlorophyll concentration (mg m-3).
             """
-            return jnp.power(10.0, jnp.polyval(p[::-1], x))
+            return jnp.power(
+                10.0,
+                jnp.polyval(
+                    p[::-1], jnp.log10(jnp.maximum.reduce(x[:-1]) / x[-1])
+                ),
+            )
 
         super().__init__(f)
-
-
-class Olci(OCx):
-    """
-    The OC4 model function for Sentinel-3 OLCI.
-
-    Applicable to OLCI with maximum common logarithm of 443/560,
-    490/560 or 510/560 remote sensing reflectance band ratio as
-    input.
-    """
-
-    def __init__(self):
-        """Creates a new model function instance."""
-        super().__init__(5)
 
     def estimate(
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
-        preset: str | None = None,
+        preset: Literal["CZCS", "OLCI"] | None = "OLCI",
     ) -> np.ndarray:
-        """Returns the OC4 default parameter values for OLCI."""
-        return np.array([0.42540, -3.21679, 2.86907, -0.62628, -1.09333])
+        pars = [0.42540, -3.21679, 2.86907, -0.62628, -1.09333]
+        match preset:
+            case "CZCS":
+                pars = [0.31841, -4.56386, 8.63979, -8.41411, 1.91532]
+            case "OLCI":
+                pass
+            case _:
+                pass
+        return np.array(pars)
