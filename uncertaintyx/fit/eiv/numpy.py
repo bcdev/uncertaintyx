@@ -123,7 +123,7 @@ class EIV(Fitting):
         punc = u(res.sd_beta, k_u)
         pcov = u(res.cov_beta * res.res_var, k_u + k_u)
         rvar = np.var(f.eval(popt, x) - y, axis=0, ddof=popt.size)
-        cost = res.sum_square
+        cost = 0.5 * res.sum_square  # compares to EVM cost
 
         return Result(
             f,
