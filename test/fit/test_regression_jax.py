@@ -38,10 +38,10 @@ class RegressionTest(unittest.TestCase):
         result = Bootstrap(HomoscedasticRegression(EIV())).fit(Linear(), x, y)
 
         self.assertEqual(0, result.info)
-        self.assertAlmostEqual(1.0, result.popt[0], delta=0.1)
-        self.assertAlmostEqual(0.0, result.popt[1], delta=5.0)
-        self.assertAlmostEqual(0.0, result.punc[0], delta=0.1)
-        self.assertAlmostEqual(0.0, result.punc[1], delta=5.0)
+        self.assertAlmostEqual(1.0, result.popt[0], delta=0.10)
+        self.assertAlmostEqual(0.0, result.popt[1], delta=5.00)
+        self.assertAlmostEqual(0.0, result.punc[0], delta=0.05)
+        self.assertAlmostEqual(0.0, result.punc[1], delta=1.50)
 
         print()
         print("popt = ", result.popt)
@@ -92,10 +92,10 @@ class RegressionTest(unittest.TestCase):
         )
 
         self.assertEqual(0, result.info)
-        self.assertAlmostEqual(1.0, result.popt[0], delta=0.1)
-        self.assertAlmostEqual(0.0, result.popt[1], delta=5.0)
-        self.assertAlmostEqual(0.0, result.punc[0], delta=0.1)
-        self.assertAlmostEqual(0.0, result.punc[1], delta=5.0)
+        self.assertAlmostEqual(1.0, result.popt[0], delta=0.10)
+        self.assertAlmostEqual(0.0, result.popt[1], delta=2.00)
+        self.assertAlmostEqual(0.0, result.punc[0], delta=0.05)
+        self.assertAlmostEqual(0.0, result.punc[1], delta=1.00)
 
         print()
         print("popt = ", result.popt)
@@ -146,10 +146,10 @@ class RegressionTest(unittest.TestCase):
         )
 
         self.assertEqual(0, result.info)
-        self.assertAlmostEqual(1.0, result.popt[0], delta=0.1)
-        self.assertAlmostEqual(0.0, result.popt[1], delta=5.0)
-        self.assertAlmostEqual(0.0, result.punc[0], delta=0.1)
-        self.assertAlmostEqual(0.0, result.punc[1], delta=5.0)
+        self.assertAlmostEqual(1.0, result.popt[0], delta=0.05)
+        self.assertAlmostEqual(0.0, result.popt[1], delta=1.50)
+        self.assertAlmostEqual(0.0, result.punc[0], delta=0.05)
+        self.assertAlmostEqual(0.0, result.punc[1], delta=1.00)
 
         print()
         print("popt = ", result.popt)
@@ -200,9 +200,9 @@ class RegressionTest(unittest.TestCase):
 
         self.assertEqual(0, result.info)
         self.assertAlmostEqual(1.0, result.popt[0], delta=0.05)
-        self.assertAlmostEqual(0.0, result.popt[1], delta=2.00)
-        self.assertAlmostEqual(0.0, result.punc[0], delta=0.20)
-        self.assertAlmostEqual(0.0, result.punc[1], delta=2.00)
+        self.assertAlmostEqual(0.0, result.popt[1], delta=1.50)
+        self.assertAlmostEqual(0.0, result.punc[0], delta=0.05)
+        self.assertAlmostEqual(0.0, result.punc[1], delta=1.00)
 
         print()
         print("popt = ", result.popt)
