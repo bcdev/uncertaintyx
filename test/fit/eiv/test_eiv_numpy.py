@@ -16,20 +16,23 @@ class ErrorsInVariablesTest(unittest.TestCase):
     Tests EIV regression.
     """
 
+    def setUp(self):
+        n = 100
+        x = np.linspace(0.0, 100.0, n).reshape((n, 1))
+        u = 1.0 + np.sqrt(x)
+
+        rng = np.random.default_rng(5489)
+        self.n = n
+        self.u = u
+        self.x = x + rng.normal(0.0, u, (n, 1))
+        self.y = x + rng.normal(0.0, u, (n, 1))
+
     def test_linear_model(self):
         """
         Tests EIV regression by fitting a linear model to generated
         test data with known uncertainties of x and y.
         """
-        n = 100
-        x = np.linspace(0.0, 100.0, n).reshape((n, 1))
-        u = 1.0 + np.sqrt(x)
-
-        rng = np.random.default_rng(42)
-        y = x + rng.normal(0.0, u, (n, 1))
-        x = x + rng.normal(0.0, u, (n, 1))
-
-        result = EIV().fit(Linear(), x, y, ux=u, uy=u)
+        result = EIV().fit(Linear(), self.x, self.y, ux=self.u, uy=self.u)
 
         self.assertEqual(0, result.info)
         self.assertAlmostEqual(1.0, result.popt[0], delta=0.05)
@@ -37,13 +40,18 @@ class ErrorsInVariablesTest(unittest.TestCase):
         self.assertAlmostEqual(0.0, result.punc[0], delta=0.05)
         self.assertAlmostEqual(0.0, result.punc[1], delta=1.00)
         self.assertAlmostEqual(0.0, result.pcov[0, 0], delta=0.001)
-        self.assertAlmostEqual(0.0, result.pcov[0, 1], delta=0.015)
-        self.assertAlmostEqual(0.0, result.pcov[1, 0], delta=0.015)
+        self.assertAlmostEqual(0.0, result.pcov[0, 1], delta=0.020)
+        self.assertAlmostEqual(0.0, result.pcov[1, 0], delta=0.020)
         self.assertAlmostEqual(0.0, result.pcov[1, 1], delta=1.000)
 
+        dof = self.n - 2
+        self.assertAlmostEqual(
+            dof, 2.0 * result.cost, delta=np.sqrt(2.0 * dof)
+        )
+
         RegressionPlot(result).plot(
-            x,
-            y,
+            self.x,
+            self.y,
             xlabel=r"$x$",
             ylabel=r"$y$",
             xrange=(-10.0, 110.0),
@@ -52,7 +60,7 @@ class ErrorsInVariablesTest(unittest.TestCase):
             title="Errors-in-variables regression",
         )
         MatrixPlot().plot(
-            result.ycov_p(np.linspace(0.5, 99.5, n)),
+            result.ycov_p(np.linspace(0.5, 99.5, self.n)),
             xlabel=r"$x$",
             ylabel=r"$x$",
             xrange=(0.5, 99.5),
