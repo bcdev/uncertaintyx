@@ -57,7 +57,7 @@ def evm(
     max_i: int = DEFAULT_MAX_I,
     max_g: Any = DEFAULT_MAX_G,
     covar: bool = False,
-) -> tuple[Array, Array, Array, Array, bool]:
+) -> tuple[Array, Array, Array, Array, Array]:
     r"""
     Implementation of the effective variance method (EVM) with
     a limited-memory Broyden-Fletcher-Goldfarb-Shanno (L-BFGS)
@@ -254,7 +254,7 @@ def evm(
     popt, cost, converged = opti(p)
     pcov, punc = post(popt)
 
-    return popt, pcov, punc, cost, converged.item()
+    return popt, pcov, punc, cost, converged
 
 
 class EIV(Fitting):
@@ -314,5 +314,5 @@ class EIV(Fitting):
             pcov=np.asarray(pcov),
             rvar=rvar,
             cost=np.asarray(cost),
-            info=0 if converged else 1,
+            info=0 if converged.item() else 1,
         )
