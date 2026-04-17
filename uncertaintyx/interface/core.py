@@ -328,7 +328,12 @@ class Result:
     @property
     def cost(self) -> Any:
         r"""
-        Returns the value of the cost function.
+        Returns the value of the cost function at its minimum.
+
+        The standard convention in maximum likelihood and inverse
+        problem theory implies, that the minimum cost is equal to
+        half the degrees of freedom of the fitting problem, for a
+        closed uncertainty budget.
         """
         return self._cost
 
