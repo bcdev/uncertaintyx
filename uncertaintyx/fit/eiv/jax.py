@@ -37,8 +37,11 @@ from ...interface.core import Fitting
 from ...interface.core import M
 from ...interface.core import Result
 
-DEFAULT_MAX_G: Any = 1.0e-08
-"""The maximum gradient permitted."""
+DEFAULT_MAX_D: Any = 1.0e-08
+"""The maximum L2 norm of the parameter step allowed for convergence."""
+
+DEFAULT_MAX_G: Any = 1.0e-06
+"""The maximum infinity norm of the gradient allowed for convergence."""
 
 DEFAULT_MAX_I: int = 100
 """The maximum number of iterations permitted."""
@@ -55,6 +58,7 @@ def evm(
     up: Array | None = None,
     *,
     max_i: int = DEFAULT_MAX_I,
+    max_d: Any = DEFAULT_MAX_D,
     max_g: Any = DEFAULT_MAX_G,
     covar: bool = False,
 ) -> tuple[Array, Array, Array, Array, Array]:
@@ -87,8 +91,11 @@ def evm(
     :param ux: Uncertainty tensor :math:`U(X)`, full or diagonal.
     :param uy: Uncertainty tensor :math:`U(Y)`, full or diagonal.
     :param up: Uncertainty tensor :math:`U(p)`, full or diagonal.
-    :param max_i: The maximum number of iterations permitted.
-    :param max_g: The maximum gradient permitted.
+    :param max_i: The maximum number of iterations allowed.
+    :param max_d: The maximum L2 norm of the parameter step allowed
+    for convergence
+    :param max_g: The maximum infinity norm of the gradient allowed
+    for convergence.
     :param covar: Use effective covariance, too.
     :returns: The fit result comprising: the optimized parameter
     values, the parameter uncertainty tensor, parameter standard
@@ -210,12 +217,14 @@ def evm(
         :returns: The updated loop state carrier.
         """
         i, popt, tree, cost, grad, _ = carry
-        u, tree = optimizer.update(
+        d, tree = optimizer.update(
             grad, tree, popt, value=cost, grad=grad, value_fn=S
         )
-        popt = optax.apply_updates(popt, u)
+        popt = optax.apply_updates(popt, d)
         cost, grad = cost_and_grad(popt, state=tree)
-        converged = jli.norm(grad, ord=jnp.inf) < max_g  # noqa
+        grad_norm = jli.norm(grad, ord=jnp.inf)  # noqa
+        step_norm = jli.norm(d)
+        converged = jnp.logical_or(grad_norm < max_g, step_norm < max_d)
         return i + 1, popt, tree, cost, grad, converged
 
     def opti(p: Array) -> tuple[Array, Array, Array]:
