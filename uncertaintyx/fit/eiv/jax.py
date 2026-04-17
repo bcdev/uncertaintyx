@@ -225,7 +225,7 @@ def evm(
         :param p: The initial parameter values.
         :returns: The optimized parameter values, the cost, and the
         convergence status.
-        """ 
+        """
         tree = optimizer.init(p)
         cost, grad = cost_and_grad(p, state=tree)
         init = (0, p, tree, cost, grad, False)
@@ -235,7 +235,7 @@ def evm(
     def post(p: Array) -> tuple[Array, Array]:
         """
         Computes posterior parameter uncertainty.
-        
+
         :param p: The optimized parameter values.
         :returns: The posterior parameter uncertainty tensor and parameter
         standard uncertainties.
