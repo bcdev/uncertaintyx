@@ -144,7 +144,6 @@ def evm(
         :param y: The sample :math:`y \in \mathbb{R}^{n}`.
         :param ux: :math:`U(x) \in \mathbb{R}^{m \times m}`.
         :param uy: :math:`U(y) \in \mathbb{R}^{n \times n}`.
-
         :returns: The sample loss.
         """
         d = f(q, x) - y
