@@ -133,40 +133,24 @@ of length $d$), and the trailing tensor dimensions of the Jacobian
 tensor $G$ and the input uncertainty tensor $U$ correspond to
 these indices. The code below provides an implementation. 
 
-    def propagate(d: int, g: np.ndarray, u: np.ndarray) -> np.ndarray:
-        r"""
-        Default implementation of the law of propagation of uncertainty
-        in general tensor form.
-    
-        Using Einstein's summation convention and the symmetry of the
-        input uncertainty tensor :math:`U`, the output uncertainty
-        tensor reads:
-    
-        .. math::
-            V_{\dots ij} = G_{\dots ik}U_{\dots lk}G_{\dots jl}
-    
-        with multi-indices :math:`k, l \in D \subset \mathbb{N}^d`
-        for some :math:`d \in \mathbb{N}`. The summation is taken over
-        all :math:`k, l \in D`.
-    
-        Here, :math:`D` denotes the set of inner tensor indices
-        (multi-indices of length :math:`d`), and the trailing tensor
-        dimensions of :math:`G` and :math:`U` correspond to these
-        indices.
-    
-        In what follows, we write :math:`\mathbb{R}^{\cdots \times D}`
-        for a tensor space whose trailing indices are labelled by the
-        index set :math:`D`.
-    
-        :param d: The number of inner tensor dimensions.
-        :param g: Jacobian tensor :math:`G \in \mathbb{R}^{\cdots \times D}`.
-        :param u: Uncertainty tensor :math:`U \in \mathbb{R}^{\cdots \times D}`.
-        :returns: Uncertainty tensor :math:`V \in \mathbb{R}^{\cdots}`.
-        """
+    import jax.numpy as jnp
+    from jax import Array
+
+    def make_lpu(d: int) -> Callable[[Array, Array], Array]:
+    """
+    Returns the law of propagation of uncertainty.
+
+    :param d: The number of inner tensor dimensions.
+    :returns: The law of propagation of uncertainty.
+    """
+
+    def lpu(g: Array, u: Array) -> Array:
+        """The law of propagation of uncertainty."""
         dims = tuple(range(-d, 0))
-        return np.tensordot(
-            np.tensordot(g, u, axes=(dims, dims)), g, axes=(dims, dims)
-        )
+        return jnp.tensordot(jnp.tensordot(g, u, (dims, dims)), g, (dims, dims))
+
+    return lpu
+
 
 [![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
 [![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
