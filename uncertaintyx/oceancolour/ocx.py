@@ -20,74 +20,124 @@ color sensors - OC4, OC5 & OC6. Remote Sensing of Environment,
 229, 32-47. https://doi.org/10.1016/j.rse.2019.04.021.
 """
 
-from abc import ABC
 from typing import Literal
 
 import jax.numpy as jnp
 import numpy as np
-from jax import Array
 
-from ..f.jax import ToF
 from ..m.jax import ToM
 
 
-class Cb(ToF):
+class Blended(ToM):
     """
-    The blended chlorophyll function.
+    The blended OC4/OCI model function.
 
-    For chlorophyll retrievals between, e.g., 0.25 and 0.35 mg m-3. For
-    details refer to https://doi.org/10.5067/JCQB8QALDOYD.
+    The two or three nearest wavebands to 412, 443, 490 and 510 nm
+    are used for the blue, while the nearest waveband to 555 nm is
+    used for the green, and the nearest waveband to 670 nm is used
+    for the red.
 
-    The blending occurs when :class:`OCx` is between, e.g., 0.25-0.35 mg
-    m-3, creating a smooth handover between :class:`OCi` (low chlorophyll
-    specialist) and :class:`OCx` (baseline). The blending uses perfectly
-    normalized weights. Low :class:`OCi` values favour :class:`OCi` while
-    high :class:`OCi` values favour :class:`OCx` through self-weighting. A
-    quadratic term creates curvature that eliminates boundary
-    discontinuities while :class:`OCx` acts as regime detector.
+    The blending occurs when :class:`OC4` is between, e.g.,
+    0.25-0.35 mg m-3, creating a smooth handover between :class:`OCI`
+    (low chlorophyll specialist) and :class:`OC4` (baseline). The
+    blending uses perfectly normalized weights. Low :class:`OCI`
+    values favour :class:`OCI` while high :class:`OCI` values
+    favour :class:`OC4` through self-weighting. A quadratic term
+    creates curvature that eliminates boundary discontinuities while
+    :class:`OC4` acts as regime detector.
     """
 
-    def __init__(self, t1=0.25, t2=0.35):
+    def __init__(self, b: Literal[0, 1] = 0):
         """
-        Creates a new instance.
+        Creates a new model function instance.
 
-        :param t1: The lower threshold value (e.g., mg m-3).
-        :param t2: The upper threshold value (e.g., mg m-3).
+        :param b: The index of the blue waveband near 443 nm.
         """
-        self.t1 = t1
-        self.t2 = t2
-        self.dt = t2 - t1
+        self._oci = OCI()
+        self._ocx = OC4()
 
-        def f(x):
-            """
-            Returns the blended chlorophyll concentration.
+        def f(p, x):
+            r"""
+            The blended OCI/OCX model function.
 
             The blending is self-adjusting.
 
-            :param x: Chlorophyll concentrations obtained from :class:`OCi`
-            and :class:`OCx` model functions, respectively, shape (2, ...).
-            :returns: The blended chlorophyll concentration.
+            Let :math:`p = \in \mathbb{R}^{k}, k = 2 + 2 + 5` be the
+            model parameters and let :math:`\lambda = (\lambda_1,\dots
+            \lambda_\mathrm{m}) \in \mathbb{R}^{m}` denote the central
+            wavelengths of :math:`2 \le m-2 \le 3` wavebands in the blue,
+            and a single waveband :math:`\lambda_{m-1}` in the green, and
+            a single waveband :math:`\lambda_{m}` in the red. Further let
+
+            .. math::
+                x = (\lambda, R_\mathrm{rs}(\lambda))
+                \in \mathbb{R}^{2 \times m}
+
+            denote the function inputs. Then:
+
+            :param p: The parameters :math:`p \in \mathbb{R}^{k}`.
+            :param x: The inputs :math:`x \in \mathbb{R}^{2 \times m}`.
+            :returns: The chlorophyll concentration (mg m-3).
             """
 
-            def blend(ci: Array, cx: Array) -> Array:
+            def blend(p, ci, cx):
                 """Returns the blended chlorophyll concentration."""
-                ti = self.t2 - ci
-                tx = ci - self.t1
-                return (ci * ti + cx * tx) / self.dt
+                ti = p[1] - ci
+                tx = ci - p[0]
+                return (ci * ti + cx * tx) / (p[1] - p[0])
 
-            ci = x[0]
-            cx = x[1]
+            ci = self._oci.f(p[2:4], x[:, [b, -2, -1]])
+            cx = self._ocx.f(p[4:9], x[1, 0:-1])
+
             return jnp.where(
-                cx < self.t1,
+                cx < p[0],
                 ci,
-                jnp.where(cx > self.t2, cx, blend(ci, cx)),
+                jnp.where(cx > p[1], cx, blend(p, ci, cx)),
             )
 
         super().__init__(f)
 
+    def estimate(
+        self,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        preset: Literal[
+            "CZCS",
+            "GOCI",
+            "HAWKEYE",
+            "MERIS",
+            "MODIS",
+            "OCTS",
+            "OLCI",
+            "PACE",
+            "SEAWIFS",
+            "VIIRS20",
+            "VIIRS21",
+        ]
+        | None = None,
+    ) -> np.ndarray:
+        """
+        Returns the blended OCI/OCX default parameter values.
+
+        Elements ``[0:2]`` refer to the blending, elements ``[2:4]``
+        refer to OCI, and elements ``[4:9]`` refer to OCX.
+        """
+        return np.concatenate(
+            (
+                np.array([0.25, 0.35]),
+                self._oci.estimate(x, y),
+                self._ocx.estimate(x, y, preset),
+            )
+        )
+
 
 class OCI(ToM):
-    """NASA's ocean colour chlorophyll index (OCI) model function."""
+    """
+    NASA's ocean colour chlorophyll index (OCI) model function.
+
+    The nearest wavebands to 443, 555, and 670 nm are used for the blue,
+    green, and red, respectively, for all sensors.
+    """
 
     def __init__(self):
         """Creates a new model function instance."""
@@ -112,12 +162,53 @@ class OCI(ToM):
             :param x: The inputs :math:`x \in \mathbb{R}^{2 \times 3}`.
             :returns: The chlorophyll concentration (mg m-3).
             """
+
+            def maybe_convert(g, G):  # noqa: N806
+                """
+                Converts remote sensing reflectance in the green
+                waveband, if its central wavelength is not within
+                :math:`555\pm2 \mathrm{nm}`.
+                """
+                c = jnp.asarray(
+                    [
+                        [0.001723, 0.986, 0.081495, 1.031, 0.000216],
+                        [0.001597, 0.988, 0.062195, 1.014, 0.000128],
+                        [0.001148, 1.023, -0.103624, 0.979, -0.000121],
+                        [0.000891, 1.039, -0.183044, 0.971, -0.000170],
+                    ]
+                )
+                return jnp.where(
+                    g < 547.5,
+                    convert(G, c[0]),
+                    jnp.where(
+                        g < 553.0,
+                        convert(G, c[1]),
+                        jnp.where(
+                            g > 562.5,
+                            convert(G, c[2]),
+                            jnp.where(
+                                g > 557.0,
+                                convert(G, c[2]),
+                                G,
+                            ),
+                        ),
+                    ),
+                )
+
+            def convert(x, c):
+                sw, a1, b1, a2, b2 = c
+                return jnp.where(
+                    x < sw,
+                    jnp.power(10.0, a1 * jnp.log10(x) - b1),
+                    a2 * x - b2,
+                )
+
             a0, a1 = p
             b = x[0, 0]
-            g = x[1, 0]
-            r = x[2, 0]
+            g = x[0, 1]
+            r = x[0, 2]
             B = x[1, 0]  # noqa: N806
-            G = x[1, 1]  # noqa: N806
+            G = maybe_convert(g, x[1, 1])  # noqa: N806
             R = x[1, 2]  # noqa: N806
             c = G - (B + (R - B) * (g - b) / (r - b))
 
@@ -135,13 +226,16 @@ class OCI(ToM):
         return np.array([-0.4287, 230.47])
 
 
-class OCX(ToM):
-    """NASA's OCX family of chlorophyll model functions."""
+class OC4(ToM):
+    """
+    NASA's OC3/OC4 chlorophyll model function.
 
-    n: Literal[2, 3, 4, 5, 6]
-    """The number of polynomial coefficients."""
+    The two or three nearest wavebands to 412, 443, 490 and 510 nm
+    are used for the blue, while the nearest waveband to 555 nm is
+    used for the green, for all sensors.
+    """
 
-    def __init__(self, n: Literal[2, 3, 4, 5, 6]):
+    def __init__(self):
         """Creates a new model function instance."""
 
         def f(p, x):
@@ -151,8 +245,8 @@ class OCX(ToM):
             Let :math:`p = (p_0, \dots p_4) \in \mathbb{R}^{5}` be the
             model parameters and let :math:`\lambda = (\lambda_1,\dots
             \lambda_\mathrm{m}) \in \mathbb{R}^{m}` denote the central
-            wavelengths of :math:`m-1 \ge 2` wavebands in the blue, and
-            a single waveband :math:`\lambda_{m}` in the green.
+            wavelengths of :math:`2 \le m-1 \le 3` wavebands in the blue,
+            and a single waveband :math:`\lambda_{m}` in the green.
             Further let
 
             .. math::
@@ -164,12 +258,8 @@ class OCX(ToM):
             :param x: The inputs :math:`x \in \mathbb{R}^{m}`.
             :returns: The chlorophyll concentration (mg m-3).
             """
-            return jnp.power(
-                10.0,
-                jnp.polyval(
-                    p[::-1], jnp.log10(jnp.maximum.reduce(x[:-1]) / x[-1])
-                ),
-            )
+            b = jnp.log10(jnp.nanmax(x[:-1]) / x[-1])
+            return jnp.power(10.0, jnp.polyval(p[::-1], b))
 
         super().__init__(f)
 
@@ -177,14 +267,50 @@ class OCX(ToM):
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
-        preset: Literal["CZCS", "OLCI"] | None = "OLCI",
+        preset: Literal[
+            "CZCS",
+            "GOCI",
+            "HAWKEYE",
+            "MERIS",
+            "MODIS",
+            "OCTS",
+            "OLCI",
+            "PACE",
+            "SEAWIFS",
+            "VIIRS20",
+            "VIIRS21",
+        ]
+        | None = None,
     ) -> np.ndarray:
-        pars = [0.42540, -3.21679, 2.86907, -0.62628, -1.09333]
+        """
+        Returns the OCX default parameter values for different sensors.
+
+        The default parameter set returned is for SeaWiFS.
+        """
+        params = [0.32814, -3.20725, 3.22969, -1.36769, -0.81739]
         match preset:
             case "CZCS":
-                pars = [0.31841, -4.56386, 8.63979, -8.41411, 1.91532]
+                params = [0.31841, -4.56386, 8.63979, -8.41411, 1.91532]
+            case "GOCI":
+                params = [0.28043, -2.49033, 1.53980, -0.09926, -0.68403]
+            case "HAWKEYE":
+                params = [0.32814, -3.20725, 3.22969, -1.36769, -0.81739]
+            case "MERIS":
+                params = [0.42487, -3.20974, 2.89721, -0.75258, -0.98259]
+            case "MODIS":
+                params = [0.26294, -2.64669, 1.28364, 1.08209, -1.76828]
+            case "OCTS":
+                params = [0.54655, -3.51799, 3.39128, -0.91567, -0.97112]
             case "OLCI":
-                pass
+                params = [0.42540, -3.21679, 2.86907, -0.62628, -1.09333]
+            case "PACE":  # OCI
+                params = [0.32814, -3.20725, 3.22969, -1.36769, -0.81739]
+            case "SEAWIFS":
+                params = [0.32814, -3.20725, 3.22969, -1.36769, -0.81739]
+            case "VIIRS20":  # NOAA-20
+                params = [0.28153, -2.65472, 1.30882, 1.31521, -2.08622]
+            case "VIIRS21":  # NOAA-21
+                params = [0.24765, -2.54926, 1.55323, 0.39485, -1.54632]
             case _:
                 pass
-        return np.array(pars)
+        return np.array(params)
