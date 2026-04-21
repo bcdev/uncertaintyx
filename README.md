@@ -133,7 +133,8 @@ of length $d$), and the trailing tensor dimensions of the Jacobian
 tensor $G$ and the input uncertainty tensor $U$ correspond to
 these indices. The code below provides an implementation. 
 
-    def make_lpu(d: int) -> Callable[[Array, Array], Array]:
+```python
+def make_lpu(d: int) -> Callable[[Array, Array], Array]:
     """
     Returns the law of propagation of uncertainty.
 
@@ -143,11 +144,19 @@ these indices. The code below provides an implementation.
 
     @jax.jit
     def lpu(g: Array, u: Array) -> Array:
-        """The law of propagation of uncertainty."""
+        r"""
+        The law of propagation of uncertainty.
+
+        :param g: The Jacobian tensor :math:`G`.
+        :param u: The uncertainty tensor :math:`U`.
+        :returns: The uncertainty tensor :math:`V`.
+        """
         dims = tuple(range(-d, 0))
         return jnp.tensordot(jnp.tensordot(g, u, (dims, dims)), g, (dims, dims))
 
     return lpu
+```
+
 
 [![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
 [![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
