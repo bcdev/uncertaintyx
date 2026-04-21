@@ -325,7 +325,7 @@ class QAA(ToM):
         y: np.ndarray | None = None,
         preset: Literal["case1", "case2"] | None = None,
     ) -> np.ndarray:
-        pars = {
+        params = {
             "r0": 0.5200,
             "r1": 1.7000,
             "g0": 0.0890,
@@ -343,12 +343,12 @@ class QAA(ToM):
         }
         match preset:
             case "case1":
-                pars["t1"] = np.inf
+                params["t1"] = np.inf
             case "case2":
-                pars["t1"] = 0.0
+                params["t1"] = 0.0
             case _:
                 pass
-        return np.array([p for _, p in pars.items()])
+        return np.array([p for _, p in params.items()])
 
 
 class E(ToM):
