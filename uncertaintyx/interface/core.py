@@ -469,7 +469,9 @@ class Result:
         """
         return self._f.propagate_x_diag(self.popt, x, u)
 
-    def yunc(self, x: np.ndarray, u: np.ndarray | None = None) -> np.ndarray:
+    def yunc_t(
+        self, x: np.ndarray, u: np.ndarray | None = None
+    ) -> np.ndarray:
         r"""
         Evaluates the total standard uncertainty of the fitted
         model function values due to the uncertainty of model
