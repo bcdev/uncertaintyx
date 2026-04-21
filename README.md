@@ -133,9 +133,6 @@ of length $d$), and the trailing tensor dimensions of the Jacobian
 tensor $G$ and the input uncertainty tensor $U$ correspond to
 these indices. The code below provides an implementation. 
 
-    import jax.numpy as jnp
-    from jax import Array
-
     def make_lpu(d: int) -> Callable[[Array, Array], Array]:
     """
     Returns the law of propagation of uncertainty.
