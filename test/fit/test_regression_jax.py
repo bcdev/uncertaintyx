@@ -12,9 +12,17 @@ from uncertaintyx.fit.regression import HeteroHomoscedasticRegression
 from uncertaintyx.fit.regression import HeteroscedasticRegression
 from uncertaintyx.fit.regression import HomoHeteroscedasticRegression
 from uncertaintyx.fit.regression import HomoscedasticRegression
+from uncertaintyx.interface.core import Result
 from uncertaintyx.m.jax import Linear
 from uncertaintyx.plot.plots import MatrixPlot
 from uncertaintyx.plot.plots import RegressionPlot
+
+
+def matrix(result: Result, n: int = 100) -> np.ndarray:
+    """
+    Returns the variance-covariance matrix of the fitted curve.
+    """
+    return np.squeeze(result.ycov_p(np.linspace(0.5, 99.5, n).reshape(1, n)))
 
 
 class RegressionTest(unittest.TestCase):
@@ -61,13 +69,13 @@ class RegressionTest(unittest.TestCase):
             title="Homoscedastic regression",
         )
         MatrixPlot().plot(
-            result.ycov_p(np.linspace(0.5, 99.5, n)),
+            matrix(result, n),
             xlabel=r"$x$",
             ylabel=r"$x$",
             xrange=(0.5, 99.5),
             yrange=(0.5, 99.5),
-            cbar_max=4.0,
-            cbar_min=-1.0,
+            cbar_max=5.0,
+            cbar_min=0.0,
             cbar_label=r"variance-covariance $U_p(y)$",
             savefig="lin1-ycov.png",
             title="Homoscedastic regression",
@@ -115,13 +123,13 @@ class RegressionTest(unittest.TestCase):
             title="Homo-heteroscedastic regression",
         )
         MatrixPlot().plot(
-            result.ycov_p(np.linspace(0.5, 99.5, n)),
+            matrix(result, n),
             xlabel=r"$x$",
             ylabel=r"$x$",
             xrange=(0.5, 99.5),
             yrange=(0.5, 99.5),
-            cbar_max=4.0,
-            cbar_min=-1.0,
+            cbar_max=5.0,
+            cbar_min=0.0,
             cbar_label=r"variance-covariance $U_p(y)$",
             savefig="lin2-ycov.png",
             title="Homo-heteroscedastic regression",
@@ -169,13 +177,13 @@ class RegressionTest(unittest.TestCase):
             title="Hetero-homoscedastic regression",
         )
         MatrixPlot().plot(
-            result.ycov_p(np.linspace(0.5, 99.5, n)),
+            matrix(result, n),
             xlabel=r"$x$",
             ylabel=r"$x$",
             xrange=(0.5, 99.5),
             yrange=(0.5, 99.5),
-            cbar_max=4.0,
-            cbar_min=-1.0,
+            cbar_max=5.0,
+            cbar_min=0.0,
             cbar_label=r"variance-covariance $U_p(y)$",
             savefig="lin3-ycov.png",
             title="Hetero-homoscedastic regression",
@@ -222,13 +230,13 @@ class RegressionTest(unittest.TestCase):
             title="Heteroscedastic regression",
         )
         MatrixPlot().plot(
-            result.ycov_p(np.linspace(0.5, 99.5, n)),
+            matrix(result, n),
             xlabel=r"$x$",
             ylabel=r"$x$",
             xrange=(0.5, 99.5),
             yrange=(0.5, 99.5),
-            cbar_max=4.0,
-            cbar_min=-1.0,
+            cbar_max=5.0,
+            cbar_min=0.0,
             cbar_label=r"variance-covariance $U_p(y)$",
             savefig="lin4-ycov.png",
             title="Heteroscedastic regression",
