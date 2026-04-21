@@ -142,7 +142,7 @@ class RegressionPlot(Plotting):
         x = np.linspace(xrange[0], xrange[1], 1000)
         y_opt = self._result.f(x)
         y_unp = self._result.yunc_p(x)
-        y_unc = self._result.yunc(x)
+        y_unc = self._result.yunc_t(x)
         ax.plot(x, y_opt, "-", color=self._colors[1], label="regression")
         ax.plot(
             x,
