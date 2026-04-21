@@ -412,7 +412,7 @@ class Result:
         Under the same notation as :meth:`f`:
 
         :param x: :math:`X \in \mathbb{R}^{M \times m}`.
-        :returns: :math:`v(Y) \in \mathbb{R}^{M \times n}`.
+        :returns: :math:`u^{2}(Y) \in \mathbb{R}^{M \times n}`.
         """
         return self._f.propagate_p_diag(self.popt, self.pcov, x)
 
@@ -465,7 +465,7 @@ class Result:
 
         :param x: :math:`X \in \mathbb{R}^{M \times m}`.
         :param u: :math:`U(X) \in \mathbb{R}^{M \times \cdots \times m}`.
-        :returns: :math:`v(Y) \in \mathbb{R}^{M \times n}`.
+        :returns: :math:`u^{2}(Y) \in \mathbb{R}^{M \times n}`.
         """
         return self._f.propagate_x_diag(self.popt, x, u)
 
@@ -492,8 +492,7 @@ class Result:
     @property
     def rvar(self) -> Any:
         r"""
-        Returns the irreducible residual variance
-        :math:`u^2 \in \mathbb{R}^{n}`.
+        Returns the residual variance :math:`u^{2} \in \mathbb{R}^{n}`.
         """
         return self._rvar
 
