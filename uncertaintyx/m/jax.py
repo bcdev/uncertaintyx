@@ -58,7 +58,6 @@ def jac_x(
     :param f: The function :math:`f`.
     :param p: :math:`p \in \mathbb{R}^{k}`.
     :param x: :math:`X \in \mathbb{R}^{M \times m}`.
-    :param x: :math:`X \in \mathbb{R}^{M \times m}`.
     :param rev: Use reverse mode.
     :returns: :math:`(G_x f)(p, X) \in \mathbb{R}^{M \times n \times m}`.
     """
