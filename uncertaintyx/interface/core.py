@@ -73,7 +73,7 @@ class F(ABC):
         :param u: :math:`U(X) \in \mathbb{R}^{M \times \cdots \times m}`.
         :returns: :math:`U(Y) \in \mathbb{R}^{M \times n \times n}`.
         """
-        return propagate(x.ndim - 1, self.jac(x), u)
+        return lpu_x(x.ndim - 1, self.jac(x), u)
 
     def propagate_diag(self, x: np.ndarray, u: np.ndarray) -> np.ndarray:
         r"""
@@ -87,7 +87,7 @@ class F(ABC):
         :param u: :math:`U(X) \in \mathbb{R}^{M \times \cdots \times m}`.
         :returns: The diagonal elements of :math:`U(Y)`.
         """
-        return propagate_diag(x.ndim - 1, self.jac(x), u)
+        return lpu_x(x.ndim - 1, self.jac(x), u, True)
 
     @property
     @abstractmethod
@@ -169,7 +169,7 @@ class M(ABC):
         :param x: :math:`X \in \mathbb{R}^{M \times m}`.
         :returns: :math:`U(Y) \in \mathbb{R}^{M \times n \times n}`.
         """
-        return propagate(p.ndim, self.jac_p(p, x), u)
+        return lpu_p(p.ndim, self.jac_p(p, x), u)
 
     def propagate_p_diag(
         self, p: np.ndarray, u: np.ndarray, x: np.ndarray
@@ -186,7 +186,7 @@ class M(ABC):
         :param x: :math:`X \in \mathbb{R}^{M \times m}`.
         :returns: The diagonal elements of :math:`U(Y)`.
         """
-        return propagate_diag(p.ndim, self.jac_p(p, x), u)
+        return lpu_p(p.ndim, self.jac_p(p, x), u, True)
 
     def propagate_x(
         self, p: np.ndarray, x: np.ndarray, u: np.ndarray
@@ -216,7 +216,7 @@ class M(ABC):
         :param u: :math:`U(X) \in \mathbb{R}^{M \times \cdots \times m}`.
         :returns: :math:`U(Y) \in \mathbb{R}^{M \times n \times n}`.
         """
-        return propagate(x.ndim - 1, self.jac_x(p, x), u)
+        return lpu_x(x.ndim - 1, self.jac_x(p, x), u)
 
     def propagate_x_diag(
         self, p: np.ndarray, x: np.ndarray, u: np.ndarray
@@ -233,7 +233,7 @@ class M(ABC):
         :param u: :math:`U(X) \in \mathbb{R}^{M \times \cdots \times m}`.
         :returns: The diagonal elements of :math:`U(Y)`.
         """
-        return propagate_diag(x.ndim - 1, self.jac_x(p, x), u)
+        return lpu_x(x.ndim - 1, self.jac_x(p, x), u, True)
 
     @abstractmethod
     def estimate(
@@ -564,10 +564,12 @@ class Perturbing(ABC):
         """
 
 
-def propagate(d: int, g: np.ndarray, u: np.ndarray) -> np.ndarray:
+def lpu_p(
+    d: int, g: np.ndarray, u: np.ndarray, diag: bool = False
+) -> np.ndarray:
     r"""
     Default implementation of the law of propagation of uncertainty
-    in general tensor form.
+    in general tensor form (for parameter uncertainty tensors).
 
     Using Einstein's summation convention and the symmetry of the
     input uncertainty tensor :math:`U`:, the output uncertainty
@@ -589,36 +591,75 @@ def propagate(d: int, g: np.ndarray, u: np.ndarray) -> np.ndarray:
     for a tensor space whose trailing indices are labelled by the
     index set :math:`D`.
 
+    Otherwise, under the same notation as :meth:`jac_p`:
+
     :param d: The number of inner tensor dimensions.
-    :param g: Jacobian tensor :math:`G \in \mathbb{R}^{\cdots \times D}`.
-    :param u: Uncertainty tensor :math:`U \in \mathbb{R}^{\cdots \times D}`.
-    :returns: Uncertainty tensor :math:`V \in \mathbb{R}^{\cdots}`.
+    :param g: Jacobian :math:`G \in \mathbb{R}^{M \times \cdots \times D}`.
+    :param u: Tensor :math:`U \in \mathbb{R}^{\cdots \times D}`.
+    :param diag: To return only variance elements of :math:`V`.
+    :returns: Tensor :math:`V \in \mathbb{R}^{M \times \cdots}`.
     """
-    dims = tuple(range(-d, 0))
-    return np.tensordot(
-        np.tensordot(g, u, axes=(dims, dims)), g, axes=(dims, dims)
-    )
+    lpu = make_lpu(d, diag)
+    return np.stack([lpu(g_, u) for g_ in g])
 
 
-def propagate_diag(d: int, g: np.ndarray, u: np.ndarray) -> np.ndarray:
+def lpu_x(
+    d: int, g: np.ndarray, u: np.ndarray, diag: bool = False
+) -> np.ndarray:
     r"""
     Default implementation of the law of propagation of uncertainty
-    in general tensor form that returns only the diagonal elements of
-    the output uncertainty tensor.
+    in general tensor form (for input uncertainty tensors)
 
-    Under the same notation as :meth:`propagate`, only the diagonal
-    elements of :math:`V_{\dots ij}` are computed:
+    Using Einstein's summation convention and the symmetry of the
+    input uncertainty tensor :math:`U`:, the output uncertainty
+    tensor reads:
 
     .. math::
-        V_{\dots ii} = G_{\dots ik} U_{\dots lk} G_{\dots il}
+        V_{\dots ij} = G_{\dots ik}U_{\dots lk}G_{\dots jl}
 
-    where the summation is over :math:`k, l` only, and :math:`i`
-    labels the diagonal components :math:`V_{\dots ii}`.
+    with multi-indices :math:`k, l \in D \subset \mathbb{N}^d`
+    for some :math:`d \in \mathbb{N}`. The summation is taken over
+    all :math:`k, l \in D`.
+
+    Here, :math:`D` denotes the set of inner tensor indices
+    (multi-indices of length :math:`d`), and the trailing tensor
+    dimensions of :math:`G` and :math:`U` correspond to these
+    indices.
+
+    In what follows, we write :math:`\mathbb{R}^{\cdots \times D}`
+    for a tensor space whose trailing indices are labelled by the
+    index set :math:`D`.
+
+    Otherwise, under the same notation as :meth:`jac_p`:
 
     :param d: The number of inner tensor dimensions.
-    :param g: Jacobian tensor :math:`G \in \mathbb{R}^{\cdots \times D}`.
-    :param u: Uncertainty tensor :math:`U \in \mathbb{R}^{\cdots \times D}`.
-    :returns: Diagonal elements of :math:`V`.
+    :param g: Jacobian :math:`G \in \mathbb{R}^{M \times \cdots \times D}`.
+    :param u: Tensor :math:`U \in \mathbb{R}^{M \times \cdots \times D}`.
+    :param diag: To return only variance elements of :math:`V`.
+    :returns: Tensor :math:`V \in \mathbb{R}^{M \times \cdots}`.
     """
-    dims = tuple(range(-d, 0))
-    return np.sum(np.tensordot(g, u, axes=(dims, dims)) * g, axis=dims)
+    lpu = make_lpu(d, diag)
+    return np.stack([lpu(g_, u_) for g_, u_ in zip(g, u)])
+
+
+def make_lpu(
+    d: int, diag: bool = False
+) -> Callable[[np.ndarray, np.ndarray], np.ndarray]:
+    r"""
+    Returns the law of propagation of uncertainty.
+
+    :param d: The number of inner tensor dimensions.
+    :param diag: To return only variance elements .
+    :returns: The law of propagation of uncertainty.
+    """
+
+    def lpu(g: np.ndarray, u: np.ndarray) -> np.ndarray:
+        dims = tuple(range(-d, 0))
+        gu = np.tensordot(g, u, (dims, dims)) if u.ndim != d else g * u
+        return (
+            np.tensordot(gu, g, (dims, dims))
+            if not diag
+            else np.sum(gu * g, dims)
+        )
+
+    return lpu
