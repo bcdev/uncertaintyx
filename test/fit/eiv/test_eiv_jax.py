@@ -6,9 +6,17 @@ import unittest
 import numpy as np
 
 from uncertaintyx.fit.eiv.jax import EIV
+from uncertaintyx.interface.core import Result
 from uncertaintyx.m.jax import Linear
 from uncertaintyx.plot.plots import MatrixPlot
 from uncertaintyx.plot.plots import RegressionPlot
+
+
+def matrix(result: Result, n: int = 100) -> np.ndarray:
+    """
+    Returns the variance-covariance matrix of the fitted curve.
+    """
+    return np.squeeze(result.ycov_p(np.linspace(0.5, 99.5, n).reshape(1, n)))
 
 
 class ErrorsInVariablesTest(unittest.TestCase):
@@ -60,13 +68,13 @@ class ErrorsInVariablesTest(unittest.TestCase):
             title="Errors-in-variables regression",
         )
         MatrixPlot().plot(
-            result.ycov_p(np.linspace(0.5, 99.5, self.n)),
+            matrix(result, self.n),
             xlabel=r"$x$",
             ylabel=r"$x$",
             xrange=(0.5, 99.5),
             yrange=(0.5, 99.5),
-            cbar_max=4.0,
-            cbar_min=-1.0,
+            cbar_max=5.0,
+            cbar_min=0.0,
             cbar_label=r"variance-covariance $U_p(y)$",
             savefig="eiv-ycov.png",
             title="Errors-in-variables regression",

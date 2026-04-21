@@ -3,6 +3,7 @@
 
 import unittest
 from importlib import resources
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -10,6 +11,7 @@ import pandas as pd
 from uncertaintyx.fit.eiv.jax import EIV
 from uncertaintyx.fit.randomsampling import Bootstrap
 from uncertaintyx.fit.regression import HomoscedasticRegression
+from uncertaintyx.interface.core import Result
 from uncertaintyx.oceancolour.qaa import E
 from uncertaintyx.oceancolour.qaa import QAA
 from uncertaintyx.oceancolour.qaa import S
@@ -36,6 +38,13 @@ Test data for precise wavelengths of spectral wavebands (nm).
 
 Reference: https://www.ioccg.org/groups/Software_OCA/QAA_v6.xlsm
 """
+
+
+def matrix(result: Result, a: Any, b: Any, n: int = 1000) -> np.ndarray:
+    """
+    Returns the variance-covariance matrix of the fitted curve.
+    """
+    return np.squeeze(result.ycov_p(np.linspace(a, b, n).reshape(1, n)))
 
 
 def read_plot_data(
@@ -118,7 +127,7 @@ class QaaTest(unittest.TestCase):
             savefig="qaa2.png",
         )
         MatrixPlot().plot(
-            result.ycov_p(np.linspace(0.5, 4.5, 1000)),
+            matrix(result, 0.5, 4.5, 1000),
             xlabel=r"$r(443~\mathrm{nm})$ / $r(555~\mathrm{nm})$",
             ylabel=r"$r(443~\mathrm{nm})$ / $r(555~\mathrm{nm})$",
             xrange=(0.5, 4.5),
@@ -165,7 +174,7 @@ class QaaTest(unittest.TestCase):
             savefig="qaa3.png",
         )
         MatrixPlot().plot(
-            result.ycov_p(np.linspace(0.05, 9.95, 1000)),
+            matrix(result, 0.05, 9.95),
             xlabel=r"$r(443~\mathrm{nm})$ / $r(555~\mathrm{nm})$",
             ylabel=r"$r(443~\mathrm{nm})$ / $r(555~\mathrm{nm})$",
             xrange=(0.05, 9.95),
