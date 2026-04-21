@@ -572,7 +572,7 @@ def lpu_p(
     in general tensor form (for parameter uncertainty tensors).
 
     Using Einstein's summation convention and the symmetry of the
-    input uncertainty tensor :math:`U`:, the output uncertainty
+    parameter uncertainty tensor :math:`U`:, the output uncertainty
     tensor reads:
 
     .. math::
@@ -645,7 +645,7 @@ def lpu_x(
 def make_lpu(
     d: int, diag: bool = False
 ) -> Callable[[np.ndarray, np.ndarray], np.ndarray]:
-    r"""
+    """
     Returns the law of propagation of uncertainty.
 
     :param d: The number of inner tensor dimensions.
@@ -654,6 +654,7 @@ def make_lpu(
     """
 
     def lpu(g: np.ndarray, u: np.ndarray) -> np.ndarray:
+        """The law of propagation of uncertainty."""
         dims = tuple(range(-d, 0))
         gu = np.tensordot(g, u, (dims, dims)) if u.ndim != d else g * u
         return (
