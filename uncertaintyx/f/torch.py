@@ -39,6 +39,58 @@ def jac(f: Callable[[Tensor], Tensor], x: Tensor, rev: bool = True) -> Tensor:
     )
 
 
+@torch.compile
+def lpu(d: int, g: Tensor, u: Tensor, diag: bool = False) -> Tensor:
+    r"""
+    Implementation of the law of propagation of uncertainty in
+    general tensor form.
+
+    Using Einstein's summation convention and the symmetry of the
+    input uncertainty tensor :math:`U`:, the output uncertainty
+    tensor reads:
+
+    .. math::
+        V_{\dots ij} = G_{\dots ik}U_{\dots lk}G_{\dots jl}
+
+    with multi-indices :math:`k, l \in D \subset \mathbb{N}^d`
+    for some :math:`d \in \mathbb{N}`. The summation is taken over
+    all :math:`k, l \in D`.
+
+    Under the same notation as :meth:`lpu_p`:
+
+    :param d: The number of inner tensor dimensions.
+    :param g: Jacobian :math:`G \in \mathbb{R}^{M \times \cdots \times D}`.
+    :param u: Tensor :math:`U \in \mathbb{R}^{M \times \cdots \times D}`.
+    :param diag: To return only variance elements of :math:`V`.
+    :returns: Tensor :math:`V \in \mathbb{R}^{M \times \cdots}`.
+    """
+    return torch.vmap(make_lpu(d, diag), in_dims=(0, 0))(g, u)
+
+
+def make_lpu(
+    d: int, diag: bool = False
+) -> Callable[[Tensor, Tensor], Tensor]:
+    """
+    Returns the law of propagation of uncertainty.
+
+    :param d: The number of inner tensor dimensions.
+    :param diag: To return only variance elements .
+    :returns: The law of propagation of uncertainty.
+    """
+
+    def lpu(g: Tensor, u: Tensor) -> Tensor:
+        """The law of propagation of uncertainty."""
+        dims = list(range(-d, 0))
+        gu = torch.tensordot(g, u, (dims, dims)) if u.ndim != d else g * u
+        return (
+            torch.tensordot(gu, g, (dims, dims))
+            if not diag
+            else torch.sum(gu * g, dim=dims)
+        )
+
+    return lpu
+
+
 def vec(f: Callable[[Tensor], Tensor], x: Tensor) -> Tensor:
     r"""
     Evaluates :math:`f(X)`.
@@ -98,18 +150,26 @@ class ToF(F):
         self._jit = jit
 
     def eval(self, x: np.ndarray) -> np.ndarray:
-        x_t = torch.from_numpy(x)
-        y_t = vec(self._f, x_t) if self._jit else vec_no_jit(self._f, x_t)
+        x_ = torch.from_numpy(x)
+        y_t = vec(self._f, x_) if self._jit else vec_no_jit(self._f, x_)
         return y_t.detach().numpy()
 
     def jac(self, x: np.ndarray) -> np.ndarray:
-        x_t = torch.from_numpy(x).requires_grad_(True)
-        g_t = (
-            jac(self._f, x_t, self._rev)
+        x_ = torch.from_numpy(x).requires_grad_(True)
+        g_ = (
+            jac(self._f, x_, self._rev)
             if self._jit
-            else jac_no_jit(self._f, x_t, self._rev)
+            else jac_no_jit(self._f, x_, self._rev)
         )
-        return g_t.detach().numpy()
+        return g_.detach().numpy()
+
+    def lpu(
+        self, x: np.ndarray, u: np.ndarray, diag: bool = False
+    ) -> np.ndarray:
+        x_ = torch.from_numpy(x).requires_grad_(True)
+        u_ = torch.from_numpy(u)
+        v_ = lpu(x_.ndim - 1, jac(self._f, x_, self._rev), u_, diag)
+        return v_.detach().numpy()
 
     @property
     def f(self) -> Callable[[Tensor], Tensor]:
