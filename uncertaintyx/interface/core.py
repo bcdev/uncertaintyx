@@ -48,7 +48,9 @@ class F(ABC):
         :returns: :math:`(G_x f)(X) \in \mathbb{R}^{M \times n \times m}`.
         """
 
-    def propagate(self, x: np.ndarray, u: np.ndarray) -> np.ndarray:
+    def lpu(
+        self, x: np.ndarray, u: np.ndarray, diag: bool = False
+    ) -> np.ndarray:
         r"""
         Propagates the input uncertainty tensor :math:`U(X)`
         through the Jacobian, producing the output uncertainty
@@ -71,23 +73,10 @@ class F(ABC):
 
         :param x: :math:`X \in \mathbb{R}^{M \times m}`.
         :param u: :math:`U(X) \in \mathbb{R}^{M \times \cdots \times m}`.
+        :param diag: To return only the diagonal elements of :math:`U(Y)`.
         :returns: :math:`U(Y) \in \mathbb{R}^{M \times n \times n}`.
         """
         return lpu_x(x.ndim - 1, self.jac(x), u)
-
-    def propagate_diag(self, x: np.ndarray, u: np.ndarray) -> np.ndarray:
-        r"""
-        Propagates the input uncertainty tensor :math:`U(X)`
-        through the Jacobian, producing only the diagonal elements
-        of the output uncertainty tensor :math:`U(Y)`.
-
-        Under the same notation and remarks as :meth:`propagate`:
-
-        :param x: :math:`X \in \mathbb{R}^{M \times m}`.
-        :param u: :math:`U(X) \in \mathbb{R}^{M \times \cdots \times m}`.
-        :returns: The diagonal elements of :math:`U(Y)`.
-        """
-        return lpu_x(x.ndim - 1, self.jac(x), u, True)
 
     @property
     @abstractmethod
@@ -153,8 +142,8 @@ class M(ABC):
         :returns: :math:`(G_x f)(p, X) \in \mathbb{R}^{M \times n \times m}`.
         """
 
-    def propagate_p(
-        self, p: np.ndarray, u: np.ndarray, x: np.ndarray
+    def lpu_p(
+        self, p: np.ndarray, u: np.ndarray, x: np.ndarray, diag: bool = False
     ) -> np.ndarray:
         r"""
         Propagates the parameter uncertainty tensor :math:`U(p)`
@@ -167,29 +156,13 @@ class M(ABC):
         :param p: :math:`p \in \mathbb{R}^{k}`.
         :param u: :math:`U(p) \in \mathbb{R}^{k \times k}`.
         :param x: :math:`X \in \mathbb{R}^{M \times m}`.
+        :param diag: To return only the diagonal elements of :math:`U(Y)`.
         :returns: :math:`U(Y) \in \mathbb{R}^{M \times n \times n}`.
         """
         return lpu_p(p.ndim, self.jac_p(p, x), u)
 
-    def propagate_p_diag(
-        self, p: np.ndarray, u: np.ndarray, x: np.ndarray
-    ) -> np.ndarray:
-        r"""
-        Propagates the parameter uncertainty tensor :math:`U(p)`
-        through the Jacobian, producing only the diagonal elements
-        of the output uncertainty tensor :math:`U(Y)`.
-
-        Under the same notation and remarks as :meth:`propagate_p`:
-
-        :param p: :math:`p \in \mathbb{R}^{k}`.
-        :param u: :math:`U(p) \in \mathbb{R}^{k \times k}`.
-        :param x: :math:`X \in \mathbb{R}^{M \times m}`.
-        :returns: The diagonal elements of :math:`U(Y)`.
-        """
-        return lpu_p(p.ndim, self.jac_p(p, x), u, True)
-
-    def propagate_x(
-        self, p: np.ndarray, x: np.ndarray, u: np.ndarray
+    def lpu_x(
+        self, p: np.ndarray, x: np.ndarray, u: np.ndarray, diag: bool = False
     ) -> np.ndarray:
         r"""
         Propagates the input uncertainty tensor :math:`U(X)`
@@ -214,26 +187,10 @@ class M(ABC):
         :param p: :math:`p \in \mathbb{R}^{k}`.
         :param x: :math:`X \in \mathbb{R}^{M \times m}`.
         :param u: :math:`U(X) \in \mathbb{R}^{M \times \cdots \times m}`.
+        :param diag: To return only the diagonal elements of :math:`U(Y)`.
         :returns: :math:`U(Y) \in \mathbb{R}^{M \times n \times n}`.
         """
         return lpu_x(x.ndim - 1, self.jac_x(p, x), u)
-
-    def propagate_x_diag(
-        self, p: np.ndarray, x: np.ndarray, u: np.ndarray
-    ) -> np.ndarray:
-        r"""
-        Propagates the input uncertainty tensor :math:`U(X)`
-        through the Jacobian, producing only the diagonal elements
-        of the output uncertainty tensor :math:`U(Y)`.
-
-        Under the same notation and remarks as :meth:`propagate_x`:
-
-        :param p: :math:`p \in \mathbb{R}^{k}`.
-        :param x: :math:`X \in \mathbb{R}^{M \times m}`.
-        :param u: :math:`U(X) \in \mathbb{R}^{M \times \cdots \times m}`.
-        :returns: The diagonal elements of :math:`U(Y)`.
-        """
-        return lpu_x(x.ndim - 1, self.jac_x(p, x), u, True)
 
     @abstractmethod
     def estimate(
@@ -389,7 +346,7 @@ class Result:
         :param x: :math:`X \in \mathbb{R}^{M \times m}`.
         :returns: :math:`U(Y) \in \mathbb{R}^{M \times n \times n}`.
         """
-        return self._f.propagate_p(self.popt, self.pcov, x)
+        return self._f.lpu_p(self.popt, self.pcov, x)
 
     def yunc_p(self, x: np.ndarray) -> np.ndarray:
         r"""
@@ -414,7 +371,7 @@ class Result:
         :param x: :math:`X \in \mathbb{R}^{M \times m}`.
         :returns: :math:`u^{2}(Y) \in \mathbb{R}^{M \times n}`.
         """
-        return self._f.propagate_p_diag(self.popt, self.pcov, x)
+        return self._f.lpu_p(self.popt, self.pcov, x, True)
 
     def ycov_x(self, x: np.ndarray, u: np.ndarray) -> np.ndarray:
         r"""
@@ -440,7 +397,7 @@ class Result:
         :param u: :math:`U(X) \in \mathbb{R}^{M \times \cdots \times m}`.
         :returns: :math:`U(Y) \in \mathbb{R}^{M \times n \times n}`.
         """
-        return self._f.propagate_x(self.popt, x, u)
+        return self._f.lpu_x(self.popt, x, u)
 
     def yunc_x(self, x: np.ndarray, u: np.ndarray) -> np.ndarray:
         r"""
@@ -467,7 +424,21 @@ class Result:
         :param u: :math:`U(X) \in \mathbb{R}^{M \times \cdots \times m}`.
         :returns: :math:`u^{2}(Y) \in \mathbb{R}^{M \times n}`.
         """
-        return self._f.propagate_x_diag(self.popt, x, u)
+        return self._f.lpu_x(self.popt, x, u, True)
+
+    @property
+    def yunc_r(self) -> np.ndarray:
+        r"""
+        Returns the residual uncertainty :math:`u \in \mathbb{R}^{n}`.
+        """
+        return np.sqrt(self._rvar)
+
+    @property
+    def yvar_r(self) -> np.ndarray:
+        r"""
+        Returns the residual variance :math:`u^{2} \in \mathbb{R}^{n}`.
+        """
+        return self._rvar
 
     def yunc_t(
         self, x: np.ndarray, u: np.ndarray | None = None
@@ -483,18 +454,27 @@ class Result:
         :param u: :math:`U(X) \in \mathbb{R}^{M \times \cdots \times m}`.
         :returns: :math:`u(Y) \in \mathbb{R}^{M \times n}`.
         """
-        return np.sqrt(
-            self.rvar
+        return np.sqrt(self.yvar_t(x, u))
+
+    def yvar_t(
+        self, x: np.ndarray, u: np.ndarray | None = None
+    ) -> np.ndarray:
+        r"""
+        Evaluates the total variance the fitted model function
+        values due to the uncertainty of model parameters and
+        inputs, and residual variance.
+
+        Under the same notation as :meth:`f` and :meth:`ycov_x`:
+
+        :param x: :math:`X \in \mathbb{R}^{M \times m}`.
+        :param u: :math:`U(X) \in \mathbb{R}^{M \times \cdots \times m}`.
+        :returns: :math:`u^{2}(Y) \in \mathbb{R}^{M \times n}`.
+        """
+        return (
+            self.yvar_r
             + self.yvar_p(x)
             + (self.yvar_x(x, u) if u is not None else 0.0)
         )
-
-    @property
-    def rvar(self) -> Any:
-        r"""
-        Returns the residual variance :math:`u^{2} \in \mathbb{R}^{n}`.
-        """
-        return self._rvar
 
     def property(self, name: str) -> Any:
         """
@@ -596,7 +576,7 @@ def lpu_p(
     :param d: The number of inner tensor dimensions.
     :param g: Jacobian :math:`G \in \mathbb{R}^{M \times \cdots \times D}`.
     :param u: Tensor :math:`U \in \mathbb{R}^{\cdots \times D}`.
-    :param diag: To return only variance elements of :math:`V`.
+    :param diag: To return only the diagonal elements of :math:`V`.
     :returns: Tensor :math:`V \in \mathbb{R}^{M \times \cdots}`.
     """
     lpu = make_lpu(d, diag)
@@ -635,7 +615,7 @@ def lpu_x(
     :param d: The number of inner tensor dimensions.
     :param g: Jacobian :math:`G \in \mathbb{R}^{M \times \cdots \times D}`.
     :param u: Tensor :math:`U \in \mathbb{R}^{M \times \cdots \times D}`.
-    :param diag: To return only variance elements of :math:`V`.
+    :param diag: To return only the diagonal elements of :math:`V`.
     :returns: Tensor :math:`V \in \mathbb{R}^{M \times \cdots}`.
     """
     lpu = make_lpu(d, diag)
@@ -649,7 +629,7 @@ def make_lpu(
     Returns the law of propagation of uncertainty.
 
     :param d: The number of inner tensor dimensions.
-    :param diag: To return only variance elements .
+    :param diag: To return only the diagonal elements.
     :returns: The law of propagation of uncertainty.
     """
 

@@ -108,13 +108,13 @@ class QaaTest(unittest.TestCase):
         self.assertAlmostEqual(0.1, result.punc[0], delta=0.1)
         self.assertAlmostEqual(0.1, result.punc[1], delta=0.1)
         self.assertAlmostEqual(0.1, result.punc[1], delta=0.1)
-        self.assertAlmostEqual(0.3, result.rvar, delta=0.1)
+        self.assertAlmostEqual(0.3, result.yvar_r, delta=0.1)
 
         print()
         print("popt = ", result.popt)
         print("punc = ", result.punc)
         print("pcov = ", result.pcov)
-        print("rvar = ", result.rvar)
+        print("rvar = ", result.yvar_r)
 
         RegressionPlot(result).plot(
             x,
@@ -155,13 +155,13 @@ class QaaTest(unittest.TestCase):
         self.assertAlmostEqual(0.001, result.punc[0], delta=0.001)
         self.assertAlmostEqual(0.001, result.punc[0], delta=0.001)
         self.assertAlmostEqual(5.0, result.punc[0], delta=5.0)
-        self.assertAlmostEqual(1.5e-05, result.rvar, delta=0.1e-05)
+        self.assertAlmostEqual(1.5e-05, result.yvar_r, delta=0.1e-05)
 
         print()
         print("popt = ", result.popt)
         print("punc = ", result.punc)
         print("pcov = ", result.pcov)
-        print("rvar = ", result.rvar)
+        print("rvar = ", result.yvar_r)
 
         RegressionPlot(result).plot(
             x,
