@@ -28,112 +28,9 @@ import numpy as np
 from ..m.jax import ToM
 
 
-class Blended(ToM):
+class CI(ToM):
     """
-    The blended OC4/OCI model function.
-
-    The two or three nearest wavebands to 412, 443, 490 and 510 nm
-    are used for the blue, while the nearest waveband to 555 nm is
-    used for the green, and the nearest waveband to 670 nm is used
-    for the red.
-
-    The blending occurs when :class:`OC4` is between, e.g.,
-    0.25-0.35 mg m-3, creating a smooth handover between :class:`OCI`
-    (low chlorophyll specialist) and :class:`OC4` (baseline). The
-    blending uses perfectly normalized weights. Low :class:`OCI`
-    values favour :class:`OCI` while high :class:`OCI` values
-    favour :class:`OC4` through self-weighting. A quadratic term
-    creates curvature that eliminates boundary discontinuities while
-    :class:`OC4` acts as regime detector.
-    """
-
-    def __init__(self, b: Literal[0, 1] = 0):
-        """
-        Creates a new model function instance.
-
-        :param b: The index of the blue waveband near 443 nm.
-        """
-        self._oci = OCI()
-        self._ocx = OC4()
-
-        def f(p, x):
-            r"""
-            The blended OCI/OCX model function.
-
-            The blending is self-adjusting.
-
-            Let :math:`p = \in \mathbb{R}^{k}, k = 2 + 2 + 5` be the
-            model parameters and let :math:`\lambda = (\lambda_1,\dots
-            \lambda_\mathrm{m}) \in \mathbb{R}^{m}` denote the central
-            wavelengths of :math:`2 \le m-2 \le 3` wavebands in the blue,
-            and a single waveband :math:`\lambda_{m-1}` in the green, and
-            a single waveband :math:`\lambda_{m}` in the red. Further let
-
-            .. math::
-                x = (\lambda, R_\mathrm{rs}(\lambda))
-                \in \mathbb{R}^{2 \times m}
-
-            denote the function inputs. Then:
-
-            :param p: The parameters :math:`p \in \mathbb{R}^{k}`.
-            :param x: The inputs :math:`x \in \mathbb{R}^{2 \times m}`.
-            :returns: The chlorophyll concentration (mg m-3).
-            """
-
-            def blend(p, ci, cx):
-                """Returns the blended chlorophyll concentration."""
-                ti = p[1] - ci
-                tx = ci - p[0]
-                return (ci * ti + cx * tx) / (p[1] - p[0])
-
-            ci = self._oci.f(p[2:4], x[:, [b, -2, -1]])
-            cx = self._ocx.f(p[4:9], x[1, 0:-1])
-
-            return jnp.where(
-                cx < p[0],
-                ci,
-                jnp.where(cx > p[1], cx, blend(p, ci, cx)),
-            )
-
-        super().__init__(f)
-
-    def estimate(
-        self,
-        x: np.ndarray | None = None,
-        y: np.ndarray | None = None,
-        preset: Literal[
-            "CZCS",
-            "GOCI",
-            "HAWKEYE",
-            "MERIS",
-            "MODIS",
-            "OCTS",
-            "OLCI",
-            "PACE",
-            "SEAWIFS",
-            "VIIRS20",
-            "VIIRS21",
-        ]
-        | None = None,
-    ) -> np.ndarray:
-        """
-        Returns the blended OCI/OCX default parameter values.
-
-        Elements ``[0:2]`` refer to the blending, elements ``[2:4]``
-        refer to OCI, and elements ``[4:9]`` refer to OCX.
-        """
-        return np.concatenate(
-            (
-                np.array([0.25, 0.35]),
-                self._oci.estimate(x, y),
-                self._ocx.estimate(x, y, preset),
-            )
-        )
-
-
-class OCI(ToM):
-    """
-    NASA's ocean colour chlorophyll index (OCI) model function.
+    NASA's ocean colour chlorophyll index (CI) model function.
 
     The nearest wavebands to 443, 555, and 670 nm are used for the blue,
     green, and red, respectively, for all sensors.
@@ -228,9 +125,9 @@ class OCI(ToM):
 
 class OC4(ToM):
     """
-    NASA's OC3/OC4 chlorophyll model function.
+    NASA's OC4 (and OC3) chlorophyll model function.
 
-    The two or three nearest wavebands to 412, 443, 490 and 510 nm
+    The three (or two) nearest wavebands to 412, 443, 490 and 510 nm
     are used for the blue, while the nearest waveband to 555 nm is
     used for the green, for all sensors.
     """
@@ -314,3 +211,106 @@ class OC4(ToM):
             case _:
                 pass
         return np.array(params)
+
+
+class OCI(ToM):
+    """
+    The blended OC4/CI model function.
+
+    The two or three nearest wavebands to 412, 443, 490 and 510 nm
+    are used for the blue, while the nearest waveband to 555 nm is
+    used for the green, and the nearest waveband to 670 nm is used
+    for the red.
+
+    The blending occurs when :class:`OC4` is between, e.g.,
+    0.25-0.35 mg m-3, creating a smooth handover between :class:`OCI`
+    (low chlorophyll specialist) and :class:`OC4` (baseline). The
+    blending uses perfectly normalized weights. Low :class:`CI`
+    values favour :class:`CI` while high :class:`CI` values
+    favour :class:`OC4` through self-weighting. A quadratic term
+    creates curvature that eliminates boundary discontinuities while
+    :class:`OC4` acts as regime detector.
+    """
+
+    def __init__(self, b: Literal[0, 1] = 0):
+        """
+        Creates a new model function instance.
+
+        :param b: The index of the blue waveband near 443 nm.
+        """
+        self.m_ci: ToM = CI()
+        self.m_oc: ToM = OC4()
+
+        def f(p, x):
+            r"""
+            The blended OCI/OCX model function.
+
+            The blending is self-adjusting.
+
+            Let :math:`p = \in \mathbb{R}^{k}, k = 2 + 2 + 5` be the
+            model parameters and let :math:`\lambda = (\lambda_1,\dots
+            \lambda_\mathrm{m}) \in \mathbb{R}^{m}` denote the central
+            wavelengths of :math:`2 \le m-2 \le 3` wavebands in the blue,
+            and a single waveband :math:`\lambda_{m-1}` in the green, and
+            a single waveband :math:`\lambda_{m}` in the red. Further let
+
+            .. math::
+                x = (\lambda, R_\mathrm{rs}(\lambda))
+                \in \mathbb{R}^{2 \times m}
+
+            denote the function inputs. Then:
+
+            :param p: The parameters :math:`p \in \mathbb{R}^{k}`.
+            :param x: The inputs :math:`x \in \mathbb{R}^{2 \times m}`.
+            :returns: The chlorophyll concentration (mg m-3).
+            """
+
+            def blend(p, ci, cx):
+                """Returns the blended chlorophyll concentration."""
+                ti = p[1] - ci
+                tx = ci - p[0]
+                return (ci * ti + cx * tx) / (p[1] - p[0])
+
+            ci = self.m_ci.f(p[2:4], x[:, [b, -2, -1]])
+            oc = self.m_oc.f(p[4:9], x[1, 0:-1])
+
+            return jnp.where(
+                oc < p[0],
+                ci,
+                jnp.where(oc > p[1], oc, blend(p, ci, oc)),
+            )
+
+        super().__init__(f)
+
+    def estimate(
+        self,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        preset: Literal[
+            "CZCS",
+            "GOCI",
+            "HAWKEYE",
+            "MERIS",
+            "MODIS",
+            "OCTS",
+            "OLCI",
+            "PACE",
+            "SEAWIFS",
+            "VIIRS20",
+            "VIIRS21",
+        ]
+        | None = None,
+    ) -> np.ndarray:
+        """
+        Returns the blended OCI/OCX default parameter values.
+
+        Elements ``[0:2]`` refer to the blending, elements ``[2:4]``
+        refer to CI, and elements ``[4:9]`` refer to OC4.
+        """
+        return np.concatenate(
+            (
+                np.array([0.25, 0.35]),
+                self.m_ci.estimate(x, y),
+                self.m_oc.estimate(x, y, preset),
+            )
+        )
