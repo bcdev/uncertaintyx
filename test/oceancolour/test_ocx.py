@@ -12,7 +12,7 @@ from uncertaintyx.oceancolour.ocx import OC4
 from uncertaintyx.oceancolour.ocx import OCI
 
 
-def read_test_data(
+def read_owt_data(
     package: str, filename: str
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, int, int]:
     """
@@ -39,10 +39,11 @@ class OCxTest(unittest.TestCase):
     """Tests OCX model functions on optical water type classes."""
 
     def test_ci(self):
-        w, R, u, M, m = read_test_data(  # noqa : N806
+        """Tests the chlorophyll index (CI) model function."""
+        w, R, u, M, m = read_owt_data(  # noqa : N806
             "test.resources", "owt.csv"
         )
-        W = np.broadcast_to(w, R.shape)  # noqa : N806
+        W = np.broadcast_to(w, (M, m))  # noqa : N806
 
         f = CI()
         x = np.stack([W[:, [1, 4, 5]], R[:, [1, 4, 5]]], axis=1)
@@ -89,7 +90,8 @@ class OCxTest(unittest.TestCase):
         self.assertTrue(np.isfinite(y[13]))
 
     def test_oc4(self):
-        _, R, u, M, m = read_test_data(  # noqa : N806
+        """Tests the OC4 model function."""
+        _, R, u, M, m = read_owt_data(  # noqa : N806
             "test.resources", "owt.csv"
         )
 
@@ -136,10 +138,11 @@ class OCxTest(unittest.TestCase):
         self.assertAlmostEqual(4.362, v[13], delta=0.001)
 
     def test_oci(self):
-        w, R, u, M, m = read_test_data(  # noqa : N806
+        """Tests the OCI model function."""
+        w, R, u, M, m = read_owt_data(  # noqa : N806
             "test.resources", "owt.csv"
         )
-        W = np.broadcast_to(w, R.shape)  # noqa : N806
+        W = np.broadcast_to(w, (M, m))  # noqa : N806
 
         f = OCI()
         x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
@@ -164,10 +167,10 @@ class OCxTest(unittest.TestCase):
         self.assertAlmostEqual(3.427, y[13], delta=0.001)
 
         U = np.square(u)  # noqa : N806
-        V = f.lpu_x(p, x, U)  # noqa : N806
-        self.assertEqual((M,), V.shape)
+        U = f.lpu_x(p, x, U)  # noqa : N806
+        self.assertEqual((M,), U.shape)
 
-        v = np.sqrt(V)
+        v = np.sqrt(U)
         self.assertAlmostEqual(0.026, v[0], delta=0.001)
         self.assertAlmostEqual(0.024, v[1], delta=0.001)
         self.assertAlmostEqual(0.042, v[2], delta=0.001)
