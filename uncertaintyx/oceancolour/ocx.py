@@ -302,10 +302,11 @@ class OCI(ToM):
         | None = None,
     ) -> np.ndarray:
         """
-        Returns the blended OCI/OCX default parameter values.
+        Returns the OC4/CI default parameter values.
 
         Elements ``[0:2]`` refer to the blending, elements ``[2:4]``
-        refer to CI, and elements ``[4:9]`` refer to OC4.
+        refer to CI, and elements ``[4:9]`` refer to OC4. The default
+        OC4 parameter set returned is for SeaWiFS.
         """
         return np.concatenate(
             (
