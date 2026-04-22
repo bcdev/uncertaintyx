@@ -4,7 +4,11 @@
 Errors-in-variables implementation based on the effective
 variance method (EVM). Refer to:
 
-A. Tarantola (2005). Inverse Problem Theory and Methods for
+Giering et al. (2019). A Novel Framework to Harmononise
+Satellite Data Series for Climate Applications. Remote
+Sens., 11, 1002. https://doi.org/10.3390/rs11091002.
+
+Tarantola (2005). Inverse Problem Theory and Methods for
 Model Parameter Estimation. Society for Industrial and Applied
 Mathematics. https://doi.org/10.1137/1.9780898717921
 
