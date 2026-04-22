@@ -64,7 +64,7 @@ class CI(ToM):
                 """
                 Converts remote sensing reflectance in the green
                 waveband, if its central wavelength is not within
-                :math:`555\pm2 \mathrm{nm}`.
+                :math:`555 \pm 2 \mathrm{nm}`.
                 """
                 c = jnp.asarray(
                     [
