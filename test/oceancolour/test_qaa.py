@@ -47,6 +47,29 @@ def matrix(result: Result, a: Any, b: Any, n: int = 1000) -> np.ndarray:
     return np.squeeze(result.ycov_p(np.linspace(a, b, n).reshape(1, n)))
 
 
+def read_owt_data(
+    package: str, filename: str
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, int, int]:
+    """
+    Returns the optical water types (OWT) data table.
+
+    :param package: The package name.
+    :param filename: The filename.
+    :returns: The data table.
+    """
+    with resources.path(package, filename) as resource:
+        rows = []
+        with open(resource) as r:
+            df = pd.read_csv(r, sep=";", header=None, index_col=0)
+            for name, _ in df.items():
+                rows.append(df[name].values)
+            data = np.stack(rows, axis=-1)
+    wav = data[0, :6]
+    rrs = data[1:, :6]
+    unc = data[1:, 6:]
+    return wav, rrs, unc, rrs.shape[0], rrs.shape[1]
+
+
 def read_plot_data(
     package: str, filename: str
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -108,7 +131,7 @@ class QaaTest(unittest.TestCase):
         self.assertAlmostEqual(0.1, result.punc[0], delta=0.1)
         self.assertAlmostEqual(0.1, result.punc[1], delta=0.1)
         self.assertAlmostEqual(0.1, result.punc[1], delta=0.1)
-        self.assertAlmostEqual(0.3, result.yvar_r, delta=0.1)
+        self.assertAlmostEqual(0.3, result.yvar_r.item(), delta=0.1)
 
         print()
         print("popt = ", result.popt)
@@ -155,7 +178,7 @@ class QaaTest(unittest.TestCase):
         self.assertAlmostEqual(0.001, result.punc[0], delta=0.001)
         self.assertAlmostEqual(0.001, result.punc[0], delta=0.001)
         self.assertAlmostEqual(5.0, result.punc[0], delta=5.0)
-        self.assertAlmostEqual(1.5e-05, result.yvar_r, delta=0.1e-05)
+        self.assertAlmostEqual(1.5e-05, result.yvar_r.item(), delta=0.1e-05)
 
         print()
         print("popt = ", result.popt)
@@ -271,6 +294,73 @@ class QaaTest(unittest.TestCase):
                     delta=0.015,
                     msg=f"{i}, {j}: assertion failed",
                 )
+
+    def test_qaa_with_owt(self):
+        """
+        Test QAA on optical water type (OWT) classes.
+        """
+        w, R, u, M, m = read_owt_data(  # noqa : N806
+            "test.resources", "owt.csv"
+        )
+        W = np.broadcast_to(w, (M, m))  # noqa : N806
+
+        f = QAA()
+        x = np.stack(
+            [
+                np.broadcast_to(W, (M, m)),
+                R,
+                np.broadcast_to(AW, (M, m)),
+                np.broadcast_to(BW, (M, m)),
+            ],
+            axis=1,
+        )
+        u = np.stack(
+            [
+                np.broadcast_to(0.5, (M, m)),
+                u,
+                np.broadcast_to(0.1 * AW, (M, m)),
+                np.broadcast_to(0.1 * BW, (M, m)),
+            ],
+            axis=1,
+        )
+        p = f.estimate()
+        y = f.eval(p, x)
+        self.assertEqual((M, 4, m), y.shape)
+
+        a = y[:, 0, :]
+        self.assertAlmostEqual(0.014, a[0, 0], delta=0.001)
+        self.assertAlmostEqual(0.015, a[0, 1], delta=0.001)
+        self.assertAlmostEqual(0.019, a[0, 2], delta=0.001)
+        self.assertAlmostEqual(0.034, a[0, 3], delta=0.001)
+        self.assertAlmostEqual(0.060, a[0, 4], delta=0.001)
+        self.assertAlmostEqual(0.291, a[0, 5], delta=0.001)
+
+        self.assertAlmostEqual(0.515, a[13, 0], delta=0.001)
+        self.assertAlmostEqual(0.391, a[13, 1], delta=0.001)
+        self.assertAlmostEqual(0.249, a[13, 2], delta=0.001)
+        self.assertAlmostEqual(0.224, a[13, 3], delta=0.001)
+        self.assertAlmostEqual(0.184, a[13, 4], delta=0.001)
+        self.assertAlmostEqual(0.514, a[13, 5], delta=0.001)
+
+        U = np.square(u)  # noqa : N806
+        U = f.lpu_x(p, x, U, True)  # noqa : N806
+        self.assertEqual((M, 4, m), U.shape)
+
+        u = np.sqrt(U)
+        ua = u[:, 0, :]
+        self.assertAlmostEqual(0.013, ua[0, 0], delta=0.001)
+        self.assertAlmostEqual(0.016, ua[0, 1], delta=0.001)
+        self.assertAlmostEqual(0.024, ua[0, 2], delta=0.001)
+        self.assertAlmostEqual(0.046, ua[0, 3], delta=0.001)
+        self.assertAlmostEqual(0.006, ua[0, 4], delta=0.001)
+        self.assertAlmostEqual(1.569, ua[0, 5], delta=0.001)
+
+        self.assertAlmostEqual(0.479, ua[13, 0], delta=0.001)
+        self.assertAlmostEqual(0.359, ua[13, 1], delta=0.001)
+        self.assertAlmostEqual(0.235, ua[13, 2], delta=0.001)
+        self.assertAlmostEqual(0.210, ua[13, 3], delta=0.001)
+        self.assertAlmostEqual(0.178, ua[13, 4], delta=0.001)
+        self.assertAlmostEqual(0.083, ua[13, 5], delta=0.001)
 
 
 if __name__ == "__main__":
