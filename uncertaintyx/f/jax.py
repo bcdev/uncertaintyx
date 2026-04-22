@@ -39,6 +39,56 @@ def jac(f: Callable[[Array], Array], x: Array, rev: bool = True) -> Array:
     return jax.vmap(jax.jacrev(f) if rev else jax.jacfwd(f))(x)
 
 
+@jax.jit(static_argnums=(0, 3))
+def lpu(d: int, g: Array, u: Array, diag: bool = False) -> Array:
+    r"""
+    Implementation of the law of propagation of uncertainty in
+    general tensor form.
+
+    Using Einstein's summation convention and the symmetry of the
+    input uncertainty tensor :math:`U`:, the output uncertainty
+    tensor reads:
+
+    .. math::
+        V_{\dots ij} = G_{\dots ik}U_{\dots lk}G_{\dots jl}
+
+    with multi-indices :math:`k, l \in D \subset \mathbb{N}^d`
+    for some :math:`d \in \mathbb{N}`. The summation is taken over
+    all :math:`k, l \in D`.
+
+    Under the same notation as :meth:`lpu_p`:
+
+    :param d: The number of inner tensor dimensions.
+    :param g: Jacobian :math:`G \in \mathbb{R}^{M \times \cdots \times D}`.
+    :param u: Tensor :math:`U \in \mathbb{R}^{M \times \cdots \times D}`.
+    :param diag: To return only variance elements of :math:`V`.
+    :returns: Tensor :math:`V \in \mathbb{R}^{M \times \cdots}`.
+    """
+    return jax.vmap(make_lpu(d, diag), in_axes=(0, 0))(g, u)
+
+
+def make_lpu(d: int, diag: bool = False) -> Callable[[Array, Array], Array]:
+    """
+    Returns the law of propagation of uncertainty.
+
+    :param d: The number of inner tensor dimensions.
+    :param diag: To return only variance elements .
+    :returns: The law of propagation of uncertainty.
+    """
+
+    def lpu(g: Array, u: Array) -> Array:
+        """The law of propagation of uncertainty."""
+        dims = tuple(range(-d, 0))
+        gu = jnp.tensordot(g, u, (dims, dims)) if u.ndim != d else g * u
+        return (
+            jnp.tensordot(gu, g, (dims, dims))
+            if not diag
+            else jnp.sum(gu * g, dims)
+        )
+
+    return lpu
+
+
 @jax.jit(static_argnums=(0,))
 def vec(f: Callable[[Array], Array], x: Array) -> Array:
     r"""
@@ -94,18 +144,26 @@ class ToF(F):
         self._jit = jit
 
     def eval(self, x: np.ndarray) -> np.ndarray:
-        x_j = jnp.asarray(x)
-        y_j = vec(self._f, x_j) if self._jit else vec_no_jit(self._f, x_j)
-        return np.asarray(y_j)
+        x_ = jnp.asarray(x)
+        y_ = vec(self._f, x_) if self._jit else vec_no_jit(self._f, x_)
+        return np.asarray(y_)
 
     def jac(self, x: np.ndarray) -> np.ndarray:
-        x_j = jnp.asarray(x)
-        g_j = (
-            jac(self._f, x_j, self._rev)
+        x_ = jnp.asarray(x)
+        g_ = (
+            jac(self._f, x_, self._rev)
             if self._jit
-            else jac_no_jit(self._f, x_j, self._rev)
+            else jac_no_jit(self._f, x_, self._rev)
         )
-        return np.asarray(g_j)
+        return np.asarray(g_)
+
+    def lpu(
+        self, x: np.ndarray, u: np.ndarray, diag: bool = False
+    ) -> np.ndarray:
+        x_ = jnp.asarray(x)
+        u_ = jnp.asarray(u)
+        v_ = lpu(x_.ndim - 1, jac(self._f, x_, self._rev), u_, diag)
+        return np.asarray(v_)
 
     @property
     def f(self) -> Callable[[Array], Array]:
