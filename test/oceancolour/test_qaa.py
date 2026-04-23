@@ -108,6 +108,34 @@ def read_test_data(
     return data, data.shape[0], data.shape[1]
 
 
+def to_var(u: np.ndarray) -> np.ndarray:
+    """
+    Converts standard uncertainty to a diagonal uncertainty tensor.
+    """
+    return np.square(u)
+
+
+def to_std(U: np.ndarray) -> np.ndarray:  # noqa: N806
+    """
+    Converts a diagonal uncertainty tensor to standard uncertainty.
+    """
+    return np.sqrt(U)
+
+
+def diagonalize(U: np.ndarray) -> np.ndarray:  # noqa: N806
+    """
+    Extracts the diagonal elements from a non-diagonal uncertainty tensor.
+    """
+    return np.stack(
+        [
+            np.diag(
+                U[i].reshape((-1, np.prod(U.shape[1 + U.ndim // 2 :])))
+            ).reshape(U.shape[1 + U.ndim // 2 :])
+            for i in range(U.shape[0])
+        ]
+    )
+
+
 class QaaTest(unittest.TestCase):
     """
     Tests QAA model fitting.
@@ -295,7 +323,7 @@ class QaaTest(unittest.TestCase):
                     msg=f"{i}, {j}: assertion failed",
                 )
 
-    def test_qaa_with_owt(self):
+    def test_apply_qaa_to_owt_classes(self):
         """
         Test QAA on optical water type (OWT) classes.
         """
@@ -342,11 +370,11 @@ class QaaTest(unittest.TestCase):
         self.assertAlmostEqual(0.184, a[13, 4], delta=0.001)
         self.assertAlmostEqual(0.514, a[13, 5], delta=0.001)
 
-        U = np.square(u)  # noqa : N806
+        U = to_var(u)  # noqa : N806
         U = f.lpu_x(p, x, U, True)  # noqa : N806
         self.assertEqual((M, 4, m), U.shape)
 
-        u = np.sqrt(U)
+        u = to_std(U)
         ua = u[:, 0, :]
         self.assertAlmostEqual(0.013, ua[0, 0], delta=0.001)
         self.assertAlmostEqual(0.016, ua[0, 1], delta=0.001)
@@ -361,6 +389,26 @@ class QaaTest(unittest.TestCase):
         self.assertAlmostEqual(0.210, ua[13, 3], delta=0.001)
         self.assertAlmostEqual(0.178, ua[13, 4], delta=0.001)
         self.assertAlmostEqual(0.083, ua[13, 5], delta=0.001)
+
+        U = to_var(0.1 * p)  # noqa: N806
+        U = f.lpu_p(p, U, x)  # noqa: N806
+        self.assertEqual((M, 4, m, 4, m), U.shape)
+
+        u = to_std(diagonalize(U))
+        ua = u[:, 0, :]
+        self.assertAlmostEqual(0.0007, ua[0, 0], delta=0.0001)
+        self.assertAlmostEqual(0.0006, ua[0, 1], delta=0.0001)
+        self.assertAlmostEqual(0.0004, ua[0, 2], delta=0.0001)
+        self.assertAlmostEqual(0.0005, ua[0, 3], delta=0.0001)
+        self.assertAlmostEqual(0.0003, ua[0, 4], delta=0.0001)
+        self.assertAlmostEqual(0.0121, ua[0, 5], delta=0.0010)
+
+        self.assertAlmostEqual(0.042, ua[13, 0], delta=0.001)
+        self.assertAlmostEqual(0.027, ua[13, 1], delta=0.001)
+        self.assertAlmostEqual(0.014, ua[13, 2], delta=0.001)
+        self.assertAlmostEqual(0.011, ua[13, 3], delta=0.001)
+        self.assertAlmostEqual(0.007, ua[13, 4], delta=0.001)
+        self.assertAlmostEqual(0.000, ua[13, 5], delta=0.001)
 
 
 if __name__ == "__main__":
