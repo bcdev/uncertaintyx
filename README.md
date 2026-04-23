@@ -112,7 +112,7 @@ of **Tyx**.
 > The batch dimension $M$ enumerates independent samples (e.g.,
 > sensor scans, simulations, ensemble members) but you get to define
 > what “one sample” is: a single pixel value, a spectrum, a scan line,
-> or a spatiotemporal cubelet. **Tyx** treats that single sample as
+> or a spatiotemporal cubelet. Tyx treats that single sample as
 > a tensor $x$, and the framework scales it to a batch $X$ of $M$ such
 > samples. Many remote‑sensing workflows implicitly assume “one sample
 > is one pixel”, but this is often an oversimplification that obscures
