@@ -91,10 +91,10 @@ f: \mathbb{R}^{k_1 \times \cdots \times k_{N_k}} \times
 f(p, X) \mapsto Y
 $$
 
-The main objective of **Tyx** is to provide efficient access to
+The main objective of Tyx is to provide efficient access to
 uncertainty tensors for such functions. While Jacobians themselves
 are obtained through automatic differentiation (using JAX),
-**Tyx** delivers a high-level interface, utilities, and structured
+Tyx delivers a high-level interface, utilities, and structured
 handling for them. These Jacobians form the foundation for parameter
 estimation, sensitivity analysis, and uncertainty propagation within
 the framework.
