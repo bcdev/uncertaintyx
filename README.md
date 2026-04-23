@@ -32,8 +32,8 @@ computational workflows.
 
 ## Synopsis
 
-**Uncertaintyx** is a lightweight framework for tensor‑level uncertainty
-propagation, fitting of empirical or physics-informed models, and
+**Uncertaintyx** (or just **Tyx**) is a lightweight framework for tensor‑level
+uncertainty propagation, fitting of empirical or physics-informed models, and
 metrology‑aware workflows. It produces uncertainty tensors by combining
 tensor‑valued models with AD backends such as [JAX](https://docs.jax.dev/).
 Conventional [NumPy](https://numpy.org)
@@ -81,8 +81,8 @@ f: \mathbb{R}^{k_1 \times \cdots \times k_{N_k}} \times
 f(p, x) \mapsto y
 $$
 
-**Uncertaintyx** extends this formulation by introducing a batch
-dimension $M \in \mathbb{N}$ into the function signature:
+**Tyx** extends this formulation by introducing a batch dimension
+$M \in \mathbb{N}$ into the function signature:
 
 $$
 f: \mathbb{R}^{k_1 \times \cdots \times k_{N_k}} \times 
@@ -91,13 +91,13 @@ f: \mathbb{R}^{k_1 \times \cdots \times k_{N_k}} \times
 f(p, X) \mapsto Y
 $$
 
-The main objective of Uncertaintyx is to provide efficient access
-to uncertainty tensors for such functions. While Jacobians themselves
+The main objective of **Tyx** is to provide efficient access to
+uncertainty tensors for such functions. While Jacobians themselves
 are obtained through automatic differentiation (using JAX),
-**Uncertaintyx** delivers a high-level interface, utilities,
-and structured handling for them. These Jacobians form the foundation
-for parameter estimation, sensitivity analysis, and uncertainty
-propagation within the framework.
+**Tyx** delivers a high-level interface, utilities, and structured
+handling for them. These Jacobians form the foundation for parameter
+estimation, sensitivity analysis, and uncertainty propagation within
+the framework.
 
 The **single-input tensor paradigm** is lightweight and modern,
 following the design principles of leading machine learning frameworks.
@@ -107,12 +107,12 @@ logical inputs without cluttering the function signature. Organizing
 and assembling these logical inputs into a unified tensor structure is
 the user’s responsibility. In this role, you serve as the *Thalamus*—the
 interface channelling structured data into the computational core
-of Uncertaintyx. 
+of **Tyx**.
 
 > The batch dimension $M$ enumerates independent samples (e.g.,
 > sensor scans, simulations, ensemble members) but you get to define
 > what “one sample” is: a single pixel value, a spectrum, a scan line,
-> or a spatiotemporal cubelet. Uncertaintyx treats that single sample as
+> or a spatiotemporal cubelet. **Tyx** treats that single sample as
 > a tensor $x$, and the framework scales it to a batch $X$ of $M$ such
 > samples. Many remote‑sensing workflows implicitly assume “one sample
 > is one pixel”, but this is often an oversimplification that obscures
