@@ -224,9 +224,9 @@ class MonteCarlo(Fitting):
         success_count = 0
 
         for i in range(self._how_many):
-            dx = self._perturbator.perturb_x(x, ux, **kwargs)
-            dy = self._perturbator.perturb_y(y, uy, **kwargs)
-            res = self._fitting.fit(f, x + dx, y + dy, ux=ux, uy=uy, **kwargs)
+            x_ = self._perturbator.perturb_x(x, ux, **kwargs)
+            y_ = self._perturbator.perturb_y(y, uy, **kwargs)
+            res = self._fitting.fit(f, x_, y_, ux=ux, uy=uy, **kwargs)
             if not hasattr(res, "info") or res.info == 0:
                 popt[i] = res.popt
                 cost[i] = res.cost
