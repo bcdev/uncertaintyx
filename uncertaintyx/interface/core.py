@@ -76,7 +76,7 @@ class F(ABC):
         :param diag: To return only the diagonal elements of :math:`U(Y)`.
         :returns: :math:`U(Y) \in \mathbb{R}^{M \times n \times n}`.
         """
-        return lpu_x(x.ndim - 1, self.jac(x), u)
+        return lpu_x(x.ndim - 1, self.jac(x), u, diag)
 
     @property
     @abstractmethod
@@ -159,7 +159,7 @@ class M(ABC):
         :param diag: To return only the diagonal elements of :math:`U(Y)`.
         :returns: :math:`U(Y) \in \mathbb{R}^{M \times n \times n}`.
         """
-        return lpu_p(p.ndim, self.jac_p(p, x), u)
+        return lpu_p(p.ndim, self.jac_p(p, x), u, diag)
 
     def lpu_x(
         self, p: np.ndarray, x: np.ndarray, u: np.ndarray, diag: bool = False
@@ -190,7 +190,7 @@ class M(ABC):
         :param diag: To return only the diagonal elements of :math:`U(Y)`.
         :returns: :math:`U(Y) \in \mathbb{R}^{M \times n \times n}`.
         """
-        return lpu_x(x.ndim - 1, self.jac_x(p, x), u)
+        return lpu_x(x.ndim - 1, self.jac_x(p, x), u, diag)
 
     @abstractmethod
     def estimate(
