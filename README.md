@@ -1,6 +1,6 @@
 ![Matrix plot](assets/img/qaa2-ycov.png)
 
-# Uncertaintyx
+# Context
 
 In an algorithm-driven measurement context, the “measurement models” are
 not static laboratory instruments but complex, evolving data-processing
