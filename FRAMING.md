@@ -1,4 +1,4 @@
-# Framing: metrology and uncertainty
+# Metrology and uncertainty
 
 Future satellite missions such as ESA [TRUTHS](https://www.esa.int/Applications/Observing_the_Earth/TRUTHS)
 and NASA [CPF](https://science.nasa.gov/mission/clarreo-pathfinder/)
@@ -23,7 +23,7 @@ Strategically, it positions providers to offer truly uncertainty‑aware
 services that fully exploit upcoming metrological missions, instead of
 being limited by legacy ideas that ignore metrology.
 
-# Framing: explainable AI
+# Differentiable programming
 
 Everyone wants explainable AI, but most “ML” in Earth Observation still
 acts as a black box that ignores the physics we already know.
