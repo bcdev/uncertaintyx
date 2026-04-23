@@ -75,6 +75,7 @@ exclude_also = [
 
 [tool.coverage.run]
 omit = [
+    "**/plot/**",
 ]
 disable_warnings = [
     "couldnt-parse",
