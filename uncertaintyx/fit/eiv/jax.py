@@ -37,9 +37,9 @@ import numpy as np
 import optax
 from jax import Array
 
-from ...interface.core import Fitting
-from ...interface.core import M
-from ...interface.core import Result
+from ...tyx import Fitting
+from ...tyx import M
+from ...tyx import Result
 
 DEFAULT_MAX_D: Any = 1.0e-08
 """The maximum L2 norm of the parameter step allowed for convergence."""

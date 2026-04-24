@@ -13,7 +13,7 @@ import numpy as np
 import torch
 from torch import Tensor
 
-from ..interface.core import F
+from ..tyx import F
 
 
 def jac(f: Callable[[Tensor], Tensor], x: Tensor, rev: bool = True) -> Tensor:

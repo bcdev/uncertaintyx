@@ -11,12 +11,12 @@ import pandas as pd
 from uncertaintyx.fit.eiv.jax import EIV
 from uncertaintyx.fit.randomsampling import Bootstrap
 from uncertaintyx.fit.regression import HomoscedasticRegression
-from uncertaintyx.interface.core import Result
 from uncertaintyx.oceancolour.qaa import E
 from uncertaintyx.oceancolour.qaa import QAA
 from uncertaintyx.oceancolour.qaa import S
 from uncertaintyx.plot.plots import MatrixPlot
 from uncertaintyx.plot.plots import RegressionPlot
+from uncertaintyx.tyx import Result
 
 AW = np.array([[0.00473, 0.00635, 0.01500, 0.03250, 0.05960, 0.43900]])
 """

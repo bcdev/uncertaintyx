@@ -14,7 +14,7 @@ import jax.numpy as jnp
 import numpy as np
 from jax import Array
 
-from ..interface.core import F
+from ..tyx import F
 
 
 @jax.jit(static_argnums=(0, 2))

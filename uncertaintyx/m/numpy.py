@@ -9,7 +9,7 @@ from typing import Callable
 
 import numpy as np
 
-from ..interface.core import M
+from ..tyx import M
 
 
 class ToM(M, ABC):

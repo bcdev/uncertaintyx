@@ -16,9 +16,9 @@ Softw. 15, 348–364. https://doi.org/10.1145/76909.76913.
 import numpy as np
 import odrpack
 
-from ...interface.core import Fitting
-from ...interface.core import M
-from ...interface.core import Result
+from ...tyx import Fitting
+from ...tyx import M
+from ...tyx import Result
 
 
 class EIV(Fitting):
