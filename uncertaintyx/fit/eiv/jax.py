@@ -325,7 +325,7 @@ class EIV(Fitting):
             popt=popt,
             punc=np.asarray(punc),
             pcov=np.asarray(pcov),
-            rvar=rvar,
+            zvar=rvar,
             cost=np.asarray(cost),
             info=0 if converged.item() else 1,
         )
