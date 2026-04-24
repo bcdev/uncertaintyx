@@ -434,8 +434,7 @@ class Result:
         r"""
         Evaluates the total standard uncertainty of the fitted
         model function values due to the uncertainty of model
-        parameters and the uncertainty of inputs (or residual
-        variance).
+        parameters and inputs, and residual variance.
 
         Under the same notation as :meth:`f` and :meth:`ycov_x`:
 
@@ -451,7 +450,7 @@ class Result:
         r"""
         Evaluates the total variance the fitted model function
         values due to the uncertainty of model parameters and
-        the uncertainty of inputs (or residual variance).
+        inputs, and residual variance.
 
         Under the same notation as :meth:`f` and :meth:`ycov_x`:
 
@@ -460,7 +459,9 @@ class Result:
         :returns: :math:`u^{2}(Y) \in \mathbb{R}^{M \times n}`.
         """
         return (
-            self.yvar_p(x) + self.zvar if u is None else self.yvar_x(x, u)
+            self.yvar_p(x)
+            + (self.yvar_x(x, u) if u is not None else 0.0)
+            + self.zvar
         )
 
     @property
