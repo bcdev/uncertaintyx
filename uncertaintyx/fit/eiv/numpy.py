@@ -122,7 +122,7 @@ class EIV(Fitting):
         popt = u(res.beta, k_u)
         punc = u(res.sd_beta, k_u)
         pcov = u(res.cov_beta * res.res_var, k_u + k_u)
-        rvar = np.var(f.eval(popt, x) - y, axis=0, ddof=popt.size)
+        zvar = np.var(f.eval(popt, x) - y, axis=0, ddof=popt.size)
         cost = 0.5 * res.sum_square  # standard convention
 
         return Result(
@@ -130,7 +130,7 @@ class EIV(Fitting):
             popt=popt,
             punc=punc,
             pcov=pcov,
-            rvar=rvar,
+            zvar=zvar,
             cost=cost,
             info=0 if res.info < 4 else 1,
         )
