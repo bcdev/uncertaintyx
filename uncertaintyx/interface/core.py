@@ -237,10 +237,10 @@ class Result:
     - The uncertainty tensor of the optimized parameter values
       :math:`U(p) \in \mathbb{R}^{k \times k}`
     - The irreducible residual variance
-      :math:`u^{2}(R) \in \mathbb{R}^{n}` with residuals
-      :math:`R = f(p, X) - Y \in \mathbb{R}^{n}` and
-      :math:`M - \|k\|` degrees of freedom
-    - The value of the cost function at its minimum
+      :math:`u^{2}(Z) \in \mathbb{R}^{n}` with residuals
+      :math:`Z = f(p, X) - Y \in \mathbb{R}^{n}` and
+      :math:`M - \|k\|` degrees of freedom.
+    - The value of the objective function at its minimum.
     - The exit status, a nonzero value indicating failure
 
     Besides these properties, the class provides functions to
@@ -253,7 +253,7 @@ class Result:
         popt: np.ndarray,
         punc: np.ndarray,
         pcov: np.ndarray,
-        rvar: np.ndarray,
+        zvar: np.ndarray,
         cost: Any,
         info: int,
         **kwargs,
@@ -270,15 +270,15 @@ class Result:
         parameter values.
         :param pcov: The uncertainty tensor of the optimized model
         parameter values.
-        :param rvar: The residual variance.
-        :param cost: The value of the cost function at its minimum.
+        :param zvar: The irreducible residual variance.
+        :param cost: The value of the objective function at its minimum.
         :param info: The exit status, a nonzero value indicating failure.
         """
         self._f = f
         self._popt = popt
         self._punc = punc
         self._pcov = pcov
-        self._rvar = rvar
+        self._zvar = zvar
         self._cost = cost
         self._info = info
         self._properties: dict[str, Any] = {}
@@ -287,7 +287,7 @@ class Result:
     @property
     def cost(self) -> Any:
         r"""
-        Returns the value of the cost function at its minimum.
+        Returns the value of the objective function at its minimum.
 
         The standard convention in maximum likelihood and inverse
         problem theory implies, that the minimum cost is equal to
@@ -428,29 +428,14 @@ class Result:
         """
         return self._f.lpu_x(self.popt, x, u, True)
 
-    @property
-    def yunc_r(self) -> np.ndarray:
-        r"""
-        Returns the residual standard uncertainty
-        :math:`u(R) \in \mathbb{R}^{n}`.
-        """
-        return np.sqrt(self._rvar)
-
-    @property
-    def yvar_r(self) -> np.ndarray:
-        r"""
-        Returns the residual variance
-        :math:`u^{2}(R) \in \mathbb{R}^{n}`.
-        """
-        return self._rvar
-
     def yunc_t(
         self, x: np.ndarray, u: np.ndarray | None = None
     ) -> np.ndarray:
         r"""
         Evaluates the total standard uncertainty of the fitted
         model function values due to the uncertainty of model
-        parameters and inputs, and residual variance.
+        parameters and the uncertainty of inputs (or residual
+        variance).
 
         Under the same notation as :meth:`f` and :meth:`ycov_x`:
 
@@ -466,7 +451,7 @@ class Result:
         r"""
         Evaluates the total variance the fitted model function
         values due to the uncertainty of model parameters and
-        inputs, and residual variance.
+        the uncertainty of inputs (or residual variance).
 
         Under the same notation as :meth:`f` and :meth:`ycov_x`:
 
@@ -475,10 +460,24 @@ class Result:
         :returns: :math:`u^{2}(Y) \in \mathbb{R}^{M \times n}`.
         """
         return (
-            self.yvar_r
-            + self.yvar_p(x)
-            + (self.yvar_x(x, u) if u is not None else 0.0)
+            self.yvar_p(x) + self.zvar if u is None else self.yvar_x(x, u)
         )
+
+    @property
+    def zunc(self) -> np.ndarray:
+        r"""
+        Returns the irreducible residual standard uncertainty
+        :math:`u(Z) \in \mathbb{R}^{n}`.
+        """
+        return np.sqrt(self._zvar)
+
+    @property
+    def zvar(self) -> np.ndarray:
+        r"""
+        Returns the irreducible residual variance
+        :math:`u^{2}(Z) \in \mathbb{R}^{n}`.
+        """
+        return self._zvar
 
     def property(self, name: str) -> Any:
         """

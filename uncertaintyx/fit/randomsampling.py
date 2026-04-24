@@ -94,7 +94,7 @@ class Bootstrap(Fitting):
             """
             return np.atleast_1d(np.mean(popt, axis=0))
 
-        def rvar():
+        def zvar():
             """
             Returns the irreducible residual variance associated
             with the dependent variable.
@@ -115,14 +115,14 @@ class Bootstrap(Fitting):
         popt = popt[~np.isnan(popt).any(axis=1)]
         cost = cost[~np.isnan(cost)]
         mean = mean()
-        rvar = rvar()
+        zvar = zvar()
 
         return Result(
             f,
             popt=mean,
             punc=np.atleast_1d(np.std(popt, axis=0, ddof=1)),
             pcov=np.atleast_2d(np.cov(popt.T, ddof=1)),
-            rvar=rvar,
+            zvar=zvar,
             cost=np.mean(cost),
             info=0 if success_count > self._how_many // 2 else 1,
             cost_uncertainty=np.std(cost),
@@ -212,7 +212,7 @@ class MonteCarlo(Fitting):
             """
             return np.atleast_1d(np.mean(popt, axis=0))
 
-        def rvar():
+        def zvar():
             """
             Returns the irreducible residual variance associated
             with the dependent variable.
@@ -234,14 +234,14 @@ class MonteCarlo(Fitting):
         popt = popt[~np.isnan(popt).any(axis=1)]
         cost = cost[~np.isnan(cost)]
         mean = mean()
-        rvar = rvar()
+        zvar = zvar()
 
         return Result(
             f,
             popt=mean,
             punc=np.atleast_1d(np.std(popt, axis=0, ddof=1)),
             pcov=np.atleast_2d(np.cov(popt.T, ddof=1)),
-            rvar=rvar,
+            zvar=zvar,
             cost=np.mean(cost),
             info=0 if success_count > self._how_many // 2 else 1,
             cost_uncertainty=np.std(cost),
