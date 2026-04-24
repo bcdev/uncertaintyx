@@ -128,10 +128,10 @@ def diagonalize(U: np.ndarray) -> np.ndarray:  # noqa: N806
     """
     return np.stack(
         [
-            np.diag(
-                U[i].reshape((-1, np.prod(U.shape[1 + U.ndim // 2 :])))
-            ).reshape(U.shape[1 + U.ndim // 2 :])
-            for i in range(U.shape[0])
+            np.diag(_.reshape((np.prod(_.shape[_.ndim // 2 :]), -1))).reshape(
+                _.shape[_.ndim // 2 :]
+            )
+            for _ in U
         ]
     )
 
