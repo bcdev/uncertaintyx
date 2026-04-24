@@ -55,7 +55,7 @@ class RegressionTest(unittest.TestCase):
         print("popt = ", result.popt)
         print("punc = ", result.punc)
         print("pcov = ", result.pcov)
-        print("rvar = ", result.zvar)
+        print("zvar = ", result.zvar)
         print("cost = ", result.cost)
 
         RegressionPlot(result).plot(
@@ -109,7 +109,7 @@ class RegressionTest(unittest.TestCase):
         print("popt = ", result.popt)
         print("punc = ", result.punc)
         print("pcov = ", result.pcov)
-        print("rvar = ", result.zvar)
+        print("zvar = ", result.zvar)
         print("cost = ", result.cost)
 
         RegressionPlot(result).plot(
@@ -163,7 +163,7 @@ class RegressionTest(unittest.TestCase):
         print("popt = ", result.popt)
         print("punc = ", result.punc)
         print("pcov = ", result.pcov)
-        print("rvar = ", result.zvar)
+        print("zvar = ", result.zvar)
         print("cost = ", result.cost)
 
         RegressionPlot(result).plot(
@@ -216,7 +216,7 @@ class RegressionTest(unittest.TestCase):
         print("popt = ", result.popt)
         print("punc = ", result.punc)
         print("pcov = ", result.pcov)
-        print("rvar = ", result.zvar)
+        print("zvar = ", result.zvar)
         print("cost = ", result.cost)
 
         RegressionPlot(result).plot(
