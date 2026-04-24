@@ -6,10 +6,10 @@ import unittest
 import numpy as np
 
 from uncertaintyx.fit.eiv.numpy import EIV
-from uncertaintyx.interface.core import Result
 from uncertaintyx.m.jax import Linear
 from uncertaintyx.plot.plots import MatrixPlot
 from uncertaintyx.plot.plots import RegressionPlot
+from uncertaintyx.tyx import Result
 
 
 def matrix(result: Result, n: int = 100) -> np.ndarray:

@@ -9,7 +9,7 @@ from typing import Callable
 
 import numpy as np
 
-from ..interface.core import F
+from ..tyx import F
 
 
 class ToF(F, ABC):

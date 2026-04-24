@@ -6,9 +6,9 @@ This module provides regression methods.
 
 import numpy as np
 
-from ..interface.core import Fitting
-from ..interface.core import M
-from ..interface.core import Result
+from ..tyx import Fitting
+from ..tyx import M
+from ..tyx import Result
 
 
 class HomoscedasticRegression(Fitting):

@@ -12,10 +12,10 @@ from uncertaintyx.fit.regression import HeteroHomoscedasticRegression
 from uncertaintyx.fit.regression import HeteroscedasticRegression
 from uncertaintyx.fit.regression import HomoHeteroscedasticRegression
 from uncertaintyx.fit.regression import HomoscedasticRegression
-from uncertaintyx.interface.core import Result
 from uncertaintyx.m.numpy import Linear
 from uncertaintyx.plot.plots import MatrixPlot
 from uncertaintyx.plot.plots import RegressionPlot
+from uncertaintyx.tyx import Result
 
 
 def matrix(result: Result, n: int = 100) -> np.ndarray:

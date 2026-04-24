@@ -14,7 +14,7 @@ import numpy as np
 import torch
 from torch import Tensor
 
-from ..interface.core import M
+from ..tyx import M
 
 
 @torch.compile

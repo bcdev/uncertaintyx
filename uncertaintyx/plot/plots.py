@@ -9,8 +9,8 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
-from ..interface.core import Result
-from ..interface.plotting import Plotting
+from ..plotting import Plotting
+from ..tyx import Result
 
 
 class MatrixPlot(Plotting):
