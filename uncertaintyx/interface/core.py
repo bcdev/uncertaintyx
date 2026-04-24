@@ -237,7 +237,8 @@ class Result:
     - The uncertainty tensor of the optimized parameter values
       :math:`U(p) \in \mathbb{R}^{k \times k}`
     - The irreducible residual variance
-      :math:`v = \|f(p, X) - Y\|^{2} / (M - \|k\|), v \in \mathbb{R}^{n}`
+      :math:`u_{\mu}^{2}(f(p, X) - Y) \in \mathbb{R}^{n}` with
+      :math:`\mu = M - \|k\|` degrees of freedom
     - The value of the cost function at its minimum
     - The exit status, a nonzero value indicating failure
 
@@ -268,7 +269,7 @@ class Result:
         parameter values.
         :param pcov: The uncertainty tensor of the optimized model
         parameter values.
-        :param rvar: The irreducible residual variance.
+        :param rvar: The residual variance.
         :param cost: The value of the cost function at its minimum.
         :param info: The exit status, a nonzero value indicating failure.
         """
@@ -429,14 +430,16 @@ class Result:
     @property
     def yunc_r(self) -> np.ndarray:
         r"""
-        Returns the residual uncertainty :math:`u \in \mathbb{R}^{n}`.
+        Returns the residual standard uncertainty
+        :math:`u_{\mu} \in \mathbb{R}^{n}`.
         """
         return np.sqrt(self._rvar)
 
     @property
     def yvar_r(self) -> np.ndarray:
         r"""
-        Returns the residual variance :math:`u^{2} \in \mathbb{R}^{n}`.
+        Returns the residual variance
+        :math:`u_{\mu}^{2} \in \mathbb{R}^{n}`.
         """
         return self._rvar
 
