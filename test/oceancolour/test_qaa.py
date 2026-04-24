@@ -165,7 +165,7 @@ class QaaTest(unittest.TestCase):
         print("popt = ", result.popt)
         print("punc = ", result.punc)
         print("pcov = ", result.pcov)
-        print("rvar = ", result.zvar)
+        print("zvar = ", result.zvar)
 
         RegressionPlot(result).plot(
             x,
@@ -212,7 +212,7 @@ class QaaTest(unittest.TestCase):
         print("popt = ", result.popt)
         print("punc = ", result.punc)
         print("pcov = ", result.pcov)
-        print("rvar = ", result.zvar)
+        print("zvar = ", result.zvar)
 
         RegressionPlot(result).plot(
             x,
