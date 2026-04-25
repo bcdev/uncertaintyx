@@ -28,7 +28,7 @@ computational workflows.
 > The concept presented here grew out of earlier, project‑specific
 > implementations of AD‑based uncertainty propagation. These implementations
 > enabled multi‑mission remote sensing calibration workflows that
-> underpin fundamental Earth climate data records.
+> underpin fundamental Earth climate data records ([Giering, Quast, Mittaz, et al., 2019](https://doi.org/10.3390/rs11091002)).
 
 ## Synopsis
 
