@@ -160,6 +160,9 @@ def make_lpu(d: int) -> Callable[[Array, Array], Array]:
     return lpu
 ```
 
+**Tyx** hereby acts as a modern bridge, translating the rigorous logic
+of the Law of Propagation of Uncertainty into the high-dimensional,
+tensor-valued language of today’s computational frameworks.
 
 [![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
 [![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
