@@ -500,9 +500,8 @@ class Fitting(ABC):
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
 
-        Concrete implementations of :class:`Fitting` supplied as
-        argument may accept keyword-only parameters for propagation
-        of standard uncertainties::
+        Concrete implementations of :class:`Fitting` may accept
+        keyword-only parameters for standard uncertainties:
 
             fit(f, x, y, *, u: np.ndarray, **kwargs)
             fit(f, x, y, *, ux: np.ndarray, **kwargs)
