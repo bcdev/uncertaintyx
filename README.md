@@ -111,7 +111,7 @@ logical inputs without cluttering the function signature. Organizing
 and assembling these logical inputs into a unified tensor structure is
 the user’s responsibility. In this role, you serve as the *Thalamus*—the
 interface channelling structured data into the computational core
-of **Tyx**.
+of Tyx.
 
 > The batch dimension $M$ enumerates independent samples (e.g.,
 > sensor scans, simulations, ensemble members) but you get to define
