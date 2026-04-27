@@ -302,7 +302,7 @@ class Exponential(ToM):
 
         super().__init__(f)
 
-    def estimate(
+    def prior(
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
@@ -324,7 +324,7 @@ class Linear(ToM):
 
         super().__init__(f)
 
-    def estimate(
+    def prior(
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,

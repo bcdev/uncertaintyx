@@ -101,7 +101,7 @@ class Bootstrap(Fitting):
             """
             return np.var(f.eval(mean, x) - y, axis=0, ddof=mean.size)
 
-        popt = np.full((self._how_many, len(f.estimate())), np.nan)
+        popt = np.full((self._how_many, len(f.prior())), np.nan)
         cost = np.full(self._how_many, np.nan)
         success_count = 0
 
@@ -219,7 +219,7 @@ class MonteCarlo(Fitting):
             """
             return np.var(f.eval(mean, x) - y, axis=0, ddof=mean.size)
 
-        popt = np.full((self._how_many, len(f.estimate())), np.nan)
+        popt = np.full((self._how_many, len(f.prior())), np.nan)
         cost = np.full(self._how_many, np.nan)
         success_count = 0
 

@@ -193,19 +193,19 @@ class M(ABC):
         return lpu_x(x.ndim - 1, self.jac_x(p, x), u, diag)
 
     @abstractmethod
-    def estimate(
+    def prior(
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
         preset: str | None = None,
     ) -> np.ndarray:
         r"""
-        Returns an initial estimate of the model parameters.
+        Returns a prior estimate of the model parameters.
 
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param preset: The name of a specific parameter preset.
-        :returns: An initial estimate of :math:`p \in \mathbb{R}^{k}`.
+        :returns: The prior estimate of :math:`p \in \mathbb{R}^{k}`.
         """
 
     @property
