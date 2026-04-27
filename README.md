@@ -32,6 +32,8 @@ computational workflows.
 > that underpins Earth climate data records
 > ([Quast et al. 2019](https://doi.org/10.3390/rs11050480);
 > [Giering et al., 2019](https://doi.org/10.3390/rs11091002)).
+> [NPL Report CMSC 26/03](https://eprintspublications.npl.co.uk/2828/1/cmsc26.pdf)
+> ranks AD as the most accurate.
 
 ## Synopsis
 
