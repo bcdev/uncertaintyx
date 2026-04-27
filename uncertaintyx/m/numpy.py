@@ -71,7 +71,7 @@ class Exponential(ToM):
         a, b, _ = p
         return a * b * np.exp(b * x)
 
-    def estimate(
+    def prior(
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
@@ -100,7 +100,7 @@ class Linear(ToM):
         a, _ = p
         return np.full_like(x, a)
 
-    def estimate(
+    def prior(
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,

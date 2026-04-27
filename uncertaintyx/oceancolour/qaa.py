@@ -319,7 +319,7 @@ class QAA(ToM):
 
         super().__init__(f, rev_p=False, rev_x=False, jit=jit)
 
-    def estimate(
+    def prior(
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
@@ -365,7 +365,7 @@ class E(ToM):
 
         super().__init__(f)
 
-    def estimate(
+    def prior(
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
@@ -388,7 +388,7 @@ class S(ToM):
 
         super().__init__(f)
 
-    def estimate(
+    def prior(
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,

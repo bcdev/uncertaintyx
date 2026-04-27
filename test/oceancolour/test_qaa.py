@@ -247,7 +247,7 @@ class QaaTest(unittest.TestCase):
 
         f = QAA()
         x = np.stack([W, R, AW, BW], axis=1)
-        p = f.estimate(preset="case1")
+        p = f.prior(preset="case1")
         y = f.eval(p, x)
 
         a = y[0, 0]
@@ -274,7 +274,7 @@ class QaaTest(unittest.TestCase):
 
         f = QAA()
         x = np.stack([W, R, AW, BW], axis=1)
-        p = f.estimate(preset="case2")
+        p = f.prior(preset="case2")
         y = f.eval(p, x)
 
         a = y[0, 0]
@@ -309,7 +309,7 @@ class QaaTest(unittest.TestCase):
             ],
             axis=1,
         )
-        p = f.estimate()
+        p = f.prior()
         y = f.eval(p, x)
 
         A, _, n = read_test_data("test.resources", "a.csv")  # noqa: N806
@@ -351,7 +351,7 @@ class QaaTest(unittest.TestCase):
             ],
             axis=1,
         )
-        p = f.estimate()
+        p = f.prior()
         y = f.eval(p, x)
         self.assertEqual((M, 4, m), y.shape)
 

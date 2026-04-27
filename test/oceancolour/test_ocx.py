@@ -48,7 +48,7 @@ class OCxTest(unittest.TestCase):
         f = CI()
         x = np.stack([W[:, [1, 4, 5]], R[:, [1, 4, 5]]], axis=1)
         u = np.stack([np.broadcast_to(0.5, (M, 3)), u[:, [1, 4, 5]]], axis=1)
-        p = f.estimate()
+        p = f.prior()
         y = f.eval(p, x)
 
         self.assertEqual((M,), y.shape)
@@ -98,7 +98,7 @@ class OCxTest(unittest.TestCase):
         f = OC4()
         x = R[:, 1:-1]
         u = u[:, 1:-1]
-        p = f.estimate()
+        p = f.prior()
         y = f.eval(p, x)
 
         self.assertEqual((M,), y.shape)
@@ -147,7 +147,7 @@ class OCxTest(unittest.TestCase):
         f = OCI()
         x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
         u = np.stack([np.broadcast_to(0.5, (M, 5)), u[:, 1:]], axis=1)
-        p = f.estimate()
+        p = f.prior()
         y = f.eval(p, x)
 
         self.assertEqual((M,), y.shape)

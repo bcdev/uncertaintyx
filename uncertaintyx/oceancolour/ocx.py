@@ -113,7 +113,7 @@ class CI(ToM):
 
         super().__init__(f)
 
-    def estimate(
+    def prior(
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
@@ -160,7 +160,7 @@ class OC4(ToM):
 
         super().__init__(f)
 
-    def estimate(
+    def prior(
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
@@ -282,7 +282,7 @@ class OCI(ToM):
 
         super().__init__(f)
 
-    def estimate(
+    def prior(
         self,
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
@@ -311,7 +311,7 @@ class OCI(ToM):
         return np.concatenate(
             (
                 np.array([0.25, 0.35]),
-                self.m_ci.estimate(x, y),
-                self.m_oc.estimate(x, y, preset),
+                self.m_ci.prior(x, y),
+                self.m_oc.prior(x, y, preset),
             )
         )

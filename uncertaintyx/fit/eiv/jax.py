@@ -308,7 +308,7 @@ class EIV(Fitting):
         """
         popt, pcov, punc, cost, converged = evm(
             f.f,
-            jnp.asarray(f.estimate(x, y)),
+            jnp.asarray(f.prior(x, y)),
             jnp.asarray(x),
             jnp.asarray(y),
             jnp.square(ux) if ux is not None else None,

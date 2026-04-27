@@ -97,7 +97,7 @@ class EIV(Fitting):
             """Wrap for external API compliance."""
             return t(r(f.jac_x(u(p, k_u), u(x.T, m_u)), n_r + m_r))
 
-        p = f.estimate(x, y)
+        p = f.prior(x, y)
 
         k_u = p.shape
         m_u = x.shape
