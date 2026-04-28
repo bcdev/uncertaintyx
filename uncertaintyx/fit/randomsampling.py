@@ -9,7 +9,7 @@ from typing import Any
 
 import numpy as np
 
-from ..tyx import Fit
+from ..tyx import Fitted
 from ..tyx import Fitting
 from ..tyx import M
 from ..tyx import Perturbing
@@ -117,7 +117,7 @@ class Bootstrap(Fitting):
         mean = mean()
         zvar = zvar()
 
-        return Fit(
+        return Fitted(
             f,
             popt=mean,
             pcov=np.atleast_2d(np.cov(popt.T, ddof=1)),
@@ -236,7 +236,7 @@ class MonteCarlo(Fitting):
         mean = mean()
         zvar = zvar()
 
-        return Fit(
+        return Fitted(
             f,
             popt=mean,
             pcov=np.atleast_2d(np.cov(popt.T, ddof=1)),

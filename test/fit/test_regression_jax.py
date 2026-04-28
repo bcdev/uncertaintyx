@@ -15,10 +15,10 @@ from uncertaintyx.fit.regression import HomoscedasticRegression
 from uncertaintyx.m.jax import Linear
 from uncertaintyx.plot.plots import MatrixPlot
 from uncertaintyx.plot.plots import RegressionPlot
-from uncertaintyx.tyx import Fit
+from uncertaintyx.tyx import Fitted
 
 
-def matrix(result: Fit, n: int = 100) -> np.ndarray:
+def matrix(result: Fitted, n: int = 100) -> np.ndarray:
     """
     Returns the variance-covariance matrix of the fitted curve.
     """

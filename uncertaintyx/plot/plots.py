@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
 from ..plotting import Plotting
-from ..tyx import Fit
+from ..tyx import Fitted
 
 
 class MatrixPlot(Plotting):
@@ -96,7 +96,7 @@ class RegressionPlot(Plotting):
 
     def __init__(
         self,
-        result: Fit,
+        result: Fitted,
         context: Literal["paper", "notebook", "talk", "poster"] = "paper",
     ):
         """

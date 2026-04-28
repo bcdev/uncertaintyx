@@ -248,7 +248,11 @@ class Estimate(Mapping):
     """
 
     def __init__(
-        self, zvar: np.ndarray, cost: np.floating, info: int, **kwargs
+        self,
+        zvar: np.ndarray,
+        cost: np.ndarray[tuple[()], np.dtype[np.floating]],
+        info: int | np.ndarray[tuple[int], np.dtype[np.int_]],
+        **kwargs,
     ):
         """
         Creates a new instance of this class.
@@ -276,7 +280,7 @@ class Estimate(Mapping):
         return self._properties.__iter__()
 
     @property
-    def info(self) -> int:
+    def info(self) -> int | np.ndarray[tuple[int], np.dtype[np.int_]]:
         """
         Returns the exit status of the estimation, a nonzero value
         indicating failure.
@@ -284,7 +288,7 @@ class Estimate(Mapping):
         return self.get("info")
 
     @property
-    def cost(self) -> np.floating:
+    def cost(self) -> np.ndarray[tuple[()], np.dtype[np.floating]]:
         """
         Returns the value of the objective function at its minimum.
 
@@ -303,7 +307,7 @@ class Estimate(Mapping):
         return self.get("zvar")
 
 
-class Fit(Estimate):
+class Fitted(Estimate):
     r"""
     The result of a model parameter fitting.
 
@@ -341,7 +345,7 @@ class Fit(Estimate):
         pcov: np.ndarray,
         punc: np.ndarray,
         zvar: np.ndarray,
-        cost: Any,
+        cost: np.ndarray[tuple[()], np.dtype[np.floating]],
         info: int,
         **kwargs,
     ):
@@ -532,7 +536,7 @@ class Fitting(ABC):
     """The fitting interface."""
 
     @abstractmethod
-    def fit(self, f: M, x: np.ndarray, y: np.ndarray, **kwargs) -> Fit:
+    def fit(self, f: M, x: np.ndarray, y: np.ndarray, **kwargs) -> Fitted:
         r"""
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
@@ -554,7 +558,7 @@ class Fitting(ABC):
         """
 
 
-class Retrieval(Estimate):
+class Retrieved(Estimate):
     r"""
     The result of a retrieval.
 
@@ -589,8 +593,8 @@ class Retrieval(Estimate):
         xunc: np.ndarray,
         xcov: np.ndarray,
         zvar: np.ndarray,
-        cost: np.floating,
-        info: int,
+        cost: np.ndarray[tuple[()], np.dtype[np.floating]],
+        info: np.ndarray[tuple[int], np.dtype[np.int_]],
         **kwargs,
     ):
         """
@@ -638,12 +642,12 @@ class Retrieving(ABC):
     @abstractmethod
     def retrieve(
         self, f: F, x: np.ndarray, y: np.ndarray, **kwargs
-    ) -> Retrieval:
+    ) -> Retrieved:
         r"""
         Solves an inverse problem of the form :math:`f(x) = y` for
         :math:`M` samples :math:`(\check{x}_i, y_i)` of data, where
         :math:`\check{x}_i` are prior estimates of the unknown
-        solution :math:`\hat{x}_i`.
+        posterior solution :math:`\hat{x}_i`.
 
         Concrete implementations of :class:`Retrieving` may accept
         keyword-only parameters for standard uncertainties:
@@ -658,7 +662,7 @@ class Retrieving(ABC):
         :param f: The function.
         :param x: Samples :math:`\check{X} \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
-        :returns: The retrieval result.
+        :returns: The retrieved result.
         """
 
 

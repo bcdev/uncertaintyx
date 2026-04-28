@@ -6,7 +6,7 @@ This module provides regression methods.
 
 import numpy as np
 
-from ..tyx import Fit
+from ..tyx import Fitted
 from ..tyx import Fitting
 from ..tyx import M
 
@@ -28,7 +28,7 @@ class HomoscedasticRegression(Fitting):
         """
         self._eiv = eiv
 
-    def fit(self, f: M, x: np.ndarray, y: np.ndarray, **kwargs) -> Fit:
+    def fit(self, f: M, x: np.ndarray, y: np.ndarray, **kwargs) -> Fitted:
         r"""
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i) \in \mathbb{R}^{m \times n}`
@@ -69,7 +69,7 @@ class HomoHeteroscedasticRegression(Fitting):
         *,
         u: np.ndarray,
         **kwargs,
-    ) -> Fit:
+    ) -> Fitted:
         r"""
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
@@ -110,7 +110,7 @@ class HeteroHomoscedasticRegression(Fitting):
         *,
         u: np.ndarray,
         **kwargs,
-    ) -> Fit:
+    ) -> Fitted:
         r"""
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
@@ -154,7 +154,7 @@ class HeteroscedasticRegression(Fitting):
         ux: np.ndarray,
         uy: np.ndarray,
         **kwargs,
-    ) -> Fit:
+    ) -> Fitted:
         r"""
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
