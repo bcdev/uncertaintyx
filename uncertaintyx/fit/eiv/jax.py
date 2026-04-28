@@ -37,7 +37,7 @@ import numpy as np
 import optax
 from jax import Array
 
-from ...tyx import Fit
+from ...tyx import Fitted
 from ...tyx import Fitting
 from ...tyx import M
 
@@ -290,7 +290,7 @@ class EIV(Fitting):
         up: np.ndarray | None = None,
         max_iter: int = 100,
         **kwargs,
-    ) -> Fit:
+    ) -> Fitted:
         r"""
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
@@ -319,14 +319,14 @@ class EIV(Fitting):
             **kwargs,
         )
         popt = np.asarray(popt)
-        rvar = np.var(f.eval(popt, x) - y, axis=0, ddof=popt.size)
+        zvar = np.var(f.eval(popt, x) - y, axis=0, ddof=popt.size)
 
-        return Fit(
+        return Fitted(
             f,
             popt=popt,
             pcov=np.asarray(pcov),
             punc=np.asarray(punc),
-            zvar=rvar,
+            zvar=zvar,
             cost=np.asarray(cost),
             info=0 if converged.item() else 1,
         )
