@@ -2,6 +2,7 @@
 #  License: MIT
 from abc import ABC
 from abc import abstractmethod
+from collections.abc import Mapping
 from typing import Any
 from typing import Callable
 
@@ -205,7 +206,7 @@ class M(ABC):
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param preset: The name of a specific parameter preset.
-        :returns: The prior estimate of :math:`p \in \mathbb{R}^{k}`.
+        :returns: The prior estimate :math:`\check{p} \in \mathbb{R}^{k}`.
         """
 
     @property
@@ -217,9 +218,94 @@ class M(ABC):
         """
 
 
-class Result:
+class Estimate(Mapping):
     r"""
-    The result of a model fitting.
+    The estimate interface.
+
+    An estimate is the result of an optimal  parameter fitting
+    or retrieving estimation.
+
+    Under the same notation and remarks as :class:`F` let
+
+    .. math::
+        f: \mathbb{R}^{M \times m} \to \mathbb{R}^{M \times n},
+        \quad (X) \mapsto f(X)
+
+    be a differentiable function. Then the result of an estimation
+    includes:
+
+    - The irreducible residual variance
+      :math:`u^{2}(\zeta) \in \mathbb{R}^{M \times n}` of
+      residuals :math:`\zeta \in \mathbb{R}^{M \times n}` with
+      :math:`\nu \in \mathbb{N}` estimate-specific residual
+      degrees of freedom.
+    - The value of the objective function at its minimum.
+    - The exit status of the estimation, a nonzero value
+    indicating failure.
+
+    Keyword-only arguments may be used to include custom properties
+    with the estimate.
+    """
+
+    def __init__(
+        self, zvar: np.ndarray, cost: np.floating, info: int, **kwargs
+    ):
+        """
+        Creates a new instance of this class.
+
+        :param zvar: The irreducible residual variance.
+        :param cost: The value of the objective function at its minimum.
+        :param info: The exit status of the estimation.
+        """
+        self._properties: dict[str, Any] = {
+            "zvar": zvar,
+            "cost": cost,
+            "info": info,
+        }
+        self._properties |= {
+            k: v for k, v in kwargs.items() if k not in self._properties
+        }
+
+    def __getitem__(self, key, /):
+        return self._properties.__getitem__(key)
+
+    def __len__(self):
+        return self._properties.__len__()
+
+    def __iter__(self):
+        return self._properties.__iter__()
+
+    @property
+    def info(self) -> int:
+        """
+        Returns the exit status of the estimation, a nonzero value
+        indicating failure.
+        """
+        return self.get("info")
+
+    @property
+    def cost(self) -> np.floating:
+        """
+        Returns the value of the objective function at its minimum.
+
+        The standard convention in maximum likelihood and inverse
+        problem theory implies, that the minimum cost is equal to
+        half the degrees of freedom of the fitting problem, for a
+        closed uncertainty budget.
+        """
+        return self.get("cost")
+
+    @property
+    def zvar(self) -> np.ndarray:
+        """
+        Returns the irreducible residual variance.
+        """
+        return self.get("zvar")
+
+
+class Fit(Estimate):
+    r"""
+    The result of a model parameter fitting.
 
     Under the same notation and remarks as :class:`M` let
 
@@ -230,100 +316,77 @@ class Result:
     be a differentiable model function. Then the result of a model
     fitting includes:
 
-    - The model function :math:`f` itself
-    - The optimized model parameter values :math:`p \in \mathbb{R}^{k}`
-    - The standard uncertainty of the optimized parameter values
-      :math:`u(p) \in \mathbb{R}^{k}`.
-    - The uncertainty tensor of the optimized parameter values
-      :math:`U(p) \in \mathbb{R}^{k \times k}`
+    - The model function :math:`f` itself.
+    - The posterior parameter values :math:`\hat{p} \in \mathbb{R}^{k}`.
+    - The posterior uncertainty tensor
+      :math:`U(\hat{p}) \in \mathbb{R}^{k \times k}`.
+    - The posterior standard uncertainty
+      :math:`u(\hat{p}) \in \mathbb{R}^{k}`.
     - The irreducible residual variance
       :math:`u^{2}(Z) \in \mathbb{R}^{n}` with residuals
-      :math:`Z = f(p, X) - Y \in \mathbb{R}^{n}` and
-      :math:`M - \|k\|` degrees of freedom.
+      :math:`Z = f(\hat{p}, X) - Y \in \mathbb{R}^{n}` and
+      :math:`M - \|k\|` residual degrees of freedom.
     - The value of the objective function at its minimum.
-    - The exit status, a nonzero value indicating failure
+    - The exit status, a nonzero value indicating failure.
 
-    Besides these properties, the class provides functions to
-    propagate uncertainties.
+    Keyword-only arguments may be used to include custom properties
+    with the result. Besides properties, the class provides functions
+    to propagate uncertainty.
     """
 
     def __init__(
         self,
         f: M,
         popt: np.ndarray,
-        punc: np.ndarray,
         pcov: np.ndarray,
+        punc: np.ndarray,
         zvar: np.ndarray,
         cost: Any,
         info: int,
         **kwargs,
     ):
-        r"""
+        """
         Creates a new instance of this class.
 
         Keyword-only arguments may be used to include custom properties
         with the result.
 
         :param f: The model function.
-        :param popt: The optimized model parameter values.
-        :param punc: The uncertainty of the optimized model
-        parameter values.
-        :param pcov: The uncertainty tensor of the optimized model
-        parameter values.
+        :param popt: The posterior parameter values.
+        :param pcov: The posterior uncertainty tensor.
+        :param punc: The posterior standard uncertainty.
         :param zvar: The irreducible residual variance.
         :param cost: The value of the objective function at its minimum.
-        :param info: The exit status, a nonzero value indicating failure.
+        :param info: The exit status.
         """
+        super().__init__(
+            zvar, cost, info, popt=popt, pcov=pcov, punc=punc, **kwargs
+        )
         self._f = f
-        self._popt = popt
-        self._punc = punc
-        self._pcov = pcov
-        self._zvar = zvar
-        self._cost = cost
-        self._info = info
-        self._properties: dict[str, Any] = {}
-        self._properties.update(kwargs)
-
-    @property
-    def cost(self) -> Any:
-        r"""
-        Returns the value of the objective function at its minimum.
-
-        The standard convention in maximum likelihood and inverse
-        problem theory implies, that the minimum cost is equal to
-        half the degrees of freedom of the fitting problem, for a
-        closed uncertainty budget.
-        """
-        return self._cost
-
-    @property
-    def info(self) -> int:
-        """Returns the exit status."""
-        return self._info
 
     @property
     def popt(self) -> np.ndarray:
         r"""
-        Returns the optimized model parameter values
-        :math:`p \in \mathbb{R}^{k}`.
+        Returns the posterior parameter values
+        :math:`\hat{p} \in \mathbb{R}^{k}`.
         """
-        return self._popt
+        return self.get("popt")
 
     @property
     def pcov(self) -> np.ndarray:
         r"""
-        Returns uncertainty tensor of the optimized model parameter
-        values :math:`U(p) \in \mathbb{R}^{k \times k}`.
+        Returns posterior uncertainty tensor
+        :math:`U(\hat{p}) \in \mathbb{R}^{k \times k}`.
         """
-        return self._pcov
+        return self.get("pcov")
 
     @property
     def punc(self) -> np.ndarray:
         r"""
-        Returns the standard uncertainties of the optimized model
-        parameter values :math:`u(p) \in \mathbb{R}^{k}`.
+        Returns the posterior standard uncertainties
+        :math:`u(\hat{p}) \in \mathbb{R}^{k}`.
         """
-        return self._punc
+        return self.get("punc")
 
     def f(self, x: np.ndarray) -> np.ndarray:
         r"""
@@ -341,7 +404,7 @@ class Result:
         r"""
         Evaluates the uncertainty tensor of the fitted
         model function values due to the uncertainty of
-        model parameters.
+        posterior parameters.
 
         Under the same notation as :meth:`f`:
 
@@ -354,7 +417,7 @@ class Result:
         r"""
         Evaluates the standard uncertainty of the fitted
         model function values due to the uncertainty of
-        model parameters.
+        posterior parameters.
 
         Under the same notation as :meth:`f`:
 
@@ -365,8 +428,8 @@ class Result:
 
     def yvar_p(self, x: np.ndarray) -> np.ndarray:
         r"""
-        Evaluates the variance of the fitted model function
-        values due to the uncertainty of model parameters.
+        Evaluates the variance of the fitted model function values
+        due to the uncertainty of posterior parameters.
 
         Under the same notation as :meth:`f`:
 
@@ -433,8 +496,8 @@ class Result:
     ) -> np.ndarray:
         r"""
         Evaluates the total standard uncertainty of the fitted
-        model function values due to the uncertainty of model
-        parameters and inputs, and residual variance.
+        model function values due to the uncertainty of posterior
+        parameters, inputs, and residual variance.
 
         Under the same notation as :meth:`f` and :meth:`ycov_x`:
 
@@ -464,38 +527,12 @@ class Result:
             + self.zvar
         )
 
-    @property
-    def zunc(self) -> np.ndarray:
-        r"""
-        Returns the irreducible residual standard uncertainty
-        :math:`u(Z) \in \mathbb{R}^{n}`.
-        """
-        return np.sqrt(self._zvar)
-
-    @property
-    def zvar(self) -> np.ndarray:
-        r"""
-        Returns the irreducible residual variance
-        :math:`u^{2}(Z) \in \mathbb{R}^{n}`.
-        """
-        return self._zvar
-
-    def property(self, name: str) -> Any:
-        """
-        Returns the value of a property.
-
-        :param name: The name of the property.
-        :returns: The value of the property or `None` if the property
-        is not defined.
-        """
-        return self._properties.get(name, None)
-
 
 class Fitting(ABC):
     """The fitting interface."""
 
     @abstractmethod
-    def fit(self, f: M, x: np.ndarray, y: np.ndarray, **kwargs) -> Result:
+    def fit(self, f: M, x: np.ndarray, y: np.ndarray, **kwargs) -> Fit:
         r"""
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
@@ -514,6 +551,114 @@ class Fitting(ABC):
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :returns: The fit result.
+        """
+
+
+class Retrieval(Estimate):
+    r"""
+    The result of a retrieval.
+
+    Under the same notation and remarks as :class:`F` let
+
+    .. math::
+        f: \mathbb{R}^{M \times m} \to \mathbb{R}^{M \times n},
+        \quad (X) \mapsto f(X)
+
+    be a differentiable function. Then the result of a retrieval
+    includes:
+
+    - The posterior estimate :math:`\hat{X} \in \mathbb{R}^{M \times m}`.
+    - The posterior standard uncertainty
+      :math:`u(\hat{X}) \in \mathbb{R}^{M \times m}`.
+    - The posterior uncertainty tensor
+      :math:`U(\hat{X}) \in \mathbb{R}^{M \times m \times m}`.
+    - The irreducible residual variance
+      :math:`u^{2}(Z) \in \mathbb{R}^{M \times n}` of residuals
+      :math:`Z = f(\hat{X}) - Y \in \mathbb{R}^{M \times n}` with
+      :math:`M(n - m)` residual degrees of freedom.
+    - The value of the objective function at its minimum.
+    - The exit status, a nonzero value indicating failure.
+
+    Keyword-only arguments may be used to include custom properties
+    with the retrieval.
+    """
+
+    def __init__(
+        self,
+        xopt: np.ndarray,
+        xunc: np.ndarray,
+        xcov: np.ndarray,
+        zvar: np.ndarray,
+        cost: np.floating,
+        info: int,
+        **kwargs,
+    ):
+        """
+        Creates a new instance of this class.
+
+        :param xopt: The posterior estimate.
+        :param xcov: The posterior uncertainty tensor.
+        :param xunc: The posterior uncertainty.
+        :param zvar: The irreducible residual variance.
+        :param cost: The value of the objective function at its minimum.
+        :param info: The exit status.
+        """
+        super().__init__(
+            zvar, cost, info, xopt=xopt, xcov=xcov, xunc=xunc, **kwargs
+        )
+
+    @property
+    def xopt(self) -> np.ndarray:
+        r"""
+        Returns the posterior estimate
+        :math:`\hat{X} \in \mathbb{R}^{M \time m}`.
+        """
+        return self.get("xopt")
+
+    @property
+    def xcov(self) -> np.ndarray:
+        r"""
+        Returns posterior uncertainty tensor
+        :math:`U(\hat{X}) \in \mathbb{R}^{M \times m \times m}`.
+        """
+        return self.get("xcov")
+
+    @property
+    def xunc(self) -> np.ndarray:
+        r"""
+        Returns the posterior standard uncertainties
+        :math:`u(\hat{X}) \in \mathbb{R}^{M \time m}`.
+        """
+        return self.get("xunc")
+
+
+class Retrieving(ABC):
+    """The retrieving interface."""
+
+    @abstractmethod
+    def retrieve(
+        self, f: F, x: np.ndarray, y: np.ndarray, **kwargs
+    ) -> Retrieval:
+        r"""
+        Solves an inverse problem of the form :math:`f(x) = y` for
+        :math:`M` samples :math:`(\check{x}_i, y_i)` of data, where
+        :math:`\check{x}_i` are prior estimates of the unknown
+        solution :math:`\hat{x}_i`.
+
+        Concrete implementations of :class:`Retrieving` may accept
+        keyword-only parameters for standard uncertainties:
+
+            retrieve(f, x, y, *, u: np.ndarray, **kwargs)
+            retrieve(f, x, y, *, ux: np.ndarray, **kwargs)
+            retrieve(f, x, y, *, uy: np.ndarray, **kwargs)
+            retrieve(f, x, y, *, ux: np.ndarray, uy: np.ndarray, **kwargs)
+
+        Under the same notation and remarks as :class:`F`:
+
+        :param f: The function.
+        :param x: Samples :math:`\check{X} \in \mathbb{R}^{M \times m}`.
+        :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
+        :returns: The retrieval result.
         """
 
 

@@ -16,7 +16,7 @@ from uncertaintyx.oceancolour.qaa import QAA
 from uncertaintyx.oceancolour.qaa import S
 from uncertaintyx.plot.plots import MatrixPlot
 from uncertaintyx.plot.plots import RegressionPlot
-from uncertaintyx.tyx import Result
+from uncertaintyx.tyx import Fit
 
 AW = np.array([[0.00473, 0.00635, 0.01500, 0.03250, 0.05960, 0.43900]])
 """
@@ -40,7 +40,7 @@ Reference: https://www.ioccg.org/groups/Software_OCA/QAA_v6.xlsm
 """
 
 
-def matrix(result: Result, a: Any, b: Any, n: int = 1000) -> np.ndarray:
+def matrix(result: Fit, a: Any, b: Any, n: int = 1000) -> np.ndarray:
     """
     Returns the variance-covariance matrix of the fitted curve.
     """

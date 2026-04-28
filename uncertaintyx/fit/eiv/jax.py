@@ -37,9 +37,9 @@ import numpy as np
 import optax
 from jax import Array
 
+from ...tyx import Fit
 from ...tyx import Fitting
 from ...tyx import M
-from ...tyx import Result
 
 DEFAULT_MAX_D: Any = 1.0e-08
 """The maximum L2 norm of the parameter step allowed for convergence."""
@@ -81,20 +81,20 @@ def evm(
         U(Y) \in \mathbb{R}^{M \times n \times n}, \quad
         U(Y) \in \mathbb{R}^{M \times n},
 
-        U(p) \in \mathbb{R}^{k \times k}, \quad
-        U(p) \in \mathbb{R}^{k},
+        U(\check{p}) \in \mathbb{R}^{k \times k}, \quad
+        U(\check{p}) \in \mathbb{R}^{k},
 
     Standard uncertainty is not accepted and must be squared to
     a variance (diagonal uncertainty tensor) before supplied as
     argument. Otherwise, under the same notation as :class:`EIV`:
 
     :param f: The model function.
-    :param p: Parameters :math:`p \in \mathbb{R}^{k}`.
+    :param p: Prior parameter values :math:`\check{p} \in \mathbb{R}^{k}`.
     :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
     :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
     :param ux: Uncertainty tensor :math:`U(X)`, full or diagonal.
     :param uy: Uncertainty tensor :math:`U(Y)`, full or diagonal.
-    :param up: Uncertainty tensor :math:`U(p)`, full or diagonal.
+    :param up: Uncertainty tensor :math:`U(\check{p})`, full or diagonal.
     :param max_i: The maximum number of iterations allowed.
     :param max_d: The maximum L2 norm of the parameter step allowed
     for convergence
@@ -235,8 +235,8 @@ def evm(
         """
         Optimizes the parameters.
 
-        :param p: The initial parameter values.
-        :returns: The optimized parameter values, the cost, and the
+        :param p: The prior parameter values.
+        :returns: The posterior parameter values, the cost, and the
         convergence status.
         """
         tree = optimizer.init(p)
@@ -247,11 +247,10 @@ def evm(
 
     def post(p: Array) -> tuple[Array, Array]:
         """
-        Computes posterior parameter uncertainty.
+        Computes posterior uncertainty.
 
-        :param p: The optimized parameter values.
-        :returns: The posterior parameter uncertainty tensor and parameter
-        standard uncertainties.
+        :param p: The posterior parameter values.
+        :returns: The posterior uncertainty tensor and standard uncertainty.
         """
         hess = jax.hessian(S)
         pcov = jli.pinv(hess(p).reshape(p.size, -1))
@@ -287,10 +286,11 @@ class EIV(Fitting):
         *,
         ux: np.ndarray | None = None,
         uy: np.ndarray | None = None,
+        p: np.ndarray | None = None,
         up: np.ndarray | None = None,
         max_iter: int = 100,
         **kwargs,
-    ) -> Result:
+    ) -> Fit:
         r"""
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
@@ -302,13 +302,14 @@ class EIV(Fitting):
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param ux: Standard uncertainties :math:`u(X)`.
         :param uy: Standard uncertainties :math:`u(Y)`.
-        :param up: Standard uncertainties :math:`u(p)`.
+        :param p: Prior model parameter values :math:`\check{p}`.
+        :param up: Prior standard uncertainties :math:`u(\check{p})`.
         :param max_iter: The maximum number of iterations conducted.
         :returns: The fit result.
         """
         popt, pcov, punc, cost, converged = evm(
             f.f,
-            jnp.asarray(f.prior(x, y)),
+            jnp.asarray(p if p is not None else f.prior(x, y)),
             jnp.asarray(x),
             jnp.asarray(y),
             jnp.square(ux) if ux is not None else None,
@@ -320,11 +321,11 @@ class EIV(Fitting):
         popt = np.asarray(popt)
         rvar = np.var(f.eval(popt, x) - y, axis=0, ddof=popt.size)
 
-        return Result(
+        return Fit(
             f,
             popt=popt,
-            punc=np.asarray(punc),
             pcov=np.asarray(pcov),
+            punc=np.asarray(punc),
             zvar=rvar,
             cost=np.asarray(cost),
             info=0 if converged.item() else 1,
