@@ -16,9 +16,9 @@ Softw. 15, 348–364. https://doi.org/10.1145/76909.76913.
 import numpy as np
 import odrpack
 
+from ...tyx import Fit
 from ...tyx import Fitting
 from ...tyx import M
-from ...tyx import Result
 
 
 class EIV(Fitting):
@@ -40,7 +40,7 @@ class EIV(Fitting):
         uy: np.ndarray | None = None,
         max_iter: int = 100,
         **kwargs,
-    ) -> Result:
+    ) -> Fit:
         r"""
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
@@ -125,11 +125,11 @@ class EIV(Fitting):
         zvar = np.var(f.eval(popt, x) - y, axis=0, ddof=popt.size)
         cost = 0.5 * res.sum_square  # standard convention
 
-        return Result(
+        return Fit(
             f,
             popt=popt,
-            punc=punc,
             pcov=pcov,
+            punc=punc,
             zvar=zvar,
             cost=cost,
             info=0 if res.info < 4 else 1,

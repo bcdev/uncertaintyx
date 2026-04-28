@@ -9,10 +9,10 @@ from typing import Any
 
 import numpy as np
 
+from ..tyx import Fit
 from ..tyx import Fitting
 from ..tyx import M
 from ..tyx import Perturbing
-from ..tyx import Result
 
 
 class Bootstrap(Fitting):
@@ -117,11 +117,11 @@ class Bootstrap(Fitting):
         mean = mean()
         zvar = zvar()
 
-        return Result(
+        return Fit(
             f,
             popt=mean,
-            punc=np.atleast_1d(np.std(popt, axis=0, ddof=1)),
             pcov=np.atleast_2d(np.cov(popt.T, ddof=1)),
+            punc=np.atleast_1d(np.std(popt, axis=0, ddof=1)),
             zvar=zvar,
             cost=np.mean(cost),
             info=0 if success_count > self._how_many // 2 else 1,
@@ -236,11 +236,11 @@ class MonteCarlo(Fitting):
         mean = mean()
         zvar = zvar()
 
-        return Result(
+        return Fit(
             f,
             popt=mean,
-            punc=np.atleast_1d(np.std(popt, axis=0, ddof=1)),
             pcov=np.atleast_2d(np.cov(popt.T, ddof=1)),
+            punc=np.atleast_1d(np.std(popt, axis=0, ddof=1)),
             zvar=zvar,
             cost=np.mean(cost),
             info=0 if success_count > self._how_many // 2 else 1,
