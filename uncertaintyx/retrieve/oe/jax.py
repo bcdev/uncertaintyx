@@ -23,13 +23,13 @@ from ...tyx import F
 from ...tyx import Retrieved
 from ...tyx import Retrieving
 
-DEFAULT_MAX_D: Any = 1.0e-08
+DEFAULT_MAX_D: Any = 1.0e-12
 """The maximum L2 norm of the parameter step allowed for convergence."""
 
-DEFAULT_MAX_G: Any = 1.0e-06
+DEFAULT_MAX_G: Any = 0.0
 """The maximum infinity norm of the gradient allowed for convergence."""
 
-DEFAULT_MAX_I: int = 100
+DEFAULT_MAX_I: int = 2000
 """The maximum number of iterations permitted."""
 
 
@@ -75,27 +75,26 @@ def oe_sample(
     :returns: The retrieval result.
     """
 
-    def loss(x: Array, y: Array, ux: Array, uy: Array) -> Array:
+    def loss(q: Array, y: Array, u: Array) -> Array:
         r"""
         The loss function.
 
-        :param x: The sample :math:`x \in \mathbb{R}^{m}`.
+        :param q: The sample :math:`x \in \mathbb{R}^{m}`.
         :param y: The sample :math:`y \in \mathbb{R}^{n}`.
-        :param ux: :math:`U(x) \in \mathbb{R}^{m \times m}`.
-        :param uy: :math:`U(y) \in \mathbb{R}^{n \times n}`.
+        :param u: :math:`U(y) \in \mathbb{R}^{n \times n}`.
         :returns: The sample loss.
         """
-        d = f(x) - y
-        if uy.ndim == y.ndim or not covar:
+        d = f(q) - y
+        if u.ndim == y.ndim or not covar:
             U = (  # noqa: N806
-                uy
-                if uy.ndim == y.ndim
-                else jnp.diag(uy.reshape((d.size, -1))).reshape(y.shape)
+                u
+                if u.ndim == y.ndim
+                else jnp.diag(u.reshape((d.size, -1))).reshape(y.shape)
             )
             b = d / U
         else:
             d = d.reshape(-1)
-            U = uy.reshape((y.size, -1))  # noqa: N806
+            U = u.reshape((y.size, -1))  # noqa: N806
             b = jla.cho_solve(jla.cho_factor(U), d)
         return 0.5 * jnp.sum(d * b)
 
@@ -114,15 +113,15 @@ def oe_sample(
         )
         return 0.5 * jnp.sum(d * b)
 
-    def S(x: Array) -> Array:  # noqa: N806
+    def S(q: Array) -> Array:  # noqa: N806
         """
         The cost (or misfit) function to minimize.
 
-        :param x: The sample.
+        :param q: The sample.
         :returns: The cost.
         """
-        loss_term = loss(x, y, ux, uy)
-        return loss_term if ux is None else loss_term + prior(x)
+        loss_term = loss(q, y, uy)
+        return loss_term if ux is None else loss_term + prior(q)
 
     def cond(carry: tuple[Any, ...]) -> Array:
         """
@@ -267,7 +266,7 @@ class OE(Retrieving):
         *,
         ux: np.ndarray | None = None,
         uy: np.ndarray | None = None,
-        max_i: int = 100,
+        max_i: int = DEFAULT_MAX_I,
         **kwargs,
     ) -> Retrieved:
         r"""
@@ -311,6 +310,6 @@ class OE(Retrieving):
             xcov=np.asarray(xcov),
             xunc=np.asarray(xunc),
             zvar=zvar,
-            cost=np.asarray(cost),
+            cost=np.asarray(jnp.sum(cost)),
             info=np.asarray(jnp.where(converged, 0, 1)),
         )
