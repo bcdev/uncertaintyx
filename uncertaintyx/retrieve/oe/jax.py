@@ -229,6 +229,7 @@ def oe_batch(
     """
 
     def oe(x, y, ux, uy):
+        """Single-sample OE without explicit keyword-only arguments."""
         return oe_sample(
             f,
             x,
