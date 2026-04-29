@@ -38,7 +38,7 @@ computational workflows.
 
 **Uncertaintyx** (or just **Tyx**) is a lightweight framework for tensor‑level
 uncertainty propagation, fitting of empirical or physics-informed models, and
-metrology‑aware workflows. It produces uncertainty tensors by combining
+metrology‑aware retrievals. It produces uncertainty tensors by combining
 tensor‑valued models with AD backends such as [JAX](https://docs.jax.dev/).
 Conventional [NumPy](https://numpy.org)
 acts as a bidirectional interoperability layer, enabling JAX‑based code
