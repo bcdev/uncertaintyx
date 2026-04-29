@@ -23,11 +23,11 @@ from ...tyx import M
 
 class EIV(Fitting):
     """
-    Errors-in-variables implementation based on orthogonal
+    Errors-in-variables optimizer based on orthogonal
     distance regression (ODR).
 
-    This implementation is intended for problems with up to
-    :math:`10^4` to :math:`10^5` data points.
+    This implementation is intended for problems with
+    up to :math:`10^4` to :math:`10^5` data points.
     """
 
     def fit(
