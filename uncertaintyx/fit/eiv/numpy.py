@@ -38,7 +38,7 @@ class EIV(Fitting):
         *,
         ux: np.ndarray | None = None,
         uy: np.ndarray | None = None,
-        max_iter: int = 100,
+        max_i: int = 100,
         **kwargs,
     ) -> Fitted:
         r"""
@@ -52,7 +52,7 @@ class EIV(Fitting):
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param ux: Standard uncertainties :math:`u(X)`.
         :param uy: Standard uncertainties :math:`u(Y)`.
-        :param max_iter: The maximum number of iterations conducted.
+        :param max_i: The maximum number of iterations conducted.
         :returns: The fit result.
         """
 
@@ -115,7 +115,7 @@ class EIV(Fitting):
             weight_y=r(w(uy), n_r).T if uy is not None else None,
             jac_beta=jac_p,
             jac_x=jac_x,
-            maxit=max_iter,
+            maxit=max_i,
             **kwargs,
         )
 
@@ -123,7 +123,7 @@ class EIV(Fitting):
         punc = u(res.sd_beta, k_u)
         pcov = u(res.cov_beta * res.res_var, k_u + k_u)
         zvar = np.var(f.eval(popt, x) - y, axis=0, ddof=popt.size)
-        cost = 0.5 * res.sum_square  # standard convention
+        cost = np.asarray(0.5 * res.sum_square)  # standard convention
 
         return Fitted(
             f,
