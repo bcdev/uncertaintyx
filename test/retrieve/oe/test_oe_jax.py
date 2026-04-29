@@ -107,8 +107,8 @@ class OptimalEstimationTest(unittest.TestCase):
     def test_different_powers(self):
         """
         The different power function has a unique minimum at zero.
-        Only the value of the cost function is tested, since the
-        problem is badly scaled.
+        Only the value of the cost function is tested here, since
+        the problem is badly scaled.
         """
         f = DifferentPowers()
 
