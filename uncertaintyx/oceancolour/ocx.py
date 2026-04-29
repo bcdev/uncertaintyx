@@ -61,7 +61,7 @@ class CI(ToM):
             """
 
             def maybe_convert(g, G):  # noqa: N806
-                """
+                r"""
                 Converts remote sensing reflectance in the green
                 waveband, if its central wavelength is not within
                 :math:`555 \pm 2 \mathrm{nm}`.
