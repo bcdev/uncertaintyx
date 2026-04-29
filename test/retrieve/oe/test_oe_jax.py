@@ -36,6 +36,11 @@ class OptimalEstimationTest(unittest.TestCase):
         result = OE().retrieve(Parabola(), x, y)
 
         self.assertTrue(np.all(result.info == 0))
+        self.assertTrue(np.allclose(result.xopt, 0.0))
+        self.assertTrue(np.allclose(result.xcov, 0.0))
+        self.assertTrue(np.allclose(result.xunc, 0.0))
+        self.assertTrue(np.allclose(result.zvar, 0.0))
+        self.assertTrue(np.allclose(result.cost, 0.0))
 
 
 if __name__ == "__main__":
