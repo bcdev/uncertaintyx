@@ -44,10 +44,10 @@ from ...tyx import M
 DEFAULT_MAX_D: Any = 1.0e-08
 """The maximum L2 norm of the parameter step allowed for convergence."""
 
-DEFAULT_MAX_G: Any = 1.0e-06
+DEFAULT_MAX_G: Any = 1.0e-07
 """The maximum infinity norm of the gradient allowed for convergence."""
 
-DEFAULT_MAX_I: int = 100
+DEFAULT_MAX_I: int = 200
 """The maximum number of iterations permitted."""
 
 
@@ -279,7 +279,7 @@ class EIV(Fitting):
         uy: np.ndarray | None = None,
         p: np.ndarray | None = None,
         up: np.ndarray | None = None,
-        max_i: int = 100,
+        max_i: int = DEFAULT_MAX_I,
         **kwargs,
     ) -> Fitted:
         r"""
