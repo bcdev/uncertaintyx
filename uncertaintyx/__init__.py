@@ -3,10 +3,16 @@
 
 __version__ = "2026.1.0"
 
-import jax
+try:
+    import jax
 
-jax.config.update("jax_enable_x64", True)
+    jax.config.update("jax_enable_x64", True)
+except ImportError:
+    pass  # ignore
 
-import torch
+try:
+    import torch
 
-torch.set_default_dtype(torch.float64)
+    torch.set_default_dtype(torch.float64)
+except ImportError:
+    pass  # ignore
