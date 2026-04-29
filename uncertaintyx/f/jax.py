@@ -168,3 +168,109 @@ class ToF(F):
     @property
     def f(self) -> Callable[[Array], Array]:
         return self._f
+
+
+class Sphere(ToF):
+    """
+    A test function.
+
+    The test function has a global minimum at zero.
+    """
+
+    def __init__(self):
+        def f(x):
+            """The test function."""
+            return jnp.sum(jnp.square(x))
+
+        super().__init__(f)
+
+
+class Ellipsoid(ToF):
+    """
+    A test function.
+
+    The test function has a global minimum at zero.
+    All axes are scaled differently.
+    """
+
+    def __init__(self):
+        def f(x):
+            """The test function."""
+            m = x.size
+            p = jnp.pow(1.0e06, jnp.arange(0, m) / (m - 1))
+            return jnp.sum(p * jnp.square(x))
+
+        super().__init__(f)
+
+
+class Cigar(ToF):
+    """
+    A test function.
+
+    The test function has a global minimum at zero.
+    All but one axes are scaled extremely.
+    """
+
+    def __init__(self):
+        def f(x):
+            """The test function."""
+            a = jnp.sum(jnp.square(x[:1]))
+            b = jnp.sum(jnp.square(x[1:]))
+            return a + 1.0e06 * b
+
+        super().__init__(f)
+
+
+class Tablet(ToF):
+    """
+    A test function.
+
+    The test function has a global minimum at zero.
+    One axis is scaled extremely.
+    """
+
+    def __init__(self):
+        def f(x):
+            """The test function."""
+            a = jnp.sum(jnp.square(x[:1]))
+            b = jnp.sum(jnp.square(x[1:]))
+            return 1.0e06 * a + b
+
+        super().__init__(f)
+
+
+class Rosenbrock(ToF):
+    """
+    The Rosenbrock test function.
+
+    The Rosenbrock function has a global and a local minimum.
+    """
+
+    def __init__(self):
+        def f(x):
+            """The Rosenbrock test function."""
+            a = jnp.square(x[1:] - jnp.square(x[:-1]))
+            b = jnp.square(1.0 - x[:-1])
+            return jnp.sum(100.0 * a + b)
+
+        super().__init__(f)
+
+
+class DifferentPowers(ToF):
+    """
+    A test function.
+
+    The test function has a global minimum at zero.
+    Axes are badly scaled.
+    """
+
+    def __init__(self):
+        def f(x):
+            """The test function."""
+            m = x.size
+            p = jnp.pow(
+                jnp.square(x), 1.0 + (5.0 * jnp.arange(0, m)) / (m - 1)
+            )
+            return jnp.sum(p)
+
+        super().__init__(f)
