@@ -61,27 +61,23 @@ def evm(
     uy: Array,
     up: Array | None = None,
     *,
+    covar: bool = False,
     max_i: int = DEFAULT_MAX_I,
     max_d: Any = DEFAULT_MAX_D,
     max_g: Any = DEFAULT_MAX_G,
-    covar: bool = False,
 ) -> tuple[Array, Array, Array, Array, Array]:
     r"""
-    Limited-memory Broyden-Fletcher-Goldfarb-Shanno (L-BFGS)
-    optimizer minimizing an EVM objective function.
+    Bayesian effective variance method (EVM) with a limited-memory
+    Broyden-Fletcher-Goldfarb-Shanno (L-BFGS) optimizer.
 
     This implementation accepts any combination of full-rank
     or diagonal-rank uncertainty tensors:
-
-    .. math::
-        U(X) \in \mathbb{R}^{M \times m \times m}, \quad
-        U(X) \in \mathbb{R}^{M \times m},
-
-        U(Y) \in \mathbb{R}^{M \times n \times n}, \quad
-        U(Y) \in \mathbb{R}^{M \times n},
-
-        U(\check{p}) \in \mathbb{R}^{k \times k}, \quad
-        U(\check{p}) \in \mathbb{R}^{k},
+    :math:`U(X) \in \mathbb{R}^{M \times m \times m}`,
+    :math:`U(X) \in \mathbb{R}^{M \times m}`,
+    :math:`U(Y) \in \mathbb{R}^{M \times n \times n}`,
+    :math:`U(Y) \in \mathbb{R}^{M \times n}`,
+    :math:`U(\check{p}) \in \mathbb{R}^{k \times k}`, and
+    :math:`U(\check{p}) \in \mathbb{R}^{k}`.
 
     Standard uncertainty is not accepted and must be squared to
     a variance (diagonal uncertainty tensor) before supplied as
@@ -94,10 +90,10 @@ def evm(
     :param ux: Uncertainty tensor :math:`U(X)`, full or diagonal.
     :param uy: Uncertainty tensor :math:`U(Y)`, full or diagonal.
     :param up: Uncertainty tensor :math:`U(\check{p})`, full or diagonal.
+    :param covar: Consider covariance?
     :param max_i: The maximum number of iterations allowed.
     :param max_d: The maximum norm of the update allowed for convergence
     :param max_g: The maximum norm of the gradient allowed for convergence.
-    :param covar: Use effective covariance, too.
     :returns: The fit result.
     """
 
@@ -158,15 +154,15 @@ def evm(
             U = upd(x.ndim, G, ux) + (  # noqa: N806
                 uy
                 if uy.ndim == y.ndim
-                else jnp.diag(uy.reshape((d.size, -1))).reshape(d.shape)
+                else jnp.diag(uy.reshape((y.size, -1))).reshape(y.shape)
             )
             b = d / U
         else:
             d = d.reshape(-1)
-            U = upc(x.ndim, G, ux).reshape((d.size, -1)) + (  # noqa: N806
+            U = upc(x.ndim, G, ux).reshape((y.size, -1)) + (  # noqa: N806
                 jnp.diag(uy.reshape(-1))
                 if uy.ndim == y.ndim
-                else uy.reshape((d.size, -1))
+                else uy.reshape((y.size, -1))
             )
             b = jla.cho_solve(jla.cho_factor(U), d)
         return 0.5 * jnp.sum(d * b)
@@ -252,11 +248,11 @@ def evm(
         punc = jnp.sqrt(jnp.diag(pcov))
         return pcov.reshape(p.shape + p.shape), punc.reshape(p.shape)
 
+    optimizer = optax.lbfgs()
     if ux is None:
         ux = jnp.broadcast_to(1.0, x.shape)
     if uy is None:
         uy = jnp.broadcast_to(1.0, y.shape)
-    optimizer = optax.lbfgs()
     cost_and_grad = optax.value_and_grad_from_state(S)
     popt, cost, converged = opti(p)
     pcov, punc = post(popt)
@@ -266,11 +262,11 @@ def evm(
 
 class EIV(Fitting):
     """
-    Errors-in-variables implementation based on the effective
+    Bayesian errors-in-variables optimizer based on the effective
     variance method (EVM).
 
-    This implementation is intended for large scale problems
-    with up to millions of data points.
+    This implementation is intended for large scale problems with
+    up to millions of data points.
     """
 
     def fit(
