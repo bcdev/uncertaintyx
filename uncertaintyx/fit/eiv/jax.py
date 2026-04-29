@@ -67,9 +67,8 @@ def evm(
     covar: bool = False,
 ) -> tuple[Array, Array, Array, Array, Array]:
     r"""
-    Implementation of the effective variance method (EVM) with
-    a limited-memory Broyden-Fletcher-Goldfarb-Shanno (L-BFGS)
-    optimizer.
+    Limited-memory Broyden-Fletcher-Goldfarb-Shanno (L-BFGS)
+    optimizer minimizing an EVM objective function.
 
     This implementation accepts any combination of full-rank
     or diagonal-rank uncertainty tensors:
@@ -96,14 +95,10 @@ def evm(
     :param uy: Uncertainty tensor :math:`U(Y)`, full or diagonal.
     :param up: Uncertainty tensor :math:`U(\check{p})`, full or diagonal.
     :param max_i: The maximum number of iterations allowed.
-    :param max_d: The maximum L2 norm of the parameter step allowed
-    for convergence
-    :param max_g: The maximum infinity norm of the gradient allowed
-    for convergence.
+    :param max_d: The maximum norm of the update allowed for convergence
+    :param max_g: The maximum norm of the gradient allowed for convergence.
     :param covar: Use effective covariance, too.
-    :returns: The fit result comprising: the optimized parameter
-    values, the parameter uncertainty tensor, parameter standard
-    uncertainties, the cost, and the convergence status.
+    :returns: The fit result.
     """
 
     def g(q: Array, x: Array) -> Array:
@@ -288,7 +283,7 @@ class EIV(Fitting):
         uy: np.ndarray | None = None,
         p: np.ndarray | None = None,
         up: np.ndarray | None = None,
-        max_iter: int = 100,
+        max_i: int = 100,
         **kwargs,
     ) -> Fitted:
         r"""
@@ -304,7 +299,7 @@ class EIV(Fitting):
         :param uy: Standard uncertainties :math:`u(Y)`.
         :param p: Prior model parameter values :math:`\check{p}`.
         :param up: Prior standard uncertainties :math:`u(\check{p})`.
-        :param max_iter: The maximum number of iterations conducted.
+        :param max_i: The maximum number of iterations conducted.
         :returns: The fit result.
         """
         popt, pcov, punc, cost, converged = evm(
@@ -315,7 +310,7 @@ class EIV(Fitting):
             jnp.square(ux) if ux is not None else None,
             jnp.square(uy) if uy is not None else None,
             jnp.square(up) if up is not None else None,
-            max_i=max_iter,
+            max_i=max_i,
             **kwargs,
         )
         popt = np.asarray(popt)
