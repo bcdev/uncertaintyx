@@ -41,6 +41,7 @@ dependencies = [
     "numpy",
     "odrpack",
     "optax",
+    "optimistix",
     "pandas",
     "seaborn",
     "torch",

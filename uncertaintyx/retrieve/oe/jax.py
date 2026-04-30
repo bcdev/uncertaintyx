@@ -16,24 +16,24 @@ import jax.numpy as jnp
 import jax.numpy.linalg as jli
 import numpy as np
 import optax
-from jax import Array
+import optimistix
 from jax import Array
 
 from ...tyx import F
 from ...tyx import Retrieved
 from ...tyx import Retrieving
 
-DEFAULT_MAX_D: Any = 1.0e-12
-"""The maximum L2 norm of the parameter step allowed for convergence."""
+DEFAULT_ATOL: Any = 1.0e-12
+"""The absolute tolerance for terminating the optimization."""
 
-DEFAULT_MAX_G: Any = 0.0
-"""The maximum infinity norm of the gradient allowed for convergence."""
+DEFAULT_RTOL: Any = 1.0e-08
+"""The relative tolerance for terminating the optimization."""
 
-DEFAULT_MAX_I: int = 2000
-"""The maximum number of iterations permitted."""
+DEFAULT_MAX_STEPS: int = 2048
+"""The maximum number of steps the optimizer can take."""
 
 
-@jax.jit(static_argnums=(0,))
+@jax.jit(static_argnums=(0,), static_argnames=("max_steps",))
 def oe_sample(
     f: Callable[[Array], Array],
     x: Array,
@@ -41,9 +41,9 @@ def oe_sample(
     ux: Array | None = None,
     uy: Array | None = None,
     *,
-    max_i: int = DEFAULT_MAX_I,
-    max_d: Any = DEFAULT_MAX_D,
-    max_g: Any = DEFAULT_MAX_G,
+    atol: Any = DEFAULT_ATOL,
+    rtol: Any = DEFAULT_RTOL,
+    max_steps: int = DEFAULT_MAX_STEPS,
 ) -> tuple[Array, Array, Array, Array, Array]:
     r"""
     Optimal estimation (OE) retrieval using a limited-memory
@@ -67,9 +67,9 @@ def oe_sample(
     :param y: Sample :math:`y \in \mathbb{R}^{n}`.
     :param ux: Uncertainty tensor :math:`U(\check{x})`, full or diagonal.
     :param uy: Uncertainty tensor :math:`U(y)`, full or diagonal.
-    :param max_i: The maximum number of iterations allowed.
-    :param max_d: The maximum norm of the update allowed for convergence.
-    :param max_g: The maximum norm of the gradient allowed for convergence.
+    :param atol: The absolute tolerance for terminating the optimization.
+    :param rtol: The relative tolerance for terminating the optimization.
+    :param max_steps: The maximum number of steps the optimizer can take.
     :returns: The retrieval result.
     """
 
@@ -88,72 +88,30 @@ def oe_sample(
         """
         The prior loss function.
 
-        :param q: The sample.
+        :param q: The sample :math:`x \in \mathbb{R}^{m}`.
         :returns: The prior loss.
         """
         d = jnp.reshape(q - x, -1)
         b = hx * d if ux.ndim == x.ndim else hx @ d
         return 0.5 * jnp.sum(d * b)
 
-    def S(q: Array) -> Array:  # noqa: N806
+    def misfit(q: Array, _: None = None) -> Array:  # noqa
         """
-        The cost (or misfit) function to minimize.
+        The misfit function.
 
-        :param q: The sample.
-        :returns: The cost.
+        :param q: The sample :math:`x \in \mathbb{R}^{m}`.
+        :returns: The total cost.
         """
-        loss_term = loss(q)
-        return loss_term if hx is None else loss_term + prior(q)
-
-    def cond(carry: tuple[Any, ...]) -> Array:
-        """
-        The function to check loop continuation.
-
-        :param carry: The loop state carrier.
-        :returns: A Boolean.
-        """
-        i, _, _, _, _, converged = carry
-        return jnp.logical_and(i < max_i, jnp.logical_not(converged))
-
-    def body(carry: tuple[Any, ...]) -> tuple[Any, ...]:
-        """
-        The loop body function.
-
-        :param carry: The loop state carrier.
-        :returns: The updated loop state carrier.
-        """
-        i, xopt, tree, cost, grad, _ = carry
-        d, tree = optimizer.update(
-            grad, tree, xopt, value=cost, grad=grad, value_fn=S
-        )
-        xopt = optax.apply_updates(xopt, d)
-        cost, grad = cost_and_grad(xopt, state=tree)
-        grad_norm = jli.norm(grad, ord=jnp.inf)  # noqa
-        step_norm = jli.norm(d)
-        converged = jnp.logical_or(grad_norm < max_g, step_norm < max_d)
-        return i + 1, xopt, tree, cost, grad, converged
-
-    def opti(x: Array) -> tuple[Array, Array, Array]:
-        """
-        Optimizes the sample.
-
-        :param x: The prior :math:`\check{x} \in \mathbb{R}^{m}`.
-        :returns: The posterior, the cost, and the convergence status.
-        """
-        tree = optimizer.init(x)
-        cost, grad = cost_and_grad(x, state=tree)
-        init = (0, x, tree, cost, grad, False)
-        _, xopt, _, cost, _, converged = jax.lax.while_loop(cond, body, init)
-        return xopt, cost, converged
+        return loss(q) if hx is None else loss(q) + prior(q)
 
     def post(x: Array) -> tuple[Array, Array]:
         """
-        Computes posterior uncertainty.
+        Computes the posterior uncertainty.
 
         :param x: The posterior :math:`\hat{x} \in \mathbb{R}^{m}`.
         :returns: The posterior uncertainty tensor and standard uncertainty.
         """
-        hess = jax.hessian(S)
+        hess = jax.hessian(misfit)
         xcov = jli.pinv(hess(x).reshape(x.size, -1))
         xunc = jnp.sqrt(jnp.diag(xcov))
         return xcov.reshape(x.shape + x.shape), xunc.reshape(x.shape)
@@ -163,7 +121,7 @@ def oe_sample(
         Inverts an uncertainty tensor.
 
         :param u: The uncertainty tensor.
-        :param t: The template tensor.
+        :param t: The sample tensor (a template).
         :returns: The inverted uncertainty tensor (in matrix form).
         """
         return (
@@ -172,16 +130,25 @@ def oe_sample(
             else jli.pinv(u.reshape(t.size, -1))
         )
 
-    optimizer = optax.lbfgs()
+    def make_minimizer():
+        """Returns the minimizer."""
+        return optimistix.OptaxMinimiser(
+            optax.lbfgs(), atol=atol, rtol=rtol, norm=optimistix.max_norm
+        )
+
     if uy is None:
         uy = jnp.broadcast_to(1.0, y.shape)
     hx = invert(ux, x) if ux is not None else None
     hy = invert(uy, y)
-    cost_and_grad = optax.value_and_grad_from_state(S)
-    xopt, cost, converged = opti(x)
+    optimum = optimistix.minimise(
+        misfit, make_minimizer(), x, max_steps=max_steps, throw=False
+    )
+    xopt = optimum.value
     xcov, xunc = post(xopt)
+    cost = misfit(xopt)
+    info = jnp.where(optimum.result == optimistix.RESULTS.successful, 0, 1)
 
-    return xopt, xcov, xunc, cost, converged
+    return xopt, xcov, xunc, cost, info
 
 
 @jax.jit(static_argnums=(0,))
@@ -192,9 +159,9 @@ def oe_batch(
     ux: Array | None = None,
     uy: Array | None = None,
     *,
-    max_i: int = DEFAULT_MAX_I,
-    max_d: Any = DEFAULT_MAX_D,
-    max_g: Any = DEFAULT_MAX_G,
+    atol: Any = DEFAULT_ATOL,
+    rtol: Any = DEFAULT_RTOL,
+    max_steps: int = DEFAULT_MAX_STEPS,
 ) -> tuple[Array, Array, Array, Array, Array]:
     r"""
     Optimal estimation (OE) retrieval using a limited-memory
@@ -218,16 +185,16 @@ def oe_batch(
     :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
     :param ux: Uncertainty tensor :math:`U(\check{X})`, full or diagonal.
     :param uy: Uncertainty tensor :math:`U(Y)`, full or diagonal.
-    :param max_i: The maximum number of iterations allowed.
-    :param max_d: The maximum norm of the update allowed for convergence.
-    :param max_g: The maximum norm of the gradient allowed for convergence.
+    :param atol: The absolute tolerance for terminating the optimization.
+    :param rtol: The relative tolerance for terminating the optimization.
+    :param max_steps: The maximum number of steps the optimizer can take.
     :returns: The retrieval result.
     """
 
     def oe(x, y, ux, uy):
         """Single-sample OE without keyword-only arguments."""
         return oe_sample(
-            f, x, y, ux, uy, max_i=max_i, max_d=max_d, max_g=max_g
+            f, x, y, ux, uy, atol=atol, rtol=rtol, max_steps=max_steps
         )
 
     mapped = jax.vmap(
@@ -255,7 +222,6 @@ class OE(Retrieving):
         *,
         ux: np.ndarray | None = None,
         uy: np.ndarray | None = None,
-        max_i: int = DEFAULT_MAX_I,
         **kwargs,
     ) -> Retrieved:
         r"""
@@ -276,16 +242,14 @@ class OE(Retrieving):
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param ux: Standard uncertainties :math:`u(\check{X})`.
         :param uy: Standard uncertainties :math:`u(Y)`.
-        :param max_i: The maximum number of iterations conducted.
         :returns: The retrieved result.
         """
-        xopt, xcov, xunc, cost, converged = oe_batch(
+        xopt, xcov, xunc, cost, info = oe_batch(
             f.f,
             jnp.asarray(x),
             jnp.asarray(y),
             jnp.square(ux) if ux is not None else None,
             jnp.square(uy) if uy is not None else None,
-            max_i=max_i,
             **kwargs,
         )
         xopt = np.asarray(xopt)
@@ -300,5 +264,5 @@ class OE(Retrieving):
             xunc=np.asarray(xunc),
             zvar=zvar,
             cost=np.asarray(jnp.sum(cost)),
-            info=np.asarray(jnp.where(converged, 0, 1)),
+            info=np.asarray(info),
         )

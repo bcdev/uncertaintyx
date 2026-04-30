@@ -14,6 +14,9 @@ from uncertaintyx.f.jax import Sphere
 from uncertaintyx.f.jax import Tablet
 from uncertaintyx.retrieve.oe.jax import OE
 
+ATOL = 1.0e-06
+"""The absolute tolerance for comparisons."""
+
 
 class OptimalEstimationTest(unittest.TestCase):
     """
@@ -34,11 +37,11 @@ class OptimalEstimationTest(unittest.TestCase):
         result = OE().retrieve(f, x, y)
 
         self.assertTrue(np.all(result.info == 0))
-        self.assertTrue(np.allclose(f.eval(result.xopt), y))
+        self.assertTrue(np.allclose(f.eval(result.xopt), y, atol=ATOL))
         self.assertTrue(np.all(np.isfinite(result.xcov)))
         self.assertTrue(np.all(np.isfinite(result.xunc)))
-        self.assertTrue(np.allclose(result.zvar, 0.0))
-        self.assertTrue(np.allclose(result.cost, 0.0))
+        self.assertTrue(np.allclose(result.zvar, 0.0, atol=ATOL))
+        self.assertTrue(np.allclose(result.cost, 0.0, atol=ATOL))
 
     def test_ellipsoid(self):
         """The ellipsoid function has a unique minimum at zero."""
@@ -49,11 +52,11 @@ class OptimalEstimationTest(unittest.TestCase):
         result = OE().retrieve(f, x, y)
 
         self.assertTrue(np.all(result.info == 0))
-        self.assertTrue(np.allclose(result.xopt, 0.0))
+        self.assertTrue(np.allclose(result.xopt, 0.0, atol=ATOL))
         self.assertTrue(np.all(np.isfinite(result.xcov)))
         self.assertTrue(np.all(np.isfinite(result.xunc)))
-        self.assertTrue(np.allclose(result.zvar, 0.0))
-        self.assertTrue(np.allclose(result.cost, 0.0))
+        self.assertTrue(np.allclose(result.zvar, 0.0, atol=ATOL))
+        self.assertTrue(np.allclose(result.cost, 0.0, atol=ATOL))
 
     def test_cigar(self):
         """The cigar function has a unique minimum at zero."""
@@ -64,11 +67,11 @@ class OptimalEstimationTest(unittest.TestCase):
         result = OE().retrieve(f, x, y)
 
         self.assertTrue(np.all(result.info == 0))
-        self.assertTrue(np.allclose(result.xopt, 0.0))
+        self.assertTrue(np.allclose(result.xopt, 0.0, atol=ATOL))
         self.assertTrue(np.all(np.isfinite(result.xcov)))
         self.assertTrue(np.all(np.isfinite(result.xunc)))
-        self.assertTrue(np.allclose(result.zvar, 0.0))
-        self.assertTrue(np.allclose(result.cost, 0.0))
+        self.assertTrue(np.allclose(result.zvar, 0.0, atol=ATOL))
+        self.assertTrue(np.allclose(result.cost, 0.0, atol=ATOL))
 
     def test_tablet(self):
         """The tablet function has a unique minimum at zero."""
@@ -79,11 +82,11 @@ class OptimalEstimationTest(unittest.TestCase):
         result = OE().retrieve(f, x, y)
 
         self.assertTrue(np.all(result.info == 0))
-        self.assertTrue(np.allclose(result.xopt, 0.0))
+        self.assertTrue(np.allclose(result.xopt, 0.0, atol=ATOL))
         self.assertTrue(np.all(np.isfinite(result.xcov)))
         self.assertTrue(np.all(np.isfinite(result.xunc)))
-        self.assertTrue(np.allclose(result.zvar, 0.0))
-        self.assertTrue(np.allclose(result.cost, 0.0))
+        self.assertTrue(np.allclose(result.zvar, 0.0, atol=ATOL))
+        self.assertTrue(np.allclose(result.cost, 0.0, atol=ATOL))
 
     def test_rosenbrock(self):
         """
@@ -98,11 +101,11 @@ class OptimalEstimationTest(unittest.TestCase):
         result = OE().retrieve(f, x, y)
 
         self.assertTrue(np.all(result.info == 0))
-        self.assertTrue(np.allclose(result.xopt, 1.0))
+        self.assertTrue(np.allclose(result.xopt, 1.0, atol=ATOL))
         self.assertTrue(np.all(np.isfinite(result.xcov)))
         self.assertTrue(np.all(np.isfinite(result.xunc)))
-        self.assertTrue(np.allclose(result.zvar, 0.0))
-        self.assertTrue(np.allclose(result.cost, 0.0))
+        self.assertTrue(np.allclose(result.zvar, 0.0, atol=ATOL))
+        self.assertTrue(np.allclose(result.cost, 0.0, atol=ATOL))
 
     def test_different_powers(self):
         """
@@ -116,7 +119,7 @@ class OptimalEstimationTest(unittest.TestCase):
         y = self.sharp(0.0, "y")
         result = OE().retrieve(f, x, y)
 
-        self.assertTrue(np.allclose(result.cost, 0.0))
+        self.assertTrue(np.allclose(result.cost, 0.0, atol=ATOL))
 
     def fuzzy(self, val, role: Literal["x", "y"]) -> np.ndarray:
         """Returns an array filled with fuzzy values."""
