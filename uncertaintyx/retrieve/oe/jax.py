@@ -73,39 +73,39 @@ def oe_sample(
     :returns: The retrieval result.
     """
 
-    def loss(q: Array) -> Array:
+    def loss(X: Array) -> Array:  # noqa : N806
         r"""
         The loss function.
 
-        :param q: The sample :math:`x \in \mathbb{R}^{m}`.
+        :param X: The sample :math:`x \in \mathbb{R}^{m}`.
         :returns: The sample loss.
         """
-        d = jnp.reshape(f(q) - y, -1)
+        d = jnp.reshape(f(X) - y, -1)
         b = hy * d if uy.ndim == y.ndim else hy @ d
         return 0.5 * jnp.sum(d * b)
 
-    def prior(q: Array) -> Array:
-        """
+    def prior(X: Array) -> Array:  # noqa : N806
+        r"""
         The prior loss function.
 
-        :param q: The sample :math:`x \in \mathbb{R}^{m}`.
+        :param X: The sample :math:`x \in \mathbb{R}^{m}`.
         :returns: The prior loss.
         """
-        d = jnp.reshape(q - x, -1)
+        d = jnp.reshape(X - x, -1)
         b = hx * d if ux.ndim == x.ndim else hx @ d
         return 0.5 * jnp.sum(d * b)
 
-    def misfit(q: Array, _: None = None) -> Array:  # noqa
-        """
+    def misfit(X: Array, _: None = None) -> Array:  # noqa
+        r"""
         The misfit function.
 
-        :param q: The sample :math:`x \in \mathbb{R}^{m}`.
+        :param X: The sample :math:`x \in \mathbb{R}^{m}`.
         :returns: The total cost.
         """
-        return loss(q) if hx is None else loss(q) + prior(q)
+        return loss(X) if hx is None else loss(X) + prior(X)
 
-    def post(x: Array) -> tuple[Array, Array]:
-        """
+    def post(x: Array) -> tuple[Array, Array]:  # noqa : N806
+        r"""
         Computes the posterior uncertainty.
 
         :param x: The posterior :math:`\hat{x} \in \mathbb{R}^{m}`.
