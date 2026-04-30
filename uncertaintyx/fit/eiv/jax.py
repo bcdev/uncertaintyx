@@ -268,6 +268,7 @@ class EIV(Fitting):
         atol: Any = DEFAULT_ATOL,
         rtol: Any = DEFAULT_RTOL,
         max_steps: int = DEFAULT_MAX_STEPS,
+        **kwargs,
     ) -> Fitted:
         r"""
         Fits the parameters of a model function to :math:`M` samples
@@ -296,10 +297,10 @@ class EIV(Fitting):
             jnp.square(ux) if ux is not None else None,
             jnp.square(uy) if uy is not None else None,
             jnp.square(up) if up is not None else None,
-            use_covar,
-            atol,
-            rtol,
-            max_steps,
+            use_covar=use_covar,
+            atol=atol,
+            rtol=rtol,
+            max_steps=maxsteps,
         )
         popt = np.asarray(popt)
         zvar = np.var(f.eval(popt, x) - y, axis=0, ddof=popt.size)
