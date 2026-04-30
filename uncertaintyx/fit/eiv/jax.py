@@ -30,28 +30,29 @@ from typing import Any
 from typing import Callable
 
 import jax
-import jax.numpy as jnp
-import jax.numpy.linalg as jli
-import jax.scipy.linalg as jla
 import numpy as np
 import optax
+import optimistix
 from jax import Array
+from jax import numpy as jnp
+from jax.numpy import linalg as jli
+from jax.scipy import linalg as jla
 
 from ...tyx import Fitted
 from ...tyx import Fitting
 from ...tyx import M
 
-DEFAULT_MAX_D: Any = 1.0e-08
-"""The maximum L2 norm of the parameter step allowed for convergence."""
+DEFAULT_ATOL: Any = 1.0e-08
+"""The absolute tolerance for terminating the optimization."""
 
-DEFAULT_MAX_G: Any = 1.0e-07
-"""The maximum infinity norm of the gradient allowed for convergence."""
+DEFAULT_RTOL: Any = 1.0e-06
+"""The relative tolerance for terminating the optimization."""
 
-DEFAULT_MAX_I: int = 200
-"""The maximum number of iterations permitted."""
+DEFAULT_MAX_STEPS: int = 2048
+"""The maximum number of steps the optimizer can take."""
 
 
-@jax.jit(static_argnums=(0,), static_argnames=("covar",))
+@jax.jit(static_argnums=(0,), static_argnames=("use_covar",))
 def evm(
     f: Callable[[Array, Array], Array],
     p: Array,
@@ -61,16 +62,18 @@ def evm(
     uy: Array,
     up: Array | None = None,
     *,
-    covar: bool = False,
-    max_i: int = DEFAULT_MAX_I,
-    max_d: Any = DEFAULT_MAX_D,
-    max_g: Any = DEFAULT_MAX_G,
+    use_covar: bool = False,
+    atol: Any = DEFAULT_ATOL,
+    rtol: Any = DEFAULT_RTOL,
+    max_steps: int = DEFAULT_MAX_STEPS,
 ) -> tuple[Array, Array, Array, Array, Array]:
     r"""
+    This function does not belong to public API.
+
     Bayesian effective variance method (EVM) with a limited-memory
     Broyden-Fletcher-Goldfarb-Shanno (L-BFGS) optimizer.
 
-    This implementation accepts any combination of full-rank
+    The implementation accepts any combination of full-rank
     or diagonal-rank uncertainty tensors:
     :math:`U(X) \in \mathbb{R}^{M \times m \times m}`,
     :math:`U(X) \in \mathbb{R}^{M \times m}`,
@@ -81,7 +84,9 @@ def evm(
 
     Standard uncertainty is not accepted and must be squared to
     a variance (diagonal uncertainty tensor) before supplied as
-    argument. Otherwise, under the same notation as :class:`EIV`:
+    argument.
+
+    Otherwise, under the same notation as :class:`EIV`:
 
     :param f: The model function.
     :param p: Prior parameter values :math:`\check{p} \in \mathbb{R}^{k}`.
@@ -90,25 +95,25 @@ def evm(
     :param ux: Uncertainty tensor :math:`U(X)`, full or diagonal.
     :param uy: Uncertainty tensor :math:`U(Y)`, full or diagonal.
     :param up: Uncertainty tensor :math:`U(\check{p})`, full or diagonal.
-    :param covar: Consider covariance?
-    :param max_i: The maximum number of iterations allowed.
-    :param max_d: The maximum norm of the update allowed for convergence
-    :param max_g: The maximum norm of the gradient allowed for convergence.
+    :param use_covar: Consider covariance?
+    :param atol: The absolute tolerance for terminating the optimization.
+    :param rtol: The relative tolerance for terminating the optimization.
+    :param max_steps: The maximum number of steps the optimizer can take.
     :returns: The fit result.
     """
 
-    def g(q: Array, x: Array) -> Array:
+    def g(P: Array, x: Array) -> Array:  # noqa : N806
         r"""
         The sample Jacobian.
 
-        :param q: The parameters.
+        :param P: The parameters :math:`p \in \mathbb{R}^{k}`.
         :param x: The sample :math:`x \in \mathbb{R}^{m}`
         :returns: :math:`(G_x f)(q, x) \in \mathbb{R}^{n \times m}`
         """
         return (
-            jax.jacrev(f, argnums=1)(q, x)
+            jax.jacrev(f, argnums=1)(P, x)
             if y.size < x.size
-            else jax.jacfwd(f, argnums=1)(q, x)
+            else jax.jacfwd(f, argnums=1)(P, x)
         )
 
     def upc(d: int, G: Array, U: Array) -> Array:  # noqa: N806
@@ -137,20 +142,26 @@ def evm(
         dims = tuple(range(-d, 0))
         return jnp.sum(jnp.tensordot(G, U, axes=(dims, dims)) * G, axis=dims)
 
-    def loss(q: Array, x: Array, y: Array, ux: Array, uy: Array) -> Array:
+    def loss(
+        P: Array,  # noqa: N806
+        x: Array,
+        y: Array,
+        ux: Array,
+        uy: Array,
+    ) -> Array:
         r"""
         The sample loss function.
 
-        :param q: The parameters.
+        :param P: The parameters :math:`p \in \mathbb{R}^{k}`.
         :param x: The sample :math:`x \in \mathbb{R}^{m}`.
         :param y: The sample :math:`y \in \mathbb{R}^{n}`.
         :param ux: :math:`U(x) \in \mathbb{R}^{m \times m}`.
         :param uy: :math:`U(y) \in \mathbb{R}^{n \times n}`.
         :returns: The sample loss.
         """
-        d = f(q, x) - y
-        G = g(q, x)  # noqa: N806
-        if not covar:
+        d = f(P, x) - y
+        G = g(P, x)  # noqa: N806
+        if not use_covar:
             U = upd(x.ndim, G, ux) + (  # noqa: N806
                 uy
                 if uy.ndim == y.ndim
@@ -167,96 +178,75 @@ def evm(
             b = jla.cho_solve(jla.cho_factor(U), d)
         return 0.5 * jnp.sum(d * b)
 
-    def prior(q: Array) -> Array:
-        """
+    def prior(P: Array) -> Array:  # noqa: N806
+        r"""
         The prior loss function.
 
-        :param q: The parameters.
-        :returns: The prior loss.
+        :param P: The parameters :math:`p \in \mathbb{R}^{k}`.
+        :returns: The prior term.
         """
-        d = jnp.reshape(q - p, -1)
-        b = (
-            jnp.where(up > 0.0, 1.0 / up, 0.0) * d
-            if up.ndim == p.ndim
-            else jli.pinv(up.reshape(p.size, -1)) @ d
-        )
+        d = jnp.reshape(P - p, -1)
+        b = hp * d if hp.ndim == p.ndim else hp @ d
         return 0.5 * jnp.sum(d * b)
 
-    def S(q: Array) -> Array:  # noqa: N806
-        """
-        The cost (or misfit) function to minimize.
+    def misfit(P: Array, _: None = None) -> Array:  # noqa
+        r"""
+        The misfit function.
 
-        :param q: The parameters.
-        :returns: The cost.
+        :param P: The parameters :math:`p \in \mathbb{R}^{k}`.
+        :returns: The total cost.
         """
         loss_term = jnp.sum(
-            jax.vmap(loss, in_axes=(None, 0, 0, 0, 0))(q, x, y, ux, uy)
+            jax.vmap(loss, in_axes=(None, 0, 0, 0, 0))(P, x, y, ux, uy)
         )
-        return loss_term if up is None else loss_term + prior(q)
-
-    def cond(carry: tuple[Any, ...]) -> Array:
-        """
-        The function to check loop continuation.
-
-        :param carry: The loop state carrier.
-        :returns: A Boolean.
-        """
-        i, _, _, _, _, converged = carry
-        return jnp.logical_and(i < max_i, jnp.logical_not(converged))
-
-    def body(carry: tuple[Any, ...]) -> tuple[Any, ...]:
-        """
-        The loop body function.
-
-        :param carry: The loop state carrier.
-        :returns: The updated loop state carrier.
-        """
-        i, popt, tree, cost, grad, _ = carry
-        d, tree = optimizer.update(
-            grad, tree, popt, value=cost, grad=grad, value_fn=S
-        )
-        popt = optax.apply_updates(popt, d)
-        cost, grad = cost_and_grad(popt, state=tree)
-        grad_norm = jli.norm(grad, ord=jnp.inf)  # noqa
-        step_norm = jli.norm(d)
-        converged = jnp.logical_or(grad_norm < max_g, step_norm < max_d)
-        return i + 1, popt, tree, cost, grad, converged
-
-    def opti(p: Array) -> tuple[Array, Array, Array]:
-        """
-        Optimizes the parameters.
-
-        :param p: The prior :math:`\check{p} \in \mathbb{R}^{k}`.
-        :returns: The posterior, the cost, and the convergence status.
-        """
-        tree = optimizer.init(p)
-        cost, grad = cost_and_grad(p, state=tree)
-        init = (0, p, tree, cost, grad, False)
-        _, popt, _, cost, _, converged = jax.lax.while_loop(cond, body, init)
-        return popt, cost, converged
+        return loss_term if up is None else loss_term + prior(P)
 
     def post(p: Array) -> tuple[Array, Array]:
-        """
+        r"""
         Computes posterior uncertainty.
 
         :param p: The posterior :math:`\hat{p} \in \mathbb{R}^{k}`.
         :returns: The posterior uncertainty tensor and standard uncertainty.
         """
-        hess = jax.hessian(S)
+        hess = jax.hessian(misfit)
         pcov = jli.pinv(hess(p).reshape(p.size, -1))
         punc = jnp.sqrt(jnp.diag(pcov))
         return pcov.reshape(p.shape + p.shape), punc.reshape(p.shape)
 
-    optimizer = optax.lbfgs()
+    def invert(u: Array, p: Array) -> Array:
+        """
+        Inverts an uncertainty tensor.
+
+        :param u: The uncertainty tensor.
+        :param p: The parameter tensor.
+        :returns: The inverted uncertainty tensor (in matrix form).
+        """
+        return (
+            jnp.where(u > 0.0, 1.0 / u, 0.0).reshape(-1)
+            if u.ndim == p.ndim
+            else jli.pinv(u.reshape(p.size, -1))
+        )
+
+    def make_minimizer():
+        """Returns the minimizer."""
+        return optimistix.OptaxMinimiser(
+            optax.lbfgs(), atol=atol, rtol=rtol, norm=optimistix.max_norm
+        )
+
+    hp = invert(up, p) if up is not None else None
     if ux is None:
         ux = jnp.broadcast_to(1.0, x.shape)
     if uy is None:
         uy = jnp.broadcast_to(1.0, y.shape)
-    cost_and_grad = optax.value_and_grad_from_state(S)
-    popt, cost, converged = opti(p)
+    optimum = optimistix.minimise(
+        misfit, make_minimizer(), p, max_steps=max_steps, throw=False
+    )
+    popt = optimum.value
     pcov, punc = post(popt)
+    cost = misfit(popt)
+    info = jnp.where(optimum.result == optimistix.RESULTS.successful, 0, 1)
 
-    return popt, pcov, punc, cost, converged
+    return popt, pcov, punc, cost, info
 
 
 class EIV(Fitting):
@@ -278,7 +268,6 @@ class EIV(Fitting):
         uy: np.ndarray | None = None,
         p: np.ndarray | None = None,
         up: np.ndarray | None = None,
-        max_i: int = DEFAULT_MAX_I,
         **kwargs,
     ) -> Fitted:
         r"""
@@ -294,10 +283,9 @@ class EIV(Fitting):
         :param uy: Standard uncertainties :math:`u(Y)`.
         :param p: Prior model parameter values :math:`\check{p}`.
         :param up: Prior standard uncertainties :math:`u(\check{p})`.
-        :param max_i: The maximum number of iterations conducted.
         :returns: The fit result.
         """
-        popt, pcov, punc, cost, converged = evm(
+        popt, pcov, punc, cost, info = evm(
             f.f,
             jnp.asarray(p if p is not None else f.prior(x, y)),
             jnp.asarray(x),
@@ -305,7 +293,6 @@ class EIV(Fitting):
             jnp.square(ux) if ux is not None else None,
             jnp.square(uy) if uy is not None else None,
             jnp.square(up) if up is not None else None,
-            max_i=max_i,
             **kwargs,
         )
         popt = np.asarray(popt)
@@ -318,5 +305,5 @@ class EIV(Fitting):
             punc=np.asarray(punc),
             zvar=zvar,
             cost=np.asarray(cost),
-            info=0 if converged.item() else 1,
+            info=info.item(),
         )
