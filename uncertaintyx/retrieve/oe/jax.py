@@ -18,6 +18,7 @@ import jax.scipy.linalg as jla
 import numpy as np
 import optax
 from jax import Array
+from jax import Array
 
 from ...tyx import F
 from ...tyx import Retrieved
@@ -33,7 +34,7 @@ DEFAULT_MAX_I: int = 2000
 """The maximum number of iterations permitted."""
 
 
-@jax.jit(static_argnums=(0,), static_argnames=("covar",))
+@jax.jit(static_argnums=(0,))
 def oe_sample(
     f: Callable[[Array], Array],
     x: Array,
@@ -41,7 +42,6 @@ def oe_sample(
     ux: Array | None = None,
     uy: Array | None = None,
     *,
-    covar: bool = False,
     max_i: int = DEFAULT_MAX_I,
     max_d: Any = DEFAULT_MAX_D,
     max_g: Any = DEFAULT_MAX_G,
@@ -68,7 +68,6 @@ def oe_sample(
     :param y: Sample :math:`y \in \mathbb{R}^{n}`.
     :param ux: Uncertainty tensor :math:`U(\check{x})`, full or diagonal.
     :param uy: Uncertainty tensor :math:`U(y)`, full or diagonal.
-    :param covar: Consider covariance?
     :param max_i: The maximum number of iterations allowed.
     :param max_d: The maximum norm of the update allowed for convergence.
     :param max_g: The maximum norm of the gradient allowed for convergence.
@@ -84,18 +83,8 @@ def oe_sample(
         :param u: :math:`U(y) \in \mathbb{R}^{n \times n}`.
         :returns: The sample loss.
         """
-        d = f(q) - y
-        if u.ndim == y.ndim or not covar:
-            U = (  # noqa: N806
-                u
-                if u.ndim == y.ndim
-                else jnp.diag(u.reshape((d.size, -1))).reshape(y.shape)
-            )
-            b = d / U
-        else:
-            d = d.reshape(-1)
-            U = u.reshape((y.size, -1))  # noqa: N806
-            b = jla.cho_solve(jla.cho_factor(U), d)
+        d = jnp.reshape(f(q) - y, -1)
+        b = hy * d if uy.ndim == y.ndim else hy @ d
         return 0.5 * jnp.sum(d * b)
 
     def prior(q: Array) -> Array:
@@ -106,11 +95,7 @@ def oe_sample(
         :returns: The prior loss.
         """
         d = jnp.reshape(q - x, -1)
-        b = (
-            jnp.where(ux > 0.0, 1.0 / ux, 0.0) * d
-            if ux.ndim == x.ndim
-            else jli.pinv(ux.reshape(d.size, -1)) @ d
-        )
+        b = hx * d if ux.ndim == x.ndim else hx @ d
         return 0.5 * jnp.sum(d * b)
 
     def S(q: Array) -> Array:  # noqa: N806
@@ -121,7 +106,7 @@ def oe_sample(
         :returns: The cost.
         """
         loss_term = loss(q, y, uy)
-        return loss_term if ux is None else loss_term + prior(q)
+        return loss_term if hx is None else loss_term + prior(q)
 
     def cond(carry: tuple[Any, ...]) -> Array:
         """
@@ -176,9 +161,25 @@ def oe_sample(
         xunc = jnp.sqrt(jnp.diag(xcov))
         return xcov.reshape(x.shape + x.shape), xunc.reshape(x.shape)
 
+    def invert(u: Array, t: Array) -> Array:
+        """
+        Inverts an uncertainty tensor.
+
+        :param u: The uncertainty tensor.
+        :param t: The template tensor.
+        :returns: The inverted uncertainty tensor (in matrix form).
+        """
+        return (
+            jnp.where(u > 0.0, 1.0 / u, 0.0).reshape(-1)
+            if u.ndim == t.ndim
+            else jli.pinv(u.reshape(t.size, -1))
+        )
+
     optimizer = optax.lbfgs()
     if uy is None:
         uy = jnp.broadcast_to(1.0, y.shape)
+    hx = invert(ux, x) if ux is not None else None
+    hy = invert(uy, y)
     cost_and_grad = optax.value_and_grad_from_state(S)
     xopt, cost, converged = opti(x)
     xcov, xunc = post(xopt)
@@ -186,7 +187,7 @@ def oe_sample(
     return xopt, xcov, xunc, cost, converged
 
 
-@jax.jit(static_argnums=(0,), static_argnames=("covar",))
+@jax.jit(static_argnums=(0,))
 def oe_batch(
     f: Callable[[Array], Array],
     x: Array,
@@ -194,7 +195,6 @@ def oe_batch(
     ux: Array | None = None,
     uy: Array | None = None,
     *,
-    covar: bool = False,
     max_i: int = DEFAULT_MAX_I,
     max_d: Any = DEFAULT_MAX_D,
     max_g: Any = DEFAULT_MAX_G,
@@ -221,7 +221,6 @@ def oe_batch(
     :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
     :param ux: Uncertainty tensor :math:`U(\check{X})`, full or diagonal.
     :param uy: Uncertainty tensor :math:`U(Y)`, full or diagonal.
-    :param covar: Consider covariance?
     :param max_i: The maximum number of iterations allowed.
     :param max_d: The maximum norm of the update allowed for convergence.
     :param max_g: The maximum norm of the gradient allowed for convergence.
@@ -229,17 +228,9 @@ def oe_batch(
     """
 
     def oe(x, y, ux, uy):
-        """Single-sample OE without explicit keyword-only arguments."""
+        """Single-sample OE without keyword-only arguments."""
         return oe_sample(
-            f,
-            x,
-            y,
-            ux,
-            uy,
-            covar=covar,
-            max_i=max_i,
-            max_d=max_d,
-            max_g=max_g,
+            f, x, y, ux, uy, max_i=max_i, max_d=max_d, max_g=max_g
         )
 
     mapped = jax.vmap(
