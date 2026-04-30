@@ -257,11 +257,7 @@ class OE(Retrieving):
             **kwargs,
         )
         xopt = np.asarray(xopt)
-        zvar = np.var(
-            f.eval(xopt) - y,
-            axis=0,
-            ddof=y.size - x.size if y.size > x.size else 0,
-        )
+        zvar = np.var(f.eval(xopt) - y, axis=0)
         return Retrieved(
             xopt=xopt,
             xcov=np.asarray(xcov),
