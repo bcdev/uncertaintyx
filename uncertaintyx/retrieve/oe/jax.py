@@ -46,10 +46,12 @@ def oe_sample(
     max_steps: int = DEFAULT_MAX_STEPS,
 ) -> tuple[Array, Array, Array, Array, Array]:
     r"""
+    This function does not belong to public API.
+
     Optimal estimation (OE) retrieval using a limited-memory
     Broyden-Fletcher-Goldfarb-Shanno (L-BFGS) optimizer.
 
-    This implementation accepts any combination of full-rank
+    The implementation accepts any combination of full-rank
     or diagonal-rank uncertainty tensors:
     :math:`U(\check{x}) \in \mathbb{R}^{m \times m}`,
     :math:`U(\check{x}) \in \mathbb{R}^{m}`,
@@ -81,7 +83,7 @@ def oe_sample(
         :returns: The sample loss.
         """
         d = jnp.reshape(f(X) - y, -1)
-        b = hy * d if uy.ndim == y.ndim else hy @ d
+        b = hy * d if hy.ndim == y.ndim else hy @ d
         return 0.5 * jnp.sum(d * b)
 
     def prior(X: Array) -> Array:  # noqa : N806
@@ -89,10 +91,10 @@ def oe_sample(
         The prior loss function.
 
         :param X: The sample :math:`x \in \mathbb{R}^{m}`.
-        :returns: The prior loss.
+        :returns: The prior term.
         """
         d = jnp.reshape(X - x, -1)
-        b = hx * d if ux.ndim == x.ndim else hx @ d
+        b = hx * d if hx.ndim == x.ndim else hx @ d
         return 0.5 * jnp.sum(d * b)
 
     def misfit(X: Array, _: None = None) -> Array:  # noqa
@@ -164,10 +166,12 @@ def oe_batch(
     max_steps: int = DEFAULT_MAX_STEPS,
 ) -> tuple[Array, Array, Array, Array, Array]:
     r"""
+    This function does not belong to public API.
+
     Optimal estimation (OE) retrieval using a limited-memory
     Broyden-Fletcher-Goldfarb-Shanno (L-BFGS) optimizer.
 
-    This implementation accepts any combination of full-rank
+    The implementation accepts any combination of full-rank
     or diagonal-rank uncertainty tensors:
     :math:`U(\check{X}) \in \mathbb{R}^{M \times m \times m}`,
     :math:`U(\check{X}) \in \mathbb{R}^{M \times m}`,
