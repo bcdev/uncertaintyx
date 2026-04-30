@@ -219,6 +219,7 @@ class OE(Retrieving):
         atol: Any = DEFAULT_ATOL,
         rtol: Any = DEFAULT_RTOL,
         max_steps: int = DEFAULT_MAX_STEPS,
+        **kwargs,
     ) -> Retrieved:
         r"""
         Solves an inverse problem of the form :math:`f(x) = y` for
@@ -249,9 +250,9 @@ class OE(Retrieving):
             jnp.asarray(y),
             jnp.square(ux) if ux is not None else None,
             jnp.square(uy) if uy is not None else None,
-            atol,
-            rtol,
-            max_steps,
+            atol=atol,
+            rtol=rtol,
+            max_steps=max_steps,
         )
         xopt = np.asarray(xopt)
         zvar = np.var(f.eval(xopt) - y, axis=0)
