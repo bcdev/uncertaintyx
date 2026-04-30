@@ -264,10 +264,6 @@ class EIV(Fitting):
         ux: np.ndarray | None = None,
         uy: np.ndarray | None = None,
         up: np.ndarray | None = None,
-        use_covar: bool = False,
-        atol: Any = DEFAULT_ATOL,
-        rtol: Any = DEFAULT_RTOL,
-        max_steps: int = DEFAULT_MAX_STEPS,
         **kwargs,
     ) -> Fitted:
         r"""
@@ -297,10 +293,6 @@ class EIV(Fitting):
             jnp.square(ux) if ux is not None else None,
             jnp.square(uy) if uy is not None else None,
             jnp.square(up) if up is not None else None,
-            use_covar=use_covar,
-            atol=atol,
-            rtol=rtol,
-            max_steps=max_steps,
         )
         popt = np.asarray(popt)
         zvar = np.var(f.eval(popt, x) - y, axis=0, ddof=popt.size)
