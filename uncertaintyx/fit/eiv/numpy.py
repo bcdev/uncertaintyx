@@ -38,10 +38,12 @@ class EIV(Fitting):
         *,
         ux: np.ndarray | None = None,
         uy: np.ndarray | None = None,
-        max_i: int = 100,
+        max_steps: int = 100,
         **kwargs,
     ) -> Fitted:
         r"""
+        This function does not belong to public API.
+
         Fits the parameters of a model function to :math:`M`
         samples :math:`(x_i, y_i)` of data.
 
@@ -52,7 +54,7 @@ class EIV(Fitting):
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param ux: Standard uncertainties :math:`u(X)`.
         :param uy: Standard uncertainties :math:`u(Y)`.
-        :param max_i: The maximum number of iterations conducted.
+        :param max_steps: The maximum number of steps the optimizer can take.
         :returns: The fit result.
         """
 
@@ -115,7 +117,7 @@ class EIV(Fitting):
             weight_y=r(w(uy), n_r).T if uy is not None else None,
             jac_beta=jac_p,
             jac_x=jac_x,
-            maxit=max_i,
+            maxit=max_steps,
             **kwargs,
         )
 
