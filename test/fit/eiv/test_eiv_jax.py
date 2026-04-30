@@ -53,7 +53,7 @@ class ErrorsInVariablesTest(unittest.TestCase):
         self.assertAlmostEqual(0.0, result.pcov[1, 1], delta=1.000)
 
         dof = self.n - 2
-        self.assertAlmostEqual(
+        self.assertAlmostEqual(  # noqa
             dof, 2.0 * result.cost, delta=np.sqrt(2.0 * dof)
         )
 
@@ -86,7 +86,7 @@ class ErrorsInVariablesTest(unittest.TestCase):
         test data with known uncertainties of x and y.
         """
         result = EIV().fit(
-            Linear(), self.x, self.y, ux=self.u, uy=self.u, covar=True
+            Linear(), self.x, self.y, ux=self.u, uy=self.u, use_covar=True
         )
 
         self.assertEqual(0, result.info)
@@ -100,7 +100,7 @@ class ErrorsInVariablesTest(unittest.TestCase):
         self.assertAlmostEqual(0.0, result.pcov[1, 1], delta=1.000)
 
         dof = self.n - 2
-        self.assertAlmostEqual(
+        self.assertAlmostEqual(  # noqa
             dof, 2.0 * result.cost, delta=np.sqrt(2.0 * dof)
         )
 
