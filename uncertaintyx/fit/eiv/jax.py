@@ -300,7 +300,7 @@ class EIV(Fitting):
             use_covar=use_covar,
             atol=atol,
             rtol=rtol,
-            max_steps=maxsteps,
+            max_steps=max_steps,
         )
         popt = np.asarray(popt)
         zvar = np.var(f.eval(popt, x) - y, axis=0, ddof=popt.size)
