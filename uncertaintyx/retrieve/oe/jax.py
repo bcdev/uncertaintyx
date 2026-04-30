@@ -162,7 +162,7 @@ def _batch(
 ) -> tuple[Array, Array, Array, Array, Array]:
     r"""
     Optimal estimation (OE) retrieval.
-    
+
     The implementation accepts any combination of full-rank
     or diagonal-rank uncertainty tensors:
     :math:`U(\check{X}) \in \mathbb{R}^{M \times m \times m}`,
