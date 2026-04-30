@@ -178,7 +178,7 @@ def evm(
         b = (
             jnp.where(up > 0.0, 1.0 / up, 0.0) * d
             if up.ndim == p.ndim
-            else jli.pinv(up.reshape(d.size, -1)) @ d
+            else jli.pinv(up.reshape(p.size, -1)) @ d
         )
         return 0.5 * jnp.sum(d * b)
 
