@@ -53,7 +53,7 @@ DEFAULT_MAX_STEPS: int = 2048
 
 
 @jax.jit(static_argnums=(0,), static_argnames=("use_covar",))
-def evm(
+def _batch(
     f: Callable[[Array, Array], Array],
     p: Array,
     x: Array,
@@ -68,10 +68,8 @@ def evm(
     max_steps: int = DEFAULT_MAX_STEPS,
 ) -> tuple[Array, Array, Array, Array, Array]:
     r"""
-    This function does not belong to public API.
-
-    Bayesian effective variance method (EVM) with a limited-memory
-    Broyden-Fletcher-Goldfarb-Shanno (L-BFGS) optimizer.
+    Bayesian errors-in-variables optimizer based on the effective
+    variance method (EVM).
 
     The implementation accepts any combination of full-rank
     or diagonal-rank uncertainty tensors:
@@ -85,8 +83,6 @@ def evm(
     Standard uncertainty is not accepted and must be squared to
     a variance (diagonal uncertainty tensor) before supplied as
     argument.
-
-    Otherwise, under the same notation as :class:`EIV`:
 
     :param f: The model function.
     :param p: Prior parameter values :math:`\check{p} \in \mathbb{R}^{k}`.
@@ -268,11 +264,14 @@ class EIV(Fitting):
         uy: np.ndarray | None = None,
         p: np.ndarray | None = None,
         up: np.ndarray | None = None,
-        **kwargs,
+        use_covar: bool = False,
+        atol: Any = DEFAULT_ATOL,
+        rtol: Any = DEFAULT_RTOL,
+        max_steps: int = DEFAULT_MAX_STEPS,
     ) -> Fitted:
         r"""
-        Fits the parameters of a model function to :math:`M`
-        samples :math:`(x_i, y_i)` of data.
+        Fits the parameters of a model function to :math:`M` samples
+        :math:`(x_i, y_i)` of data.
 
         Under the same notation and remarks as :class:`M`:
 
@@ -283,9 +282,13 @@ class EIV(Fitting):
         :param uy: Standard uncertainties :math:`u(Y)`.
         :param p: Prior model parameter values :math:`\check{p}`.
         :param up: Prior standard uncertainties :math:`u(\check{p})`.
+        :param use_covar: Consider covariance?
+        :param atol: The absolute tolerance for terminating the optimization.
+        :param rtol: The relative tolerance for terminating the optimization.
+        :param max_steps: The maximum number of steps the optimizer can take.
         :returns: The fit result.
         """
-        popt, pcov, punc, cost, info = evm(
+        popt, pcov, punc, cost, info = _batch(
             f.f,
             jnp.asarray(p if p is not None else f.prior(x, y)),
             jnp.asarray(x),
@@ -293,7 +296,10 @@ class EIV(Fitting):
             jnp.square(ux) if ux is not None else None,
             jnp.square(uy) if uy is not None else None,
             jnp.square(up) if up is not None else None,
-            **kwargs,
+            use_covar,
+            atol,
+            rtol,
+            max_steps,
         )
         popt = np.asarray(popt)
         zvar = np.var(f.eval(popt, x) - y, axis=0, ddof=popt.size)
