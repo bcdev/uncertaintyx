@@ -102,7 +102,7 @@ def evm(
         The sample Jacobian.
 
         :param q: The parameters.
-        :param x: A sample :math:`x \in \mathbb{R}^{m}`
+        :param x: The sample :math:`x \in \mathbb{R}^{m}`
         :returns: :math:`(G_x f)(q, x) \in \mathbb{R}^{n \times m}`
         """
         return (
@@ -126,7 +126,7 @@ def evm(
         )
 
     def upd(d: int, G: Array, U: Array) -> Array:  # noqa: N806
-        r"""
+        """
         The diagonalized sample uncertainty propagation.
 
         :param d: The rank of the input sample tensor.
@@ -226,9 +226,8 @@ def evm(
         """
         Optimizes the parameters.
 
-        :param p: The prior parameter values.
-        :returns: The posterior parameter values, the cost, and the
-        convergence status.
+        :param p: The prior :math:`\check{p} \in \mathbb{R}^{k}`.
+        :returns: The posterior, the cost, and the convergence status.
         """
         tree = optimizer.init(p)
         cost, grad = cost_and_grad(p, state=tree)
@@ -240,7 +239,7 @@ def evm(
         """
         Computes posterior uncertainty.
 
-        :param p: The posterior parameter values.
+        :param p: The posterior :math:`\hat{p} \in \mathbb{R}^{k}`.
         :returns: The posterior uncertainty tensor and standard uncertainty.
         """
         hess = jax.hessian(S)
