@@ -14,7 +14,6 @@ from typing import Callable
 import jax
 import jax.numpy as jnp
 import jax.numpy.linalg as jli
-import jax.scipy.linalg as jla
 import numpy as np
 import optax
 from jax import Array
@@ -74,13 +73,11 @@ def oe_sample(
     :returns: The retrieval result.
     """
 
-    def loss(q: Array, y: Array, u: Array) -> Array:
+    def loss(q: Array) -> Array:
         r"""
         The loss function.
 
         :param q: The sample :math:`x \in \mathbb{R}^{m}`.
-        :param y: The sample :math:`y \in \mathbb{R}^{n}`.
-        :param u: :math:`U(y) \in \mathbb{R}^{n \times n}`.
         :returns: The sample loss.
         """
         d = jnp.reshape(f(q) - y, -1)
@@ -105,7 +102,7 @@ def oe_sample(
         :param q: The sample.
         :returns: The cost.
         """
-        loss_term = loss(q, y, uy)
+        loss_term = loss(q)
         return loss_term if hx is None else loss_term + prior(q)
 
     def cond(carry: tuple[Any, ...]) -> Array:
@@ -140,8 +137,8 @@ def oe_sample(
         """
         Optimizes the sample.
 
-        :param x: The prior sample.
-        :returns: The posterior sample, the cost, and the convergence status.
+        :param x: The prior :math:`\check{x} \in \mathbb{R}^{m}`.
+        :returns: The posterior, the cost, and the convergence status.
         """
         tree = optimizer.init(x)
         cost, grad = cost_and_grad(x, state=tree)
@@ -153,7 +150,7 @@ def oe_sample(
         """
         Computes posterior uncertainty.
 
-        :param x: The posterior sample.
+        :param x: The posterior :math:`\hat{x} \in \mathbb{R}^{m}`.
         :returns: The posterior uncertainty tensor and standard uncertainty.
         """
         hess = jax.hessian(S)
