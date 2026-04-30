@@ -260,9 +260,9 @@ class EIV(Fitting):
         x: np.ndarray,
         y: np.ndarray,
         *,
+        p: np.ndarray | None = None,
         ux: np.ndarray | None = None,
         uy: np.ndarray | None = None,
-        p: np.ndarray | None = None,
         up: np.ndarray | None = None,
         use_covar: bool = False,
         atol: Any = DEFAULT_ATOL,
@@ -279,9 +279,9 @@ class EIV(Fitting):
         :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
+        :param p: Prior model parameter values :math:`\check{p}`.
         :param ux: Standard uncertainties :math:`u(X)`.
         :param uy: Standard uncertainties :math:`u(Y)`.
-        :param p: Prior model parameter values :math:`\check{p}`.
         :param up: Prior standard uncertainties :math:`u(\check{p})`.
         :param use_covar: Consider covariance?
         :param atol: The absolute tolerance for terminating the optimization.
