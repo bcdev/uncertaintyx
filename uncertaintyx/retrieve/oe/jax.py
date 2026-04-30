@@ -34,7 +34,7 @@ DEFAULT_MAX_STEPS: int = 2048
 
 
 @jax.jit(static_argnums=(0,), static_argnames=("max_steps",))
-def oe_sample(
+def _sample(
     f: Callable[[Array], Array],
     x: Array,
     y: Array,
@@ -46,10 +46,7 @@ def oe_sample(
     max_steps: int = DEFAULT_MAX_STEPS,
 ) -> tuple[Array, Array, Array, Array, Array]:
     r"""
-    This function does not belong to public API.
-
-    Optimal estimation (OE) retrieval using a limited-memory
-    Broyden-Fletcher-Goldfarb-Shanno (L-BFGS) optimizer.
+    Optimal estimation (OE) retrieval.
 
     The implementation accepts any combination of full-rank
     or diagonal-rank uncertainty tensors:
@@ -61,8 +58,6 @@ def oe_sample(
     Standard uncertainty is not accepted and must be squared to
     a variance (diagonal uncertainty tensor) before supplied as
     argument.
-
-    Otherwise, under the same notation as :class:`OE`:
 
     :param f: The function.
     :param x: Sample :math:`\check{x} \in \mathbb{R}^{m}`.
@@ -154,7 +149,7 @@ def oe_sample(
 
 
 @jax.jit(static_argnums=(0,))
-def oe_batch(
+def _batch(
     f: Callable[[Array], Array],
     x: Array,
     y: Array,
@@ -166,11 +161,8 @@ def oe_batch(
     max_steps: int = DEFAULT_MAX_STEPS,
 ) -> tuple[Array, Array, Array, Array, Array]:
     r"""
-    This function does not belong to public API.
-
-    Optimal estimation (OE) retrieval using a limited-memory
-    Broyden-Fletcher-Goldfarb-Shanno (L-BFGS) optimizer.
-
+    Optimal estimation (OE) retrieval.
+    
     The implementation accepts any combination of full-rank
     or diagonal-rank uncertainty tensors:
     :math:`U(\check{X}) \in \mathbb{R}^{M \times m \times m}`,
@@ -181,8 +173,6 @@ def oe_batch(
     Standard uncertainty is not accepted and must be squared to
     a variance (diagonal uncertainty tensor) before supplied as
     argument.
-
-    Otherwise, under the same notation as :class:`OE`:
 
     :param f: The function.
     :param x: Samples :math:`\check{X} \in \mathbb{R}^{M \times m}`.
@@ -195,14 +185,14 @@ def oe_batch(
     :returns: The retrieval result.
     """
 
-    def oe(x, y, ux, uy):
-        """Single-sample OE without keyword-only arguments."""
-        return oe_sample(
+    def sample(x, y, ux, uy):
+        """OE retrieval without keyword-only arguments."""
+        return _sample(
             f, x, y, ux, uy, atol=atol, rtol=rtol, max_steps=max_steps
         )
 
-    mapped = jax.vmap(
-        oe,
+    batch = jax.vmap(
+        sample,
         in_axes=(
             0,
             0,
@@ -210,7 +200,7 @@ def oe_batch(
             None if uy is None else 0,
         ),
     )
-    return mapped(x, y, ux, uy)
+    return batch(x, y, ux, uy)
 
 
 class OE(Retrieving):
@@ -226,7 +216,9 @@ class OE(Retrieving):
         *,
         ux: np.ndarray | None = None,
         uy: np.ndarray | None = None,
-        **kwargs,
+        atol: Any = DEFAULT_ATOL,
+        rtol: Any = DEFAULT_RTOL,
+        max_steps: int = DEFAULT_MAX_STEPS,
     ) -> Retrieved:
         r"""
         Solves an inverse problem of the form :math:`f(x) = y` for
@@ -237,7 +229,7 @@ class OE(Retrieving):
         Only standard uncertainties are accepted. You must not
         supply uncertainty tensors (neither diagonal nor full).
         Standard uncertainties are squared to variances before
-        passed to the OE optimizer.
+        passed to an optimizer.
 
         Under the same notation and remarks as :class:`F`:
 
@@ -246,15 +238,20 @@ class OE(Retrieving):
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param ux: Standard uncertainties :math:`u(\check{X})`.
         :param uy: Standard uncertainties :math:`u(Y)`.
+        :param atol: The absolute tolerance for terminating the optimization.
+        :param rtol: The relative tolerance for terminating the optimization.
+        :param max_steps: The maximum number of steps the optimizer can take.
         :returns: The retrieved result.
         """
-        xopt, xcov, xunc, cost, info = oe_batch(
+        xopt, xcov, xunc, cost, info = _batch(
             f.f,
             jnp.asarray(x),
             jnp.asarray(y),
             jnp.square(ux) if ux is not None else None,
             jnp.square(uy) if uy is not None else None,
-            **kwargs,
+            atol,
+            rtol,
+            max_steps,
         )
         xopt = np.asarray(xopt)
         zvar = np.var(f.eval(xopt) - y, axis=0)
