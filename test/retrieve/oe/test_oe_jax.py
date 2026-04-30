@@ -25,7 +25,7 @@ class OptimalEstimationTest(unittest.TestCase):
 
     def setUp(self):
         self.rng = np.random.default_rng(5489)
-        self.M = 50
+        self.M = 100
         self.m = 10
 
     def test_sphere(self):
@@ -115,7 +115,7 @@ class OptimalEstimationTest(unittest.TestCase):
         """
         f = DifferentPowers()
 
-        x = self.fuzzy(1.0, "x")
+        x = self.fuzzy(2.0, "x")
         y = self.sharp(0.0, "y")
         result = OE().retrieve(f, x, y)
 
