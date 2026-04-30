@@ -123,7 +123,7 @@ class Bootstrap(Fitting):
             pcov=np.atleast_2d(np.cov(popt.T, ddof=1)),
             punc=np.atleast_1d(np.std(popt, axis=0, ddof=1)),
             zvar=zvar,
-            cost=np.mean(cost),
+            cost=np.mean(cost),  # noqa
             info=0 if success_count > self._how_many // 2 else 1,
             cost_uncertainty=np.std(cost),
             success_count=success_count,
@@ -242,7 +242,7 @@ class MonteCarlo(Fitting):
             pcov=np.atleast_2d(np.cov(popt.T, ddof=1)),
             punc=np.atleast_1d(np.std(popt, axis=0, ddof=1)),
             zvar=zvar,
-            cost=np.mean(cost),
+            cost=np.mean(cost),  # noqa
             info=0 if success_count > self._how_many // 2 else 1,
             cost_uncertainty=np.std(cost),
             success_count=success_count,
