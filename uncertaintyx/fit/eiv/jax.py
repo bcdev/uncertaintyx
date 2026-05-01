@@ -16,14 +16,6 @@ Watson et al. (1984). The effective variance weighting
 for least squares calculations applied to the mass balance
 receptor model. Atmospheric Environment (1967), 18, 1347-1355.
 https://doi.org/10.1016/0004-6981(84)90043-X.
-
-D. York (1968). Least squares fitting of a straight line
-with correlated errors. Earth and Planetary Science Letters,
-5, 320-324. https://doi.org/10.1016/S0012-821X(68)80059-7.
-
-D. York (1966). Least squares fitting of a straight line.
-Canadian Journal of Physics, 44, 1079-1086.
-https://doi.org/10.1139/p66-090.
 """
 
 from typing import Any
@@ -62,7 +54,7 @@ def _batch(
     uy: Array,
     up: Array | None = None,
     *,
-    use_covar: bool = False,
+    use_covar: bool = True,
     atol: Any = DEFAULT_ATOL,
     rtol: Any = DEFAULT_RTOL,
     max_steps: int = DEFAULT_MAX_STEPS,
@@ -264,7 +256,7 @@ class EIV(Fitting):
         ux: np.ndarray | None = None,
         uy: np.ndarray | None = None,
         up: np.ndarray | None = None,
-        use_covar: bool = False,
+        use_covar: bool = True,
         atol: Any = DEFAULT_ATOL,
         rtol: Any = DEFAULT_RTOL,
         max_steps: int = DEFAULT_MAX_STEPS,
