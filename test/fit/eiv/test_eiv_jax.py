@@ -80,13 +80,13 @@ class ErrorsInVariablesTest(unittest.TestCase):
             title="Errors-in-variables regression",
         )
 
-    def test_linear_model_with_covar(self):
+    def test_linear_model_diagonal(self):
         """
         Tests EIV regression by fitting a linear model to generated
         test data with known uncertainties of x and y.
         """
         result = EIV().fit(
-            Linear(), self.x, self.y, ux=self.u, uy=self.u, use_covar=True
+            Linear(), self.x, self.y, ux=self.u, uy=self.u, use_covar=False
         )
 
         self.assertEqual(0, result.info)
