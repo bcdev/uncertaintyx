@@ -33,7 +33,6 @@ DEFAULT_MAX_STEPS: int = 2048
 """The maximum number of steps the optimizer can take."""
 
 
-@jax.jit(static_argnums=(0,), static_argnames=("max_steps",))
 def _sample(
     f: Callable[[Array], Array],
     x: Array,
@@ -216,6 +215,9 @@ class OE(Retrieving):
         *,
         ux: np.ndarray | None = None,
         uy: np.ndarray | None = None,
+        atol: Any = DEFAULT_ATOL,
+        rtol: Any = DEFAULT_RTOL,
+        max_steps: int = DEFAULT_MAX_STEPS,
         **kwargs,
     ) -> Retrieved:
         r"""
@@ -236,6 +238,9 @@ class OE(Retrieving):
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param ux: Standard uncertainties :math:`u(\check{X})`.
         :param uy: Standard uncertainties :math:`u(Y)`.
+        :param atol: The absolute tolerance for terminating the optimization.
+        :param rtol: The relative tolerance for terminating the optimization.
+        :param max_steps: The maximum number of steps the optimizer can take.
         :returns: The retrieved result.
         """
         xopt, xcov, xunc, cost, info = _batch(
@@ -244,6 +249,9 @@ class OE(Retrieving):
             jnp.asarray(y),
             jnp.square(ux) if ux is not None else None,
             jnp.square(uy) if uy is not None else None,
+            atol=atol,
+            rtol=rtol,
+            max_steps=max_steps,
         )
         xopt = np.asarray(xopt)
         zvar = np.var(f.eval(xopt) - y, axis=0)
