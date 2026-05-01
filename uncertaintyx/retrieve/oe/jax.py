@@ -147,7 +147,7 @@ def _sample(
     return xopt, xcov, xunc, cost, info
 
 
-@jax.jit(static_argnums=(0,))
+@jax.jit(static_argnums=(0,), static_argnames=("max_steps",))
 def _batch(
     f: Callable[[Array], Array],
     x: Array,
