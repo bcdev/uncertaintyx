@@ -95,11 +95,11 @@ $$
 
 The main objective of Tyx is to provide efficient access to
 uncertainty tensors for such functions. While Jacobians themselves
-are obtained through automatic differentiation (using JAX),
-Tyx delivers a high-level interface, utilities, and structured
-handling for them. These Jacobians form the foundation for parameter
-estimation, sensitivity analysis, and uncertainty propagation within
-the framework.
+are obtained through automatic differentiation, Tyx delivers a
+high-level interface, utilities, and structured handling for them.
+These Jacobians form the foundation for parameter estimation,
+sensitivity analysis, and uncertainty propagation within the
+framework.
 
 The **single-input tensor paradigm** is lightweight and modern,
 following the design principles of leading machine learning frameworks.
