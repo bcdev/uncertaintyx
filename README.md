@@ -59,11 +59,9 @@ with the tensor equation and code further below.
 or Monte Carlo often struggle with scalability for high-dimensional
 tensors, demanding extensive evaluations or approximations that compromise
 fidelity. Frameworks like JAX, facilitating GPUs and TPUs besides CPUs,
-make  differentiation a game changer, automatically generating
-exact derivatives—even for complex, nonlinear models—at machine precision
-to produce Jacobians and Hessians seamlessly. This approach efficiently
-propagates full covariance structures while honouring spatiotemporal
-correlations.
+make algorithmic differentiation a game changer, automatically generating
+exact Jacobians, Hessians and higher order derivatives—even for complex,
+nonlinear models.
 
 **How does it work?** You define and code a function that maps from one
 tensor space to another:
