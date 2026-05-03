@@ -59,7 +59,7 @@ with the tensor equation and code further below.
 or Monte Carlo often struggle with scalability for high-dimensional
 tensors, demanding extensive evaluations or approximations that compromise
 fidelity. Frameworks like JAX, facilitating GPUs and TPUs besides CPUs,
-make algorithmic differentiation a game changer, automatically generating
+make algorithmic differentiation a Game Changer, automatically generating
 exact Jacobians, Hessians and higher order derivatives—even for complex,
 nonlinear models.
 
@@ -101,7 +101,7 @@ These Jacobians form the foundation for parameter estimation,
 sensitivity analysis, and uncertainty propagation within the
 framework.
 
-The **single-input tensor paradigm** is lightweight and modern,
+The **Single-Input Tensor Paradigm** is lightweight and modern,
 following the design principles of leading machine learning frameworks.
 By accepting a single input tensor of arbitrary shape, the model
 remains both flexible and conceptually clean—supporting multiple
