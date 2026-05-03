@@ -33,7 +33,7 @@ computational workflows.
 > ([Quast et al. 2019](https://doi.org/10.3390/rs11050480);
 > [Giering et al., 2019](https://doi.org/10.3390/rs11091002)).
 
-## Synopsis
+# Synopsis
 
 **Uncertaintyx** (or just **Tyx**) is a lightweight framework for
 tensor‑level uncertainty propagation, inverse problems, and
@@ -119,7 +119,7 @@ of Tyx.
 > is one pixel”, but this is often an oversimplification that obscures
 > the full structure of the data and its uncertainties.
 
-## Law of propagation of uncertainty
+# Law of propagation of uncertainty
 
 Using Einstein's summation convention and the symmetry of the
 input uncertainty tensor $U$, the law of propagation of uncertainty
