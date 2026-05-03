@@ -25,7 +25,7 @@ being limited by legacy ideas that ignore metrology.
 # Differentiable programming
 
 Everyone wants explainable AI, but most “ML” in Earth Observation still
-acts as a black box that ignores the physics we already know.
+remains a decoupled black box that ignores the physics we already know.
 
 Our idea is to flip that around: start from existing, physics‑based
 EO algorithms and express their logic in a differentiation‑enabled framework.
