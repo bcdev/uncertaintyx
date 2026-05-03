@@ -1,11 +1,14 @@
-<!-- MathJax Setup -->
 <script>
-  MathJax = {
+  window.MathJax = {
     tex: {
-      inlineMath: [['$', '$'], ['\\(', '\\)']]
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    svg: {
+      fontCache: 'global'
     }
   };
 </script>
-<script id="MathJax-script" async
+<script id="MathJax-script" async 
   src="https://jsdelivr.net">
 </script>
