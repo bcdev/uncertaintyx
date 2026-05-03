@@ -13,19 +13,18 @@
     {% include head-custom.html %}
     <script>
       window.MathJax = {
-    tex: {
-      inlineMath: [['$', '$'], ['\\(', '\\)']],
-      displayMath: [['$$', '$$']],
-      processEscapes: true,
-      processEnvironments: true
-    },
-    options: {
-      // Dies zwingt MathJax, die von Kramdown erzeugten Tags zu scannen
-      processHtmlClass: 'math|concept'
-    }
-  };
-</script>
-<script src="https://jsdelivr.net" id="MathJax-script" async></script>
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$']],
+          processEscapes: true,
+          processEnvironments: true
+        },
+        options: {
+          processHtmlClass: 'math|concept'
+        }
+      };
+    </script>
+    <script src="https://jsdelivr.net" id="MathJax-script" async></script>
   </head>
   <body>
     <a id="skip-to-content" href="#content">Skip to the content.</a>
