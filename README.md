@@ -6,7 +6,7 @@ In an algorithm-driven measurement context, the “measurement models” are
 not static laboratory instruments but complex, evolving data-processing
 codes. In this setting, the classical [GUM](https://doi.org/10.59161/JCGMGUM-1-2023)
 framework—built on assumptions of a fixed analytical model, a fixed data
-flow, and manually maintained analytical Jacobians—offers less comprehensive
+flow, and manually maintained analytical Jacobians—offers less direct
 practical guidance. The true forward map is defined by the current state of
 the code, which evolves as algorithms, implementations, and data dependencies
 change.
