@@ -26,11 +26,10 @@ turning them from external annotations into active elements of
 computational workflows.
 
 > [NPL Report CMSC 26/03](https://eprintspublications.npl.co.uk/2828/1/cmsc26.pdf)
-> ranks AD as the most accurate. The concept presented here grew out
-> of earlier, project‑specific implementations of AD‑based uncertainty
-> propagation. AD workflows were instrumental within the [FIDUCEO](https://www.fiduceo.eu)
-> project to enable the multi‑mission remote sensing calibration that
-> underpins Earth climate data records
+> ranks AD as the most accurate. AD workflows were instrumental
+> within the [FIDUCEO](https://www.fiduceo.eu)
+> project to enable the multi‑mission remote sensing calibration
+> that underpins Earth climate data records
 > ([Quast et al. 2019](https://doi.org/10.3390/rs11050480);
 > [Giering et al., 2019](https://doi.org/10.3390/rs11091002)).
 
