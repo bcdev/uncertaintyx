@@ -44,7 +44,13 @@ DEFAULT_MAX_STEPS: int = 2048
 """The maximum number of steps the optimizer can take."""
 
 
-@jax.jit(static_argnums=(0,), static_argnames=("use_covar", "max_steps",))
+@jax.jit(
+    static_argnums=(0,),
+    static_argnames=(
+        "use_covar",
+        "max_steps",
+    ),
+)
 def _batch(
     f: Callable[[Array, Array], Array],
     p: Array,
