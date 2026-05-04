@@ -155,14 +155,7 @@ def _batch(
         """
         d = f(P, x) - y
         G = g(P, x)  # noqa: N806
-        if not use_covar:
-            U = upd(x.ndim, G, ux) + (  # noqa: N806
-                uy
-                if uy.ndim == y.ndim
-                else jnp.diag(uy.reshape((y.size, -1))).reshape(y.shape)
-            )
-            b = d / U
-        else:
+        if y.size > 1 and use_covar:
             d = d.reshape(-1)
             U = upc(x.ndim, G, ux).reshape((y.size, -1)) + (  # noqa: N806
                 jnp.diag(uy.reshape(-1))
@@ -170,6 +163,13 @@ def _batch(
                 else uy.reshape((y.size, -1))
             )
             b = jla.cho_solve(jla.cho_factor(U), d)
+        else:
+            U = upd(x.ndim, G, ux) + (  # noqa: N806
+                uy
+                if uy.ndim == y.ndim
+                else jnp.diag(uy.reshape((y.size, -1))).reshape(y.shape)
+            )
+            b = d / U
         return 0.5 * jnp.sum(d * b)
 
     def prior(P: Array) -> Array:  # noqa: N806
