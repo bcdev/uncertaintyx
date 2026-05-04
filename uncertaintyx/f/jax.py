@@ -208,24 +208,6 @@ class Cigar(ToF):
     A test function.
 
     The test function has a global minimum at zero.
-    All but one axes are scaled extremely.
-    """
-
-    def __init__(self):
-        def f(x):
-            """The test function."""
-            a = jnp.sum(jnp.square(x[:1]))
-            b = jnp.sum(jnp.square(x[1:]))
-            return a + 1.0e06 * b
-
-        super().__init__(f)
-
-
-class Tablet(ToF):
-    """
-    A test function.
-
-    The test function has a global minimum at zero.
     One axis is scaled extremely.
     """
 
@@ -235,6 +217,24 @@ class Tablet(ToF):
             a = jnp.sum(jnp.square(x[:1]))
             b = jnp.sum(jnp.square(x[1:]))
             return 1.0e06 * a + b
+
+        super().__init__(f)
+
+
+class Tablet(ToF):
+    """
+    A test function.
+
+    The test function has a global minimum at zero.
+    All but one axes are scaled extremely.
+    """
+
+    def __init__(self):
+        def f(x):
+            """The test function."""
+            a = jnp.sum(jnp.square(x[:1]))
+            b = jnp.sum(jnp.square(x[1:]))
+            return a + 1.0e06 * b
 
         super().__init__(f)
 
