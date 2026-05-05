@@ -50,7 +50,7 @@ class ExampleTest(unittest.TestCase):
     https://doi.org/10.59161/JCGMGUM-6-2020].
     """
 
-    def test_9_4_2(self):
+    def test_9_4_2_2(self):
         measured = np.array(
             [
                 [5.007, 19.663e-03, 1.0456],
@@ -89,6 +89,37 @@ class ExampleTest(unittest.TestCase):
         self.assertAlmostEqual(0.058, np.sqrt(U[0, 0, 0]), places=3)
         self.assertAlmostEqual(0.241, np.sqrt(U[0, 1, 1]), places=3)
         self.assertAlmostEqual(0.193, np.sqrt(U[0, 2, 2]), places=3)
+
+        R = to_cor(1, U)  # noqa: N806
+        self.assertAlmostEqual(-0.588, R[0, 0, 1], places=3)
+        self.assertAlmostEqual(-0.485, R[0, 0, 2], places=3)
+        self.assertAlmostEqual(-0.588, R[0, 1, 0], places=3)
+        self.assertAlmostEqual(0.00749, 1.0 - R[0, 1, 2], places=5)
+        self.assertAlmostEqual(-0.485, R[0, 2, 0], places=3)
+        self.assertAlmostEqual(0.00749, 1.0 - R[0, 2, 1], places=5)
+
+    def test_9_4_2_5(self):
+        measured = np.array(
+            [
+                [5.007, 19.663e-03, 1.0456],
+                [4.994, 19.639e-03, 1.0438],
+                [5.005, 19.640e-03, 1.0468],
+                [4.990, 19.685e-03, 1.0428],
+                [4.999, 19.678e-03, 1.0433],
+                [4.999, 19.661e-03, 1.0445],
+            ]
+        )
+        X = np.broadcast_to(np.mean(measured, axis=0), (1, 3))  # noqa: N806
+        V = np.broadcast_to(  # noqa: N806
+            np.tensordot(measured - X, measured - X, ([0], [0])) / 6.0,
+            (1, 3, 3),
+        )
+        f = Impedance()
+
+        U = f.lpu(X, V)  # noqa: N806
+        self.assertAlmostEqual(0.130, np.sqrt(U[0, 0, 0]), places=3)
+        self.assertAlmostEqual(0.540, np.sqrt(U[0, 1, 1]), places=3)
+        self.assertAlmostEqual(0.431, np.sqrt(U[0, 2, 2]), places=3)
 
         R = to_cor(1, U)  # noqa: N806
         self.assertAlmostEqual(-0.588, R[0, 0, 1], places=3)
