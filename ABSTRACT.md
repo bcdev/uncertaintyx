@@ -41,4 +41,6 @@ expressed in an AD‑enabled framework (such as JAX) can, in principle,
 be turned into an algorithmically differentiable measurement model
 with automatic, tensor‑level uncertainty propagation built in.
 
-> Abstract submitted to ESA $\Phi$-innovation Summit 2026 <https://philab.esa.int/phinnovation/>.
+> **Note**
+> Abstract submitted to ESA $\Phi$-innovation Summit
+> 2026 (<https://philab.esa.int/phinnovation/>).
