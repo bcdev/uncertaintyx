@@ -146,7 +146,7 @@ class QaaTest(unittest.TestCase):
         Tests the bootstrap method by fitting an empirical model functions
         to published data (Lee et al., 2010, Figure 2).
         """
-        x, y = read_plot_data("test.resources", "fig2.csv")
+        x, y = read_plot_data("test.resources.oceancolour", "fig2.csv")
 
         result = Bootstrap(HomoscedasticRegression(EIV())).fit(
             E(), x, y, up=np.array([0.5, 0.5, 0.5])
@@ -195,7 +195,7 @@ class QaaTest(unittest.TestCase):
         Tests the bootstrap method by fitting an empirical model function
         to published data (Lee et al., 2010, Figure 3).
         """
-        x, y = read_plot_data("test.resources", "fig3.csv")
+        x, y = read_plot_data("test.resources.oceancolour", "fig3.csv")
 
         result = Bootstrap(HomoscedasticRegression(EIV())).fit(S(), x, y)
 
@@ -298,7 +298,9 @@ class QaaTest(unittest.TestCase):
         Test with tolerance increased because there is a logical flaw in
         the reference Excel sheet (TBC).
         """
-        R, M, m = read_test_data("test.resources", "rrs.csv")  # noqa: N806
+        R, M, m = read_test_data(  # noqa: N806
+            "test.resources.oceancolour", "rrs.csv"
+        )
         f = QAA()
         x = np.stack(
             [
@@ -312,7 +314,9 @@ class QaaTest(unittest.TestCase):
         p = f.prior()
         y = f.eval(p, x)
 
-        A, _, n = read_test_data("test.resources", "a.csv")  # noqa: N806
+        A, _, n = read_test_data(  # noqa: N806
+            "test.resources.oceancolour", "a.csv"
+        )
         a = y[:, 0, :]
         for i in range(M):
             for j in range(n):
@@ -328,7 +332,7 @@ class QaaTest(unittest.TestCase):
         Test QAA on optical water type (OWT) classes.
         """
         w, R, u, M, m = read_owt_data(  # noqa : N806
-            "test.resources", "owt.csv"
+            "test.resources.oceancolour", "owt.csv"
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
 

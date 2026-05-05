@@ -41,7 +41,7 @@ class OCxTest(unittest.TestCase):
     def test_ci(self):
         """Tests the chlorophyll index (CI) model function."""
         w, R, u, M, m = read_owt_data(  # noqa : N806
-            "test.resources", "owt.csv"
+            "test.resources.oceancolour", "owt.csv"
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
 
@@ -92,7 +92,7 @@ class OCxTest(unittest.TestCase):
     def test_oc4(self):
         """Tests the OC4 model function."""
         _, R, u, M, m = read_owt_data(  # noqa : N806
-            "test.resources", "owt.csv"
+            "test.resources.oceancolour", "owt.csv"
         )
 
         f = OC4()
@@ -140,7 +140,7 @@ class OCxTest(unittest.TestCase):
     def test_oci(self):
         """Tests the OCI model function."""
         w, R, u, M, m = read_owt_data(  # noqa : N806
-            "test.resources", "owt.csv"
+            "test.resources.oceancolour", "owt.csv"
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
 
