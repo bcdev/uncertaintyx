@@ -10,9 +10,6 @@ from jax import Array
 import uncertaintyx.f.jax as tyx
 from test.gum import to_cor
 
-C = jnp.asarray([[1.0, 0.0, 1.0], [0.0, 1.0, 1.0]])
-"""The sensitivity matrix."""
-
 
 class Impedance(tyx.ToF):
     """
