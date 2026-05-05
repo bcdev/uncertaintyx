@@ -35,7 +35,7 @@ class Transformation(tyx.ToF):
 
 class ExampleTest(unittest.TestCase):
     """
-    Tests a coordinate transformation (GUM Supplement 2, Example 9.3,
+    Tests a coordinate transformation (JCGM 102:2011, Example 9.3,
     https://doi.org/10.59161/JCGM102-2011).
     """
 
