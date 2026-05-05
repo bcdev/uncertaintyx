@@ -29,7 +29,7 @@ class AdditiveModel(tyx.ToF):
 
 class ExampleTest(unittest.TestCase):
     """
-    Tests an additive measurement model (GUM Supplement 2, Example 9.2,
+    Tests an additive measurement model (JCGM 102:2011, Example 9.2,
     https://doi.org/10.59161/JCGM102-2011).
     """
 

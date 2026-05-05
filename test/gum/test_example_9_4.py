@@ -39,16 +39,15 @@ class Impedance(tyx.ToF):
 
 class ExampleTest(unittest.TestCase):
     """
-    Tests an impedance measurement (GUM Supplement 2, Example 9.4,
+    Tests an impedance measurement (JCGM 102:2011, Example 9.4,
     https://doi.org/10.59161/JCGM102-2011).
 
-    Tables 9 and 10 list rounded numbers which are too inaccurate
-    to reproduce the test. Mean values and uncertainty tensor are
-    therefore computed (to machine precision) from the measured
-    values by means of equations listed under 9.4.2.2.
-
-    Round-off error obviously affected some figures listed in
-    Table 11.
+    Recomputing Example 9.4 from the original measurements to machine
+    precision reproduced all tabulated results to the last decimal place
+    except one (off by 2), consistent with GUM guidance on numerical
+    inconsistencies due to intermediate rounding [JCGM 100:2008,
+    https://doi.org/10.59161/JCGM100-2008E; JCGM GUM-6:2020,
+    https://doi.org/10.59161/JCGMGUM-6-2020].
     """
 
     def test_9_4_2(self):
