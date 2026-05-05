@@ -26,6 +26,7 @@ uncertainties to be integrated **within** data‑processing codes themselves,
 turning them from external annotations into active elements of
 computational workflows.
 
+> **Note**
 > [NPL Report CMSC 26/03](https://eprintspublications.npl.co.uk/2828/1/cmsc26.pdf)
 > ranks AD as the most accurate. AD workflows were instrumental
 > within the [FIDUCEO](https://www.fiduceo.eu)
@@ -111,6 +112,7 @@ the user’s responsibility. In this role, you serve as the *Thalamus*—the
 interface channelling structured data into the computational core
 of Tyx.
 
+> **Note**
 > The batch dimension $M$ enumerates independent samples (e.g.,
 > sensor scans, simulations, ensemble members) but you get to define
 > what “one sample” is: a single pixel value, a spectrum, a scan line,
@@ -162,6 +164,11 @@ def make_lpu(d: int) -> Callable[[Array, Array], Array]:
 Tyx hereby acts as a modern bridge, translating the rigorous logic
 of the Law of Propagation of Uncertainty into the high-dimensional,
 tensor-valued language of today’s computational frameworks.
+
+> **Note**
+> Tyx passes all GUM test examples with explicit measurement
+> models ([JCGM 102:2011](https://doi.org/10.59161/JCGM102-2011),
+> Examples 9.2, 9.3, and 9.4).
 
 [![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
 [![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
