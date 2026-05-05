@@ -3,16 +3,13 @@
 
 import unittest
 
-import jax.numpy as jnp
 import numpy as np
-from jax import Array
+import torch
+from torch import Tensor
 
-import uncertaintyx.f.jax as tyx
+import uncertaintyx.f.torch as tyx
 from test.gum import to_cor
 from test.gum import to_cov
-
-C = jnp.asarray([[1.0, 0.0, 1.0], [0.0, 1.0, 1.0]])
-"""The sensitivity matrix."""
 
 
 class Transformation(tyx.ToF):
@@ -21,12 +18,12 @@ class Transformation(tyx.ToF):
     """
 
     def __init__(self):
-        def f(x: Array) -> Array:
+        def f(x: Tensor) -> Tensor:
             """The additive measurement model"""
-            return jnp.stack(
+            return torch.stack(
                 [
-                    jnp.sqrt(jnp.sum(jnp.square(x))),
-                    jnp.arctan2(x[1], x[0]),
+                    torch.sqrt(torch.sum(torch.square(x))),
+                    torch.arctan2(x[1], x[0]),
                 ]
             )
 
