@@ -36,6 +36,11 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings
         flake8 . --count --exit-zero --ignore E203 --max-complexity=14 --max-line-length=78 --statistics
+    - name: Count source lines of code
+      run: |
+        wget -qO scc.tar.gz https://github.com/boyter/scc/releases/latest/download/scc_Linux_x86_64.tar.gz
+        tar xf scc.tar.gz
+        ./scc --ci -i py -x csv
     - name: Test with pytest
       run: |
         pytest --cov=.
