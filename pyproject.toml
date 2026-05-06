@@ -71,7 +71,7 @@ line-length = 78
 
 [tool.coverage.report]
 exclude_also = [
-    "# no coverage",
+    "@torch.compile",
 ]
 
 [tool.coverage.run]
