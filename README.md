@@ -167,7 +167,7 @@ tensor-valued language of today’s computational frameworks.
 
 > **Note**
 > Tyx passes the GUM example cases with explicit measurement
-> models in [JCGM 102:2011](https://doi.org/10.59161/JCGM102-2011),
+> models in [JCGM 102:2011](https://doi.org/10.59161/JCGM102-2011)
 > (Examples 9.2, 9.3, and 9.4) which are implemented as unit‑level
 > tests to verify correctness and accuracy to the last digit
 > listed.
