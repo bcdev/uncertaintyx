@@ -169,21 +169,21 @@ def vec_x(f: Callable[[Array, Array], Array], p: Array, x: Array) -> Array:
     return jax.vmap(f, in_axes=(None, 0))(p, x)
 
 
-def jac_p_no_jit(  # no coverage
+def jac_p_no_jit(  # pragma: no cover
     f: Callable[[Array, Array], Array], p: Array, x: Array, rev: bool = True
 ) -> Array:
     """Noncompiled version of :meth:`jac_p` for debugging."""
     return jax.vmap(jac(f, 0, rev), in_axes=(None, 0))(p, x)
 
 
-def jac_x_no_jit(  # no coverage
+def jac_x_no_jit(  # pragma: no cover
     f: Callable[[Array, Array], Array], p: Array, x: Array, rev: bool = True
 ) -> Array:
     """Noncompiled version of :meth:`jac_x` for debugging."""
     return jax.vmap(jac(f, 1, rev), in_axes=(None, 0))(p, x)
 
 
-def vec_x_no_jit(  # no coverage
+def vec_x_no_jit(  # pragma: no cover
     f: Callable[[Array, Array], Array], p: Array, x: Array
 ) -> Array:
     """Noncompiled version of :meth:`vec_x` for debugging."""

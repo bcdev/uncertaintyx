@@ -7,12 +7,12 @@ try:
     import jax
 
     jax.config.update("jax_enable_x64", True)
-except ImportError:
-    pass  # ignore
+except ImportError:  # pragma: no cover
+    pass
 
 try:
     import torch
 
     torch.set_default_dtype(torch.float64)
-except ImportError:
-    pass  # ignore
+except ImportError:  # pragma: no cover
+    pass

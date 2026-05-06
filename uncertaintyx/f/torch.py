@@ -68,7 +68,7 @@ def lpu(d: int, g: Tensor, u: Tensor, diag: bool = False) -> Tensor:
     return torch.vmap(make_lpu(d, diag), in_dims=(0, 0))(g, u)
 
 
-def make_lpu(
+def make_lpu(  # pragma: no cover
     d: int, diag: bool = False
 ) -> Callable[[Tensor, Tensor], Tensor]:
     """
@@ -106,7 +106,7 @@ def vec(f: Callable[[Tensor], Tensor], x: Tensor) -> Tensor:
     return torch.vmap(f)(x)
 
 
-def jac_no_jit(  # no coverage
+def jac_no_jit(  # pragma: no cover
     f: Callable[[Tensor], Tensor], x: Tensor, rev: bool = True
 ) -> Tensor:
     """Noncompiled version of :meth:`jac` for debugging."""
@@ -115,7 +115,7 @@ def jac_no_jit(  # no coverage
     )
 
 
-def vec_no_jit(  # no coverage
+def vec_no_jit(  # pragma: no cover
     f: Callable[[Tensor], Tensor], x: Tensor
 ) -> Tensor:
     """Noncompiled version of :meth:`vec` for debugging."""
