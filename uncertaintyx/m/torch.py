@@ -69,7 +69,9 @@ def jac_x(
     return torch.vmap(jac(f, 1, rev), in_dims=(None, 0))(p, x)
 
 
-def jac(f: Callable[[Tensor, Tensor], Tensor], arg: int, rev: bool = True):
+def jac(  # pragma: no cover
+    f: Callable[[Tensor, Tensor], Tensor], arg: int, rev: bool = True
+):
     """Returns the Jacobian (does not belong to public API)."""
     return (
         torch.func.jacrev(f, argnums=arg)
@@ -141,7 +143,7 @@ def lpu_x(d: int, g: Tensor, u: Tensor, diag: bool = False) -> Tensor:
     return torch.vmap(make_lpu(d, diag), in_dims=(0, 0))(g, u)
 
 
-def make_lpu(
+def make_lpu(  # pragma: no cover
     d: int, diag: bool = False
 ) -> Callable[[Tensor, Tensor], Tensor]:
     """
@@ -182,21 +184,21 @@ def vec_x(
     return torch.vmap(f, in_dims=(None, 0))(p, x)
 
 
-def jac_p_no_jit(  # no coverage
+def jac_p_no_jit(  # pragma: no cover
     f, p: Tensor, x: Tensor, rev: bool = True
 ) -> Tensor:
     """Noncompiled version of :meth:`jac_p` for debugging."""
     return torch.vmap(jac(f, 0, rev), in_dims=(None, 0))(p, x)
 
 
-def jac_x_no_jit(  # no coverage
+def jac_x_no_jit(  # pragma: no cover
     f, p: Tensor, x: Tensor, rev: bool = True
 ) -> Tensor:
     """Noncompiled version of :meth:`jac_x` for debugging."""
     return torch.vmap(jac(f, 1, rev), in_dims=(None, 0))(p, x)
 
 
-def vec_x_no_jit(  # no coverage
+def vec_x_no_jit(  # pragma: no cover
     f: Callable[[Tensor, Tensor], Tensor], p: Tensor, x: Tensor
 ) -> Tensor:
     """Noncompiled version of :meth:`vec_x` for debugging."""

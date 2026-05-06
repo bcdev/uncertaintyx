@@ -103,14 +103,14 @@ def vec(f: Callable[[Array], Array], x: Array) -> Array:
     return jax.vmap(f)(x)
 
 
-def jac_no_jit(  # no coverage
+def jac_no_jit(  # pragma: no cover
     f: Callable[[Array], Array], x: Array, rev: bool = True
 ) -> Array:
     """Noncompiled version of :meth:`jac` for debugging."""
     return jax.vmap(jax.jacrev(f) if rev else jax.jacfwd(f))(x)
 
 
-def vec_no_jit(  # no coverage
+def vec_no_jit(  # pragma: no cover
     f: Callable[[Array], Array], x: Array
 ) -> Array:
     """Noncompiled version of :meth:`vec` for debugging."""
