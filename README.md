@@ -168,7 +168,7 @@ tensor-valued language of today’s computational frameworks.
 > **Note**
 > Tyx passes illustrative GUM examples with explicit measurement
 > models ([JCGM 102:2011](https://doi.org/10.59161/JCGM102-2011),
-> Examples 9.2, 9.3, and 9.4) which are implemented as unit‑level
+> Examples 9.2, 9.3, and 9.4) that are implemented as unit‑level
 > tests to verify correctness and accuracy.
 
 [![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
