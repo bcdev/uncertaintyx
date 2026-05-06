@@ -276,28 +276,6 @@ class ToM(M, ABC):
         return self._f
 
 
-class Exponential(ToM):
-    """
-    The exponential model function.
-    """
-
-    def __init__(self):
-        def f(p, x):
-            """The exponential function."""
-            a, b, c = p
-            return a * jnp.exp(b * x) + c
-
-        super().__init__(f)
-
-    def prior(
-        self,
-        x: np.ndarray | None = None,
-        y: np.ndarray | None = None,
-        preset: str | None = None,
-    ) -> np.ndarray:
-        return np.array([1.0, 1.0, 0.0])
-
-
 class Linear(ToM):
     """
     The linear model function.
