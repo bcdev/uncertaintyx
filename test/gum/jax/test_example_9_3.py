@@ -19,7 +19,7 @@ class Transformation(tyx.ToF):
 
     def __init__(self):
         def f(x: Array) -> Array:
-            """The additive measurement model"""
+            """The measurement model"""
             return jnp.stack(
                 [
                     jnp.sqrt(jnp.sum(jnp.square(x))),

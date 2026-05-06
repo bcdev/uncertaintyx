@@ -18,7 +18,7 @@ class Impedance(tyx.ToF):
 
     def __init__(self):
         def f(x: Tensor) -> Tensor:
-            """The impedance measurement model"""
+            """The measurement model"""
             V, I, phi = x  # noqa: N806
             Z = V / I  # noqa: N806
             R = Z * torch.cos(phi)  # noqa: N806

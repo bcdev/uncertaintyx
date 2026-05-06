@@ -19,7 +19,7 @@ class Transformation(tyx.ToF):
 
     def __init__(self):
         def f(x: Tensor) -> Tensor:
-            """The additive measurement model"""
+            """The measurement model"""
             return torch.stack(
                 [
                     torch.sqrt(torch.sum(torch.square(x))),
