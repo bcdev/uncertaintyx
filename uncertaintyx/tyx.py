@@ -579,7 +579,7 @@ class Retrieved(Estimate):
     - The irreducible residual variance
       :math:`u^{2}(Z) \in \mathbb{R}^{M \times n}` of residuals
       :math:`Z = f(\hat{X}) - Y \in \mathbb{R}^{M \times n}` with
-      :math:`M(n - m)` residual degrees of freedom.
+      :math:`M - 1` residual degrees of freedom.
     - The value of the objective function at its minimum.
     - The exit status, a nonzero value indicating failure.
 
