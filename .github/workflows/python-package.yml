@@ -40,7 +40,7 @@ jobs:
       run: |
         wget -qO scc.tar.gz https://github.com/boyter/scc/releases/latest/download/scc_Linux_x86_64.tar.gz
         tar xf scc.tar.gz
-        ./scc --ci -i py -x csv
+        ./scc -i py
     - name: Test with pytest
       run: |
         pytest --cov=.
