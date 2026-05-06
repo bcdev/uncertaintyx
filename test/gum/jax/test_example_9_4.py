@@ -18,7 +18,7 @@ class Impedance(tyx.ToF):
 
     def __init__(self):
         def f(x: Array) -> Array:
-            """The impedance measurement model"""
+            """The measurement model"""
             V, I, phi = x  # noqa: N806
             Z = V / I  # noqa: N806
             R = Z * jnp.cos(phi)  # noqa: N806

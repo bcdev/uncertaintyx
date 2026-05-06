@@ -21,7 +21,7 @@ class AdditiveModel(tyx.ToF):
 
     def __init__(self):
         def f(x: Array) -> Array:
-            """The additive measurement model"""
+            """The measurement model"""
             return C @ x
 
         super().__init__(f)
