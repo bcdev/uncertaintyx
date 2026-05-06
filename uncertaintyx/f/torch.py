@@ -16,6 +16,7 @@ from torch import Tensor
 from ..tyx import F
 
 
+@torch.compile
 def jac(f: Callable[[Tensor], Tensor], x: Tensor, rev: bool = True) -> Tensor:
     r"""
     Evaluates the Jacobian :math:`(G_x f)(X)`.
@@ -91,6 +92,7 @@ def make_lpu(
     return lpu
 
 
+@torch.compile
 def vec(f: Callable[[Tensor], Tensor], x: Tensor) -> Tensor:
     r"""
     Evaluates :math:`f(X)`.
