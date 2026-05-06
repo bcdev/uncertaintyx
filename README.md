@@ -166,10 +166,11 @@ of the Law of Propagation of Uncertainty into the high-dimensional,
 tensor-valued language of today’s computational frameworks.
 
 > **Note**
-> Tyx passes illustrative GUM examples with explicit measurement
-> models ([JCGM 102:2011](https://doi.org/10.59161/JCGM102-2011),
-> Examples 9.2, 9.3, and 9.4) that are implemented as unit‑level
-> tests to verify correctness and accuracy.
+> Tyx passes the GUM example cases with explicit measurement
+> models in [JCGM 102:2011](https://doi.org/10.59161/JCGM102-2011),
+> (Examples 9.2, 9.3, and 9.4) which are implemented as unit‑level
+> tests to verify correctness and accuracy to the last digit
+> listed.
 
 [![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
 [![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
