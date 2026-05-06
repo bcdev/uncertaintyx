@@ -254,7 +254,7 @@ class OE(Retrieving):
             max_steps=max_steps,
         )
         xopt = np.asarray(xopt)
-        zvar = np.var(f.eval(xopt) - y, axis=0)
+        zvar = np.var(f.eval(xopt) - y, axis=0, ddof=1)
         return Retrieved(
             xopt=xopt,
             xcov=np.asarray(xcov),
