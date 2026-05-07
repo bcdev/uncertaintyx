@@ -7,6 +7,7 @@ Adapters employ JAX algorithmic differentiation to compute
 derivatives of generic functions.
 """
 
+from typing import Any
 from typing import Callable
 
 import jax
@@ -168,6 +169,19 @@ class ToF(F):
     @property
     def f(self) -> Callable[[Array], Array]:
         return self._f
+
+
+class Line(ToF):
+    """
+    A test function.
+    """
+
+    def __init__(self, a: Any = 1.0, b: Any = 0.0):
+        def f(x):
+            """The test function."""
+            return a * x + b
+
+        super().__init__(f)
 
 
 class Sphere(ToF):
