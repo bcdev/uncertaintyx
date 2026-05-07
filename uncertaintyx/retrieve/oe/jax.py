@@ -43,7 +43,7 @@ def _sample(
     atol: Any = DEFAULT_ATOL,
     rtol: Any = DEFAULT_RTOL,
     max_steps: int = DEFAULT_MAX_STEPS,
-) -> tuple[Array, Array, Array, Array, Array]:
+) -> tuple[Array, Array, Array, Array, Array, Array]:
     r"""
     Optimal estimation (OE) retrieval.
 
@@ -100,17 +100,35 @@ def _sample(
         """
         return loss(X) if hx is None else loss(X) + prior(X)
 
-    def post(x: Array) -> tuple[Array, Array]:  # noqa : N806
+    def post(x: Array) -> tuple[Array, Array, Array]:
         r"""
-        Computes the posterior uncertainty.
+        Computes the posterior uncertainty tensor, the posterior
+        standard uncertainty and the resolution tensor.
 
         :param x: The posterior :math:`\hat{x} \in \mathbb{R}^{m}`.
-        :returns: The posterior uncertainty tensor and standard uncertainty.
+        :returns: The posterior uncertainty tensor, the standard
+            uncertainty, and the resolution tensor. The trace of
+            the resolution tensor can be interpreted as the number
+            of parameters resolved (determined) by the data (and
+            not by prior information). In this sense, the trace
+            of the resolution tensor can be taken as the effective
+            degrees of freedom.
         """
-        hess = jax.hessian(misfit)
-        xcov = jli.pinv(hess(x).reshape(x.size, -1))
-        xunc = jnp.sqrt(jnp.diag(xcov))
-        return xcov.reshape(x.shape + x.shape), xunc.reshape(x.shape)
+        H = jax.hessian(misfit)  # noqa : N806
+        U = jli.pinv(H(x).reshape(x.size, -1))  # noqa : N806
+        u = jnp.sqrt(jnp.diag(U))
+        R = jnp.eye(x.size)  # noqa : N806
+        if hx is not None:
+            R = R - (  # noqa : N806
+                U * hx.reshape(-1)
+                if hx.ndim == x.ndim
+                else U @ hx.reshape(x.size, -1)
+            )
+        return (
+            U.reshape(x.shape + x.shape),
+            u.reshape(x.shape),
+            R.reshape(x.shape + x.shape),
+        )
 
     def invert(u: Array, t: Array) -> Array:
         """
@@ -140,11 +158,11 @@ def _sample(
         misfit, make_minimizer(), x, max_steps=max_steps, throw=False
     )
     xopt = optimum.value
-    xcov, xunc = post(xopt)
+    xcov, xunc, rslv = post(xopt)
     cost = misfit(xopt)
     info = jnp.where(optimum.result == optimistix.RESULTS.successful, 0, 1)
 
-    return xopt, xcov, xunc, cost, info
+    return xopt, xcov, xunc, rslv, cost, info
 
 
 @jax.jit(static_argnums=(0,), static_argnames=("max_steps",))
@@ -158,7 +176,7 @@ def _batch(
     atol: Any = DEFAULT_ATOL,
     rtol: Any = DEFAULT_RTOL,
     max_steps: int = DEFAULT_MAX_STEPS,
-) -> tuple[Array, Array, Array, Array, Array]:
+) -> tuple[Array, Array, Array, Array, Array, Array]:
     r"""
     Optimal estimation (OE) retrieval.
 
@@ -243,7 +261,7 @@ class OE(Retrieving):
         :param max_steps: The maximum number of steps the optimizer can take.
         :returns: The retrieved result.
         """
-        xopt, xcov, xunc, cost, info = _batch(
+        xopt, xcov, xunc, rslv, cost, info = _batch(
             f.f,
             jnp.asarray(x),
             jnp.asarray(y),
@@ -260,6 +278,7 @@ class OE(Retrieving):
             xcov=np.asarray(xcov),
             xunc=np.asarray(xunc),
             zvar=zvar,
-            cost=np.asarray(jnp.sum(cost)),
+            cost=np.asarray(cost),
             info=np.asarray(info),
+            resolution=np.asarray(rslv),
         )

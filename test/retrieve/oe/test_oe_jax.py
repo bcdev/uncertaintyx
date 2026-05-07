@@ -67,6 +67,49 @@ class OptimalEstimationTest(unittest.TestCase):
         self.assertTrue(np.allclose(result.zvar, 0.0, atol=ATOL))
         self.assertTrue(np.allclose(result.cost, 0.0, atol=ATOL))
 
+    def test_line_and_prior(self):
+        """The line function is exemplary for linear forward models."""
+        f = Line()
+
+        x = self.sharp(0.0, "x")
+        y = self.fuzzy(0.0, "x")
+        ux = self.sharp(1.0, "x")
+        uy = self.sharp(1.0, "x")
+        result = OE().retrieve(f, x, y, ux=ux, uy=uy)
+
+        self.assertTrue(np.all(result.info == 0))
+        self.assertTrue(
+            np.allclose(result.xopt, np.mean([x, y], axis=0), atol=ATOL)
+        )
+        self.assertTrue(  # variance
+            np.allclose(
+                [
+                    result.xcov[:, i, j]
+                    for i in range(self.m)
+                    for j in range(self.m)
+                    if i == j
+                ],
+                0.5,
+                atol=ATOL,
+            )
+        )
+        self.assertTrue(  # covariance
+            np.allclose(
+                [
+                    result.xcov[:, i, j]
+                    for i in range(self.m)
+                    for j in range(self.m)
+                    if i != j
+                ],
+                0.0,
+                atol=ATOL,
+            )
+        )
+        self.assertTrue(np.allclose(result.xunc, np.sqrt(0.5), atol=ATOL))
+        self.assertTrue(np.all(np.isfinite(result.zvar)))
+        self.assertTrue(np.all(np.isfinite(result.cost)))
+        self.assertAlmostEqual(500.0, result["resolution"].sum())
+
     def test_sphere(self):
         """The sphere function has a unique minimum at zero."""
         f = Sphere()
