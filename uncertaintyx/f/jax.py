@@ -174,6 +174,8 @@ class ToF(F):
 class Line(ToF):
     """
     A test function.
+
+    The test function is exemplary for linear forward models.
     """
 
     def __init__(self, a: Any = 1.0, b: Any = 0.0):
