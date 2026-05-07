@@ -113,7 +113,7 @@ def _sample(
         u = jnp.sqrt(jnp.diag(U))
         return U.reshape(x.shape + x.shape), u.reshape(x.shape)
 
-    def res(x: Array, U: Array) -> Array:
+    def resolution(x: Array, U: Array, H: Array) -> Array:  # noqa: N806
         r"""
         Computes the resolution tensor.
 
@@ -124,15 +124,13 @@ def _sample(
         the effective degrees of freedom.
 
         :param x: The posterior :math:`\hat{x} \in \mathbb{R}^{m}`.
-        :param U: The posterior uncertainty tensor.
+        :param x: The posterior uncertainty tensor.
+        :param H: The inverse prior uncertainty tensor.
         :returns: The resolution tensor.
         """
-        R = jnp.eye(x.size) - (  # noqa: N806
-            U.reshape(x.size, -1) * hx.reshape(-1)
-            if hx.ndim == x.ndim
-            else U.reshape(x.size, -1) @ hx.reshape(x.size, -1)
+        return jnp.eye(x.size).reshape(U.shape) - (
+            jnp.tensordot(U, H, x.ndims) if H.ndim != x.ndim else U * H
         )
-        return R.reshape(x.shape + x.shape)
 
     def invert(u: Array, t: Array) -> Array:
         """
@@ -163,11 +161,11 @@ def _sample(
     )
     xopt = optimum.value
     xcov, xunc = post(xopt)
+    xres = resolution(xopt, xcov, hx) if hx is not None else None
     cost = misfit(xopt)
     info = jnp.where(optimum.result == optimistix.RESULTS.successful, 0, 1)
-    rslv = res(xopt, xcov) if hx is not None else None
 
-    return xopt, xcov, xunc, cost, info, rslv
+    return (xopt, xcov, xunc, cost, info, xres)
 
 
 @jax.jit(static_argnums=(0,), static_argnames=("max_steps",))
@@ -266,7 +264,7 @@ class OE(Retrieving):
         :param max_steps: The maximum number of steps the optimizer can take.
         :returns: The retrieved result.
         """
-        xopt, xcov, xunc, cost, info, rslv = _batch(
+        xopt, xcov, xunc, cost, info, xres = _batch(
             f.f,
             jnp.asarray(x),
             jnp.asarray(y),
@@ -285,5 +283,5 @@ class OE(Retrieving):
             zvar=zvar,
             cost=np.asarray(cost),
             info=np.asarray(info),
-            resolution=np.asarray(rslv) if rslv is not None else None,
+            xres=np.asarray(xres) if xres is not None else None,
         )
