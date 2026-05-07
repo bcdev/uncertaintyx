@@ -72,7 +72,7 @@ class OptimalEstimationTest(unittest.TestCase):
         """The line function is exemplary for linear forward models."""
         f = Line()
 
-        x = self.sharp(0.0, "x")
+        x = self.fuzzy(0.0, "x")
         y = self.fuzzy(0.0, "x")
         ux = self.sharp(1.0, "x")
         uy = self.sharp(1.0, "x")
