@@ -197,15 +197,16 @@ def _batch(
 
     def post(p: Array) -> tuple[Array, Array]:
         r"""
-        Computes posterior uncertainty.
+        Computes posterior uncertainty tensor and the posterior
+        standard uncertainty.
 
         :param p: The posterior :math:`\hat{p} \in \mathbb{R}^{k}`.
         :returns: The posterior uncertainty tensor and standard uncertainty.
         """
-        hess = jax.hessian(misfit)
-        pcov = jli.pinv(hess(p).reshape(p.size, -1))
-        punc = jnp.sqrt(jnp.diag(pcov))
-        return pcov.reshape(p.shape + p.shape), punc.reshape(p.shape)
+        H = jax.hessian(misfit)  # noqa : N806
+        U = jli.pinv(H(p).reshape(p.size, -1))  # noqa : N806
+        u = jnp.sqrt(jnp.diag(U))
+        return U.reshape(p.shape + p.shape), u.reshape(p.shape)
 
     def invert(u: Array, p: Array) -> Array:
         """
