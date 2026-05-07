@@ -43,7 +43,7 @@ def _sample(
     atol: Any = DEFAULT_ATOL,
     rtol: Any = DEFAULT_RTOL,
     max_steps: int = DEFAULT_MAX_STEPS,
-) -> tuple[Array, Array, Array, Array, Array, Array]:
+) -> tuple[Array, Array, Array, Array, Array, Array | None]:
     r"""
     Optimal estimation (OE) retrieval.
 
@@ -100,7 +100,7 @@ def _sample(
         """
         return loss(X) if hx is None else loss(X) + prior(X)
 
-    def post(x: Array) -> tuple[Array, Array, Array]:
+    def post(x: Array) -> tuple[Array, Array, Array | None]:
         r"""
         Computes the posterior uncertainty tensor, the posterior
         standard uncertainty and the resolution tensor.
@@ -117,17 +117,14 @@ def _sample(
         H = jax.hessian(misfit)  # noqa : N806
         U = jli.pinv(H(x).reshape(x.size, -1))  # noqa : N806
         u = jnp.sqrt(jnp.diag(U))
-        R = jnp.eye(x.size)  # noqa : N806
-        if hx is not None:
-            R = R - (  # noqa : N806
+        R = (jnp.eye(x.size) - (
                 U * hx.reshape(-1)
                 if hx.ndim == x.ndim
-                else U @ hx.reshape(x.size, -1)
-            )
+                else U @ hx.reshape(x.size, -1))) if hx is not None else None
         return (
             U.reshape(x.shape + x.shape),
             u.reshape(x.shape),
-            R.reshape(x.shape + x.shape),
+            R.reshape(x.shape + x.shape) if R is not None else None,
         )
 
     def invert(u: Array, t: Array) -> Array:
@@ -162,7 +159,7 @@ def _sample(
     cost = misfit(xopt)
     info = jnp.where(optimum.result == optimistix.RESULTS.successful, 0, 1)
 
-    return xopt, xcov, xunc, rslv, cost, info
+    return xopt, xcov, xunc, cost, info, rslv
 
 
 @jax.jit(static_argnums=(0,), static_argnames=("max_steps",))
@@ -176,7 +173,7 @@ def _batch(
     atol: Any = DEFAULT_ATOL,
     rtol: Any = DEFAULT_RTOL,
     max_steps: int = DEFAULT_MAX_STEPS,
-) -> tuple[Array, Array, Array, Array, Array, Array]:
+) -> tuple[Array, Array, Array, Array, Array, Array | None]:
     r"""
     Optimal estimation (OE) retrieval.
 
@@ -261,7 +258,7 @@ class OE(Retrieving):
         :param max_steps: The maximum number of steps the optimizer can take.
         :returns: The retrieved result.
         """
-        xopt, xcov, xunc, rslv, cost, info = _batch(
+        xopt, xcov, xunc, cost, info, rslv = _batch(
             f.f,
             jnp.asarray(x),
             jnp.asarray(y),
@@ -280,5 +277,5 @@ class OE(Retrieving):
             zvar=zvar,
             cost=np.asarray(cost),
             info=np.asarray(info),
-            resolution=np.asarray(rslv),
+            resolution=np.asarray(rslv) if rslv is not None else None,
         )
