@@ -250,7 +250,7 @@ class Estimate(Mapping):
     def __init__(
         self,
         zvar: np.ndarray,
-        cost: np.ndarray[tuple[()], np.dtype[np.floating]],
+        cost: np.ndarray[tuple[()] | tuple[int], np.dtype[np.floating]],
         info: int | np.ndarray[tuple[int], np.dtype[np.int_]],
         **kwargs,
     ):
@@ -288,7 +288,9 @@ class Estimate(Mapping):
         return self.get("info")
 
     @property
-    def cost(self) -> np.ndarray[tuple[()], np.dtype[np.floating]]:
+    def cost(
+        self,
+    ) -> np.ndarray[tuple[()] | tuple[int], np.dtype[np.floating]]:
         """
         Returns the value of the objective function at its minimum.
 
