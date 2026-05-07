@@ -69,7 +69,7 @@ def _sample(
     :returns: The retrieval result.
     """
 
-    def loss(X: Array) -> Array:  # noqa : N806
+    def loss(X: Array) -> Array:  # noqa: N806
         r"""
         The loss function.
 
@@ -80,7 +80,7 @@ def _sample(
         b = hy * d if hy.ndim == y.ndim else hy @ d
         return 0.5 * jnp.sum(d * b)
 
-    def prior(X: Array) -> Array:  # noqa : N806
+    def prior(X: Array) -> Array:  # noqa: N806
         r"""
         The prior loss function.
 
@@ -100,32 +100,39 @@ def _sample(
         """
         return loss(X) if hx is None else loss(X) + prior(X)
 
-    def post(x: Array) -> tuple[Array, Array, Array | None]:
+    def post(x: Array) -> tuple[Array, Array]:
         r"""
-        Computes the posterior uncertainty tensor, the posterior
-        standard uncertainty and the resolution tensor.
+        Computes the posterior uncertainty tensor and standard
+        uncertainty.
 
         :param x: The posterior :math:`\hat{x} \in \mathbb{R}^{m}`.
-        :returns: The posterior uncertainty tensor, the standard
-            uncertainty, and the resolution tensor. The trace of
-            the resolution tensor can be interpreted as the number
-            of parameters resolved (determined) by the data (and
-            not by prior information). In this sense, the trace
-            of the resolution tensor can be taken as the effective
-            degrees of freedom.
+        :returns: The posterior uncertainty tensor and standard uncertainty.
         """
-        H = jax.hessian(misfit)  # noqa : N806
-        U = jli.pinv(H(x).reshape(x.size, -1))  # noqa : N806
+        H = jax.hessian(misfit)  # noqa: N806
+        U = jli.pinv(H(x).reshape(x.size, -1))  # noqa: N806
         u = jnp.sqrt(jnp.diag(U))
-        R = (jnp.eye(x.size) - (
-                U * hx.reshape(-1)
-                if hx.ndim == x.ndim
-                else U @ hx.reshape(x.size, -1))) if hx is not None else None
-        return (
-            U.reshape(x.shape + x.shape),
-            u.reshape(x.shape),
-            R.reshape(x.shape + x.shape) if R is not None else None,
+        return U.reshape(x.shape + x.shape), u.reshape(x.shape)
+
+    def res(x: Array, U: Array) -> Array:
+        r"""
+        Computes the resolution tensor.
+
+        The trace of the resolution tensor can be interpreted
+        as the number of parameters resolved (determined) by
+        the data (and not by any prior information). In this
+        sense, the trace of the resolution tensor is taken as
+        the effective degrees of freedom.
+
+        :param x: The posterior :math:`\hat{x} \in \mathbb{R}^{m}`.
+        :param U: The posterior uncertainty tensor.
+        :returns: The resolution tensor.
+        """
+        R = jnp.eye(x.size) - (  # noqa: N806
+            U.reshape(x.size, -1) * hx.reshape(-1)
+            if hx.ndim == x.ndim
+            else U.reshape(x.size, -1) @ hx.reshape(x.size, -1)
         )
+        return R.reshape(x.shape + x.shape)
 
     def invert(u: Array, t: Array) -> Array:
         """
@@ -155,9 +162,10 @@ def _sample(
         misfit, make_minimizer(), x, max_steps=max_steps, throw=False
     )
     xopt = optimum.value
-    xcov, xunc, rslv = post(xopt)
+    xcov, xunc = post(xopt)
     cost = misfit(xopt)
     info = jnp.where(optimum.result == optimistix.RESULTS.successful, 0, 1)
+    rslv = res(xopt, xcov) if hx is not None else None
 
     return xopt, xcov, xunc, cost, info, rslv
 
