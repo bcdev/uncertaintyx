@@ -34,13 +34,21 @@ class ErrorsInVariablesTest(unittest.TestCase):
         self.u = u
         self.x = x + rng.normal(0.0, u, (n, 1))
         self.y = x + rng.normal(0.0, u, (n, 1))
+        self.f = Linear()
 
     def test_linear_model(self):
         """
         Tests EIV regression by fitting a linear model to generated
         test data with known uncertainties of x and y.
         """
-        result = EIV().fit(Linear(), self.x, self.y, ux=self.u, uy=self.u)
+        result = EIV().fit(
+            self.f,
+            self.x,
+            self.y,
+            ux=self.u,
+            uy=self.u,
+            up=np.ones_like(self.f.prior()),
+        )
 
         self.assertEqual(0, result.info)
         self.assertAlmostEqual(1.0, result.popt[0], delta=0.05)
@@ -86,7 +94,13 @@ class ErrorsInVariablesTest(unittest.TestCase):
         test data with known uncertainties of x and y.
         """
         result = EIV().fit(
-            Linear(), self.x, self.y, ux=self.u, uy=self.u, use_covar=False
+            self.f,
+            self.x,
+            self.y,
+            ux=self.u,
+            uy=self.u,
+            up=np.ones_like(self.f.prior()),
+            use_covar=False,
         )
 
         self.assertEqual(0, result.info)
