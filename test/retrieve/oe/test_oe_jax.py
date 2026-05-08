@@ -15,7 +15,7 @@ from uncertaintyx.f.jax import Sphere
 from uncertaintyx.f.jax import Tablet
 from uncertaintyx.retrieve.oe.jax import OE
 
-ATOL = 1.0e-06
+ATOL = 1.0e-08
 """The absolute tolerance for comparisons."""
 
 
@@ -30,7 +30,14 @@ class OptimalEstimationTest(unittest.TestCase):
         self.m = 10
 
     def test_line(self):
-        """The line function is exemplary for linear forward models."""
+        r"""
+        The line function is exemplary for linear forward models.
+
+        The model is tested without and with prior. In the latter
+        case, the expected result is the mean of prior and data
+        values, and the expected uncertainty is the square root
+        of :math:`1/2`.
+        """
         f = Line(2.0, 1.0)
 
         x = self.fuzzy(1.0, "x")
@@ -67,9 +74,7 @@ class OptimalEstimationTest(unittest.TestCase):
         self.assertTrue(np.allclose(result.zvar, 0.0, atol=ATOL))
         self.assertTrue(np.allclose(result.cost, 0.0, atol=ATOL))
 
-    def test_line_and_prior(self):
-        """The line function is exemplary for linear forward models."""
-        f = Line()
+        f = Line()  # identity
 
         x = self.fuzzy(0.0, "x")
         y = self.fuzzy(0.0, "x")
@@ -106,8 +111,8 @@ class OptimalEstimationTest(unittest.TestCase):
             )
         )
         self.assertTrue(np.allclose(result.xunc, np.sqrt(0.5), atol=ATOL))
-        self.assertTrue(np.all(np.isfinite(result.zvar)))
-        self.assertTrue(np.all(np.isfinite(result.cost)))
+        self.assertTrue(np.allclose(result.zvar, 0.5, rtol=1.0))
+        self.assertTrue(np.allclose(result.cost, 2.5, rtol=4.0))
 
     def test_sphere(self):
         """The sphere function has a unique minimum at zero."""
