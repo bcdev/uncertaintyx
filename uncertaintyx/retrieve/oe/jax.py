@@ -43,7 +43,7 @@ def _sample(
     atol: Any = DEFAULT_ATOL,
     rtol: Any = DEFAULT_RTOL,
     max_steps: int = DEFAULT_MAX_STEPS,
-) -> tuple[Array, Array, Array, Array, Array, Array | None]:
+) -> tuple[Array, Array, Array, Array, Array]:
     r"""
     Optimal estimation (OE) retrieval.
 
@@ -145,7 +145,7 @@ def _sample(
     cost = misfit(xopt)
     info = jnp.where(optimum.result == optimistix.RESULTS.successful, 0, 1)
 
-    return (xopt, xcov, xunc, cost, info)
+    return xopt, xcov, xunc, cost, info
 
 
 @jax.jit(static_argnums=(0,), static_argnames=("max_steps",))
@@ -159,7 +159,7 @@ def _batch(
     atol: Any = DEFAULT_ATOL,
     rtol: Any = DEFAULT_RTOL,
     max_steps: int = DEFAULT_MAX_STEPS,
-) -> tuple[Array, Array, Array, Array, Array, Array | None]:
+) -> tuple[Array, Array, Array, Array, Array]:
     r"""
     Optimal estimation (OE) retrieval.
 
@@ -227,18 +227,20 @@ class OE(Retrieving):
         :math:`\check{x}_i` are prior (or initial) estimates of the
         unknown posterior solution :math:`\hat{x}_i`.
 
-        Only standard uncertainties are accepted. You must not
-        supply uncertainty tensors (neither diagonal nor full).
-        Standard uncertainties are squared to variances before
-        passed to an optimizer.
+        The implementation accepts any combination of full-rank
+        uncertainty tensors and diagonal-rank standard uncertainties:
+        :math:`U(\check{X}) \in \mathbb{R}^{M \times m \times m}`,
+        :math:`u(\check{X}) \in \mathbb{R}^{M \times m}`,
+        :math:`U(Y) \in \mathbb{R}^{M \times n \times n}`, and
+        :math:`u(Y) \in \mathbb{R}^{M \times n}`.
 
         Under the same notation and remarks as :class:`F`:
 
         :param f: The function.
         :param x: Samples :math:`\check{X} \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
-        :param ux: Standard uncertainties :math:`u(\check{X})`.
-        :param uy: Standard uncertainties :math:`u(Y)`.
+        :param ux: Uncertainty tensor or standard uncertainty.
+        :param uy: Uncertainty tensor or standard uncertainty.
         :param atol: The absolute tolerance for terminating the optimization.
         :param rtol: The relative tolerance for terminating the optimization.
         :param max_steps: The maximum number of steps the optimizer can take.
@@ -248,8 +250,8 @@ class OE(Retrieving):
             f.f,
             jnp.asarray(x),
             jnp.asarray(y),
-            jnp.square(ux) if ux is not None else None,
-            jnp.square(uy) if uy is not None else None,
+            jnp.square(ux) if ux is not None and ux.ndim == x.ndim else ux,
+            jnp.square(uy) if uy is not None and uy.ndim == y.ndim else uy,
             atol=atol,
             rtol=rtol,
             max_steps=max_steps,
