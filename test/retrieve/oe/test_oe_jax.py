@@ -66,7 +66,6 @@ class OptimalEstimationTest(unittest.TestCase):
         self.assertTrue(np.allclose(result.xunc, 0.5, atol=ATOL))
         self.assertTrue(np.allclose(result.zvar, 0.0, atol=ATOL))
         self.assertTrue(np.allclose(result.cost, 0.0, atol=ATOL))
-        self.assertIsNone(result.get("xres"))
 
     def test_line_and_prior(self):
         """The line function is exemplary for linear forward models."""
@@ -109,8 +108,6 @@ class OptimalEstimationTest(unittest.TestCase):
         self.assertTrue(np.allclose(result.xunc, np.sqrt(0.5), atol=ATOL))
         self.assertTrue(np.all(np.isfinite(result.zvar)))
         self.assertTrue(np.all(np.isfinite(result.cost)))
-        self.assertIsNotNone(result.get("xres"))
-        self.assertAlmostEqual(500.0, result.get("xres").sum())
 
     def test_sphere(self):
         """The sphere function has a unique minimum at zero."""

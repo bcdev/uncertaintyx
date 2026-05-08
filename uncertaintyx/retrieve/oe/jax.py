@@ -113,25 +113,6 @@ def _sample(
         u = jnp.sqrt(jnp.diag(U))
         return U.reshape(x.shape + x.shape), u.reshape(x.shape)
 
-    def resolution(x: Array, U: Array, H: Array) -> Array:  # noqa: N806
-        r"""
-        Computes the resolution tensor.
-
-        The trace of the resolution tensor can be interpreted
-        as the number of parameters resolved (determined) by
-        the data (and not by any prior information). In this
-        sense, the trace of the resolution tensor is taken as
-        the effective degrees of freedom.
-
-        :param x: The posterior :math:`\hat{x} \in \mathbb{R}^{m}`.
-        :param x: The posterior uncertainty tensor.
-        :param H: The inverse prior uncertainty tensor.
-        :returns: The resolution tensor.
-        """
-        return jnp.eye(x.size).reshape(U.shape) - (
-            jnp.tensordot(U, H, x.ndims) if H.ndim != x.ndim else U * H
-        )
-
     def invert(u: Array, t: Array) -> Array:
         """
         Inverts an uncertainty tensor.
@@ -161,11 +142,10 @@ def _sample(
     )
     xopt = optimum.value
     xcov, xunc = post(xopt)
-    xres = resolution(xopt, xcov, hx) if hx is not None else None
     cost = misfit(xopt)
     info = jnp.where(optimum.result == optimistix.RESULTS.successful, 0, 1)
 
-    return (xopt, xcov, xunc, cost, info, xres)
+    return (xopt, xcov, xunc, cost, info)
 
 
 @jax.jit(static_argnums=(0,), static_argnames=("max_steps",))
@@ -264,7 +244,7 @@ class OE(Retrieving):
         :param max_steps: The maximum number of steps the optimizer can take.
         :returns: The retrieved result.
         """
-        xopt, xcov, xunc, cost, info, xres = _batch(
+        xopt, xcov, xunc, cost, info = _batch(
             f.f,
             jnp.asarray(x),
             jnp.asarray(y),
@@ -283,5 +263,4 @@ class OE(Retrieving):
             zvar=zvar,
             cost=np.asarray(cost),
             info=np.asarray(info),
-            xres=np.asarray(xres) if xres is not None else None,
         )
