@@ -273,29 +273,37 @@ class EIV(Fitting):
         Fits the parameters of a model function to :math:`M` samples
         :math:`(x_i, y_i)` of data.
 
-        Under the same notation and remarks as :class:`M`:
+        The implementation accepts any combination of full-rank
+        uncertainty tensors and diagonal-rank standard uncertainties:
+        :math:`U(X) \in \mathbb{R}^{M \times m \times m}`,
+        :math:`u(X) \in \mathbb{R}^{M \times m}`,
+        :math:`U(Y) \in \mathbb{R}^{M \times n \times n}`, and
+        :math:`u(Y) \in \mathbb{R}^{M \times n}`.
+        :math:`U(\check{p}) \in \mathbb{R}^{k \times k}`, and
+        :math:`u(\check{p}) \in \mathbb{R}^{k}`.
 
         :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
         :param p: Prior model parameter values :math:`\check{p}`.
-        :param ux: Standard uncertainties :math:`u(X)`.
-        :param uy: Standard uncertainties :math:`u(Y)`.
-        :param up: Prior standard uncertainties :math:`u(\check{p})`.
+        :param ux: Uncertainty tensor or standard uncertainty.
+        :param uy: Uncertainty tensor or standard uncertainty.
+        :param up: Prior uncertainty tensor or standard uncertainty.
         :param use_covar: Consider covariance?
         :param atol: The absolute tolerance for terminating the optimization.
         :param rtol: The relative tolerance for terminating the optimization.
         :param max_steps: The maximum number of steps the optimizer can take.
         :returns: The fit result.
         """
+        q = p if p is not None else f.prior(x, y)
         popt, pcov, punc, cost, info = _batch(
             f.f,
-            jnp.asarray(p if p is not None else f.prior(x, y)),
+            jnp.asarray(q),
             jnp.asarray(x),
             jnp.asarray(y),
-            jnp.square(ux) if ux is not None else None,
-            jnp.square(uy) if uy is not None else None,
-            jnp.square(up) if up is not None else None,
+            jnp.square(ux) if ux is not None and ux.ndim == x.ndim else ux,
+            jnp.square(uy) if uy is not None and uy.ndim == y.ndim else uy,
+            jnp.square(up) if up is not None and up.ndim == q.ndim else up,
             use_covar=use_covar,
             atol=atol,
             rtol=rtol,
