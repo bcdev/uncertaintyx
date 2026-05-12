@@ -107,7 +107,7 @@ class PolyTest(unittest.TestCase):
         self.assertTrue(np.allclose(g, 0.0))
 
         b = b * 2.0
-        y = b_poly_grad(b, x)
+        g = b_poly_grad(b, x)
 
         self.assertEqual((m,), g.shape)
         self.assertTrue(np.allclose(g, 0.0))
