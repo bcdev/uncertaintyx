@@ -7,6 +7,7 @@ from jax.scipy.special import gammaln
 
 
 def _binom(i, n) -> Array:
+    """Returns the binomial coefficients for the whole basis."""
     return jnp.exp(gammaln(n + 1) - (gammaln(i + 1) + gammaln(n - i + 1)))
 
 
@@ -20,6 +21,7 @@ _b_basis = jax.custom_jvp(
     )(jnp.arange(n + 1)[:, jnp.newaxis]),
     nondiff_argnums=(0,),
 )
+
 
 def _b_basis_jvp(n, inputs: tuple[Array], perturbations: tuple[Array]):
     r"""
