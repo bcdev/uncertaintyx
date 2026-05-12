@@ -53,8 +53,8 @@ def _b_basis_jvp(n, inputs: tuple[Array], perturbations: tuple[Array]):
     basis_minus = _b_basis(n - 1, x)
     a = jnp.pad(basis_minus, ((1, 0), (0, 0)))
     b = jnp.pad(basis_minus, ((0, 1), (0, 0)))
-    basis = b + (a - b) * x[jnp.newaxis, :]
     jac_x = n * (a - b)
+    basis = b + (a - b) * x[jnp.newaxis, :]
     basis_perturbation = jac_x * d[jnp.newaxis, :]
 
     return basis, basis_perturbation
