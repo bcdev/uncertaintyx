@@ -1,4 +1,4 @@
 theme: jekyll-theme-cayman
-title: "Uncertaintyx - Tyx"
+title: "Tyx"
 description: "Tensor-level uncertainty propagation with JAX"
 show_downloads: true
