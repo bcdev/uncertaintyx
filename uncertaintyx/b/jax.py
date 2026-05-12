@@ -33,9 +33,16 @@ def _b_basis_jvp(n, inputs: tuple[Array], perturbations: tuple[Array]):
         G_{x} B_{i,n}(x) =
         n \left(B_{i-1, n-1}(x) - B_{i, n-1}(x)\right) .
 
-def _b_basis_jvp(n, primals, tangents):
-    (x,) = primals
-    (t,) = tangents
+    In the context of automatic differentiation, inputs are termed
+    `primals` while perturbations are termed `tangents`.
+
+    :param n: The degree of the basis.
+    :param inputs: A tuple containing the :math:`x \in \mathbb{R}^{m}`.
+    :param perturbations: A tuple containing the perturbation for :math:`x`.
+    :returns: A tuple containing the basis and its perturbation.
+    """
+    (x,) = inputs
+    (d,) = perturbations
 
     basis = _b_basis(n, x)
     if n == 0:
@@ -44,7 +51,8 @@ def _b_basis_jvp(n, primals, tangents):
     jac_x = n * (
         jnp.pad(lower, ((1, 0), (0, 0))) - jnp.pad(lower, ((0, 1), (0, 0)))
     )
-    return basis, jac_x * t[jnp.newaxis, :]
+    basis_perturbation = jac_x * d[jnp.newaxis, :]
+    return basis, basis_perturbation
 
 
 _b_basis.defjvp(_b_basis_jvp)
