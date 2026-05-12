@@ -71,6 +71,47 @@ class BasisTest(unittest.TestCase):
 class PolyTest(unittest.TestCase):
     """Tests Bernstein polynomials."""
 
+    def test_b_poly_0(self):
+        m = 5
+        n = 0
+        b = jnp.ones(n + 1)
+        x = jnp.linspace(0.0, 1.0, m)
+        y = b_poly(b, x)
+
+        self.assertEqual((m,), y.shape)
+        self.assertTrue(np.allclose(y, 1.0))
+
+        b = b * 2.0
+        y = b_poly(b, x)
+
+        self.assertEqual((m,), y.shape)
+        self.assertTrue(np.allclose(y, 2.0))
+
+    def test_b_grad_0(self):
+        def b_poly_sum(b, x):
+            """To test the gradient."""
+            return jnp.sum(b_poly(b, x))
+
+        @jax.jit
+        def b_poly_grad(b, x):
+            """To test the gradient."""
+            return jax.grad(b_poly_sum, argnums=1)(b, x)
+
+        m = 5
+        n = 0
+        b = jnp.ones(n + 1)
+        x = jnp.linspace(0.0, 1.0, m)
+        g = b_poly_grad(b, x)
+
+        self.assertEqual((m,), g.shape)
+        self.assertTrue(np.allclose(g, 0.0))
+
+        b = b * 2.0
+        y = b_poly_grad(b, x)
+
+        self.assertEqual((m,), g.shape)
+        self.assertTrue(np.allclose(g, 0.0))
+
     def test_b_poly_n(self):
         m = 5
         n = 5
