@@ -46,14 +46,17 @@ def _b_basis_jvp(n, inputs: tuple[Array], perturbations: tuple[Array]):
     (x,) = inputs
     (d,) = perturbations
 
-    basis = _b_basis(n, x)
     if n == 0:
+        basis = _b_basis(n, x)
         return basis, jnp.zeros_like(basis)
-    lower = _b_basis(n - 1, x)
-    jac_x = n * (
-        jnp.pad(lower, ((1, 0), (0, 0))) - jnp.pad(lower, ((0, 1), (0, 0)))
-    )
+
+    basis_minus = _b_basis(n - 1, x)
+    a = jnp.pad(basis_minus, ((1, 0), (0, 0)))
+    b = jnp.pad(basis_minus, ((0, 1), (0, 0)))
+    basis = b + (a - b) * x[jnp.newaxis, :]
+    jac_x = n * (a - b)
     basis_perturbation = jac_x * d[jnp.newaxis, :]
+
     return basis, basis_perturbation
 
 
