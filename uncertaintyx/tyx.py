@@ -241,7 +241,7 @@ class Estimate(Mapping):
       degrees of freedom.
     - The value of the objective function at its minimum.
     - The exit status of the estimation, a nonzero value
-    indicating failure.
+      indicating failure.
 
     Keyword-only arguments may be used to include custom properties
     with the estimate.
