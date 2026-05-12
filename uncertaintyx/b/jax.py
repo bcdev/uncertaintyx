@@ -21,6 +21,17 @@ _b_basis = jax.custom_jvp(
     nondiff_argnums=(0,),
 )
 
+def _b_basis_jvp(n, inputs: tuple[Array], perturbations: tuple[Array]):
+    r"""
+    Custom forward-mode differentiation (JVP) for the Bernstein basis.
+
+    This implementation overrides automatic differentiation using the
+    mathematical identity:
+
+    .. math::
+
+        G_{x} B_{i,n}(x) =
+        n \left(B_{i-1, n-1}(x) - B_{i, n-1}(x)\right) .
 
 def _b_basis_jvp(n, primals, tangents):
     (x,) = primals
