@@ -90,15 +90,15 @@ def b_poly(b: Array, x: Array) -> Array:
 @jax.jit
 def b_poly_grid(b: Array, x: tuple[Array, ...]) -> Array:
     r"""
-    Evaluates an N-dimensional Bernstein polynomial on a regular
+    Evaluates a multivariate Bernstein polynomial on a regular
     N-dimensional grid of points.
 
-    This function is designed to fit coefficients for the efficient
+    The function is designed to fit coefficients for the efficient
     approximation of N-dimensional lookup tables.
 
-    The implementation uses sequential tensor contraction (Tucker
-    product) facilitated by the tensor product structure of the
-    regular grid.
+    Facilitated by the tensor product structure of a regular grid,
+    the implementation uses sequential tensor contraction (Tucker
+    product).
 
     Let :math:`N \in \mathbb{N}` be the dimension of the Bernstein
     polynomial. Let :math:`k = (k_{1}, \dots, k_{N}) \in \mathbb{N}^{N}`
@@ -117,6 +117,6 @@ def b_poly_grid(b: Array, x: tuple[Array, ...]) -> Array:
     k = tuple(b.shape[i] - 1 for i in range(N))
 
     for i in range(N):  # the Tucker product
-        b = jnp.tensordot(b, b_basis(k[i], x[i]), axes=(0, 0))
+        b = jnp.tensordot(b, b_basis(k[i], x[i]), (0, 0))
 
     return b
