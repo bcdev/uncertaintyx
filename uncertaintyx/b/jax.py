@@ -93,6 +93,9 @@ def b_poly_grid(b: Array, x: tuple[Array, ...]) -> Array:
     Evaluates an N-dimensional Bernstein polynomial on a regular
     N-dimensional grid of points.
 
+    This function is designed to fit coefficients for the efficient
+    approximation of N-dimensional lookup tables.
+
     The implementation uses sequential tensor contraction (Tucker
     product) facilitated by the tensor product structure of the
     regular grid.
