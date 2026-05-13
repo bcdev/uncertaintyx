@@ -82,6 +82,6 @@ def b_poly(b: Array, x: Array) -> Array:
 
     :param b: The Bernstein coefficients :math:`b \in \mathbb{R}^{(n + 1)}`.
     :param x: The input :math:`x \in \mathbb{R}^{m}`.
-    :returns: The polynomial :math:`B(x) \in \mathbb{R}^{(n + 1) \times m}`.
+    :returns: The polynomial values :math:`B(x) \in \mathbb{R}^{m}`.
     """
     return jnp.dot(b, b_basis(b.shape[-1] - 1, x))
