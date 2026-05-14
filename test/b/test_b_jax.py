@@ -17,20 +17,20 @@ class BBasisTest(unittest.TestCase):
 
     def test_b_basis_0(self):
         m = 5
-        n = 0
+        k = 0
         x = jnp.linspace(0.0, 1.0, m)
-        y = b_basis(n, x)
+        y = b_basis(k, x)
 
-        self.assertEqual((n + 1, m), y.shape)
+        self.assertEqual((k + 1, m), y.shape)
         self.assertTrue(jnp.allclose(y, 1.0))
 
     def test_b_basis_1(self):
         m = 5
-        n = 1
+        k = 1
         x = jnp.linspace(0.0, 1.0, m)
-        y = b_basis(n, x)
+        y = b_basis(k, x)
 
-        self.assertEqual((n + 1, m), y.shape)
+        self.assertEqual((k + 1, m), y.shape)
         self.assertTrue(jnp.allclose(y[0, 0], 1.0))
         self.assertTrue(jnp.allclose(y[0, 2], 0.5))
         self.assertTrue(jnp.allclose(y[1, 0], 0.0))
@@ -41,11 +41,11 @@ class BBasisTest(unittest.TestCase):
 
     def test_b_basis_2(self):
         m = 5
-        n = 2
+        k = 2
         x = jnp.linspace(0.0, 1.0, m)
-        y = b_basis(n, x)
+        y = b_basis(k, x)
 
-        self.assertEqual((n + 1, m), y.shape)
+        self.assertEqual((k + 1, m), y.shape)
         self.assertTrue(jnp.allclose(y[:1, 0], 1.0))
         self.assertTrue(jnp.allclose(y[1:, 0], 0.0))
         self.assertTrue(jnp.allclose(y[0, 2], 0.25))
@@ -55,13 +55,13 @@ class BBasisTest(unittest.TestCase):
         self.assertTrue(jnp.allclose(y[-1:, -1], 1.0))
         self.assertTrue(jnp.allclose(np.sum(y, axis=0), 1.0))
 
-    def test_b_basis_n(self):
+    def test_b_basis_5(self):
         m = 5
-        n = 5
+        k = 5
         x = jnp.linspace(0.0, 1.0, m)
-        y = b_basis(n, x)
+        y = b_basis(k, x)
 
-        self.assertEqual((n + 1, m), y.shape)
+        self.assertEqual((k + 1, m), y.shape)
         self.assertTrue(jnp.allclose(y[:1, 0], 1.0))
         self.assertTrue(jnp.allclose(y[1:, 0], 0.0))
         self.assertTrue(jnp.allclose(y[:-1, -1], 0.0))
@@ -74,8 +74,8 @@ class BPolyTest(unittest.TestCase):
 
     def test_b_poly_0(self):
         m = 5
-        n = 0
-        b = jnp.ones(n + 1)
+        k = 0
+        b = jnp.ones(k + 1)
         x = jnp.linspace(0.0, 1.0, m)
         y = b_poly(b, x)
 
@@ -99,8 +99,8 @@ class BPolyTest(unittest.TestCase):
             return jax.grad(b_poly_sum, argnums=1)(b, x)
 
         m = 5
-        n = 0
-        b = jnp.ones(n + 1)
+        k = 0
+        b = jnp.ones(k + 1)
         x = jnp.linspace(0.0, 1.0, m)
         g = b_poly_grad(b, x)
 
@@ -113,23 +113,23 @@ class BPolyTest(unittest.TestCase):
         self.assertEqual((m,), g.shape)
         self.assertTrue(jnp.allclose(g, 0.0))
 
-    def test_b_poly_n(self):
+    def test_b_poly_5(self):
         m = 5
-        n = 5
-        b = jnp.ones(n + 1)
+        k = 5
+        b = jnp.ones(k + 1)
         x = jnp.linspace(0.0, 1.0, m)
         y = b_poly(b, x)
 
         self.assertEqual((m,), y.shape)
         self.assertTrue(jnp.allclose(y, 1.0))
 
-        b = jnp.linspace(1.0, 2.0, n + 1)
+        b = jnp.linspace(1.0, 2.0, k + 1)
         y = b_poly(b, x)
 
         self.assertEqual((m,), y.shape)
         self.assertTrue(jnp.allclose(y, 1.0 + x))
 
-    def test_b_grad_n(self):
+    def test_b_grad_5(self):
         def b_poly_sum(b, x):
             """To test the gradient."""
             return jnp.sum(b_poly(b, x))
@@ -140,15 +140,15 @@ class BPolyTest(unittest.TestCase):
             return jax.grad(b_poly_sum, argnums=1)(b, x)
 
         m = 5
-        n = 5
-        b = jnp.ones(n + 1)
+        k = 5
+        b = jnp.ones(k + 1)
         x = jnp.linspace(0.0, 1.0, m)
         g = b_poly_grad(b, x)
 
         self.assertEqual((m,), g.shape)
         self.assertTrue(jnp.allclose(g, 0.0))
 
-        b = jnp.linspace(1.0, 2.0, n + 1)
+        b = jnp.linspace(1.0, 2.0, k + 1)
         g = b_poly_grad(b, x)
 
         self.assertEqual((m,), g.shape)
