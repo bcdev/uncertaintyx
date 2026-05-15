@@ -16,7 +16,7 @@ from uncertaintyx.b.jax import b_poly_points
 class BBasisTest(unittest.TestCase):
     """Tests the evaluation of Bernstein basis polynomials."""
 
-    def test_b_basis_0(self):
+    def test_b_basis_of_degree_0(self):
         m = 5
         k = 0
         x = jnp.linspace(0.0, 1.0, m)
@@ -25,7 +25,7 @@ class BBasisTest(unittest.TestCase):
         self.assertEqual((k + 1, m), y.shape)
         self.assertTrue(jnp.allclose(y, 1.0))
 
-    def test_b_basis_1(self):
+    def test_b_basis_of_degree_1(self):
         m = 5
         k = 1
         x = jnp.linspace(0.0, 1.0, m)
@@ -40,7 +40,7 @@ class BBasisTest(unittest.TestCase):
         self.assertTrue(jnp.allclose(y[1, -1], 1.0))
         self.assertTrue(jnp.allclose(np.sum(y, axis=0), 1.0))
 
-    def test_b_basis_2(self):
+    def test_b_basis_of_degree_2(self):
         m = 5
         k = 2
         x = jnp.linspace(0.0, 1.0, m)
@@ -56,7 +56,7 @@ class BBasisTest(unittest.TestCase):
         self.assertTrue(jnp.allclose(y[-1:, -1], 1.0))
         self.assertTrue(jnp.allclose(np.sum(y, axis=0), 1.0))
 
-    def test_b_basis_5(self):
+    def test_b_basis_of_degree_5(self):
         m = 5
         k = 5
         x = jnp.linspace(0.0, 1.0, m)
@@ -73,7 +73,7 @@ class BBasisTest(unittest.TestCase):
 class BPolyTest(unittest.TestCase):
     """Tests the evaluation of Bernstein polynomials."""
 
-    def test_b_poly_0(self):
+    def test_b_poly_of_degree_0(self):
         m = 5
         k = 0
         b = jnp.ones(k + 1)
@@ -89,7 +89,7 @@ class BPolyTest(unittest.TestCase):
         self.assertEqual((m,), y.shape)
         self.assertTrue(jnp.allclose(y, 2.0))
 
-    def test_b_grad_0(self):
+    def test_b_b_poly_of_degree_0_grad(self):
         def b_poly_sum(b, x):
             """To test the gradient."""
             return jnp.sum(b_poly(b, x))
@@ -114,7 +114,7 @@ class BPolyTest(unittest.TestCase):
         self.assertEqual((m,), g.shape)
         self.assertTrue(jnp.allclose(g, 0.0))
 
-    def test_b_poly_5(self):
+    def test_b_poly_of_degree_5(self):
         m = 5
         k = 5
         b = jnp.ones(k + 1)
@@ -130,7 +130,7 @@ class BPolyTest(unittest.TestCase):
         self.assertEqual((m,), y.shape)
         self.assertTrue(jnp.allclose(y, 1.0 + x))
 
-    def test_b_grad_5(self):
+    def test_b_poly_of_degree_5_grad(self):
         def b_poly_sum(b, x):
             """To test the gradient."""
             return jnp.sum(b_poly(b, x))
