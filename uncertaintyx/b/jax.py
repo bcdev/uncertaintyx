@@ -42,8 +42,8 @@ def _b_basis_jvp(k, inputs: tuple[Array], perturbations: tuple[Array]):
     `primals` while perturbations are termed `tangents`.
 
     :param k: The degree of the basis.
-    :param inputs: A tuple containing the :math:`x \in \mathbb{R}^{m}`.
-    :param perturbations: A tuple containing the perturbation for :math:`x`.
+    :param inputs: A tuple containing :math:`x \in \mathbb{R}^{m}`.
+    :param perturbations: A tuple containing the perturbation of :math:`x`.
     :returns: A tuple containing the basis and its perturbation.
     """
     (x,) = inputs
