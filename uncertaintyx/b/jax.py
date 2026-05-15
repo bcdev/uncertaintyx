@@ -123,3 +123,21 @@ def b_poly_grid(b: Array, x: tuple[Array, ...]) -> Array:
         b = jnp.tensordot(b, b_basis(k[i], x[i]), (0, 0))
 
     return b
+
+
+@jax.jit
+def b_poly_point(b: Array, x: Array) -> Array:
+    N = b.ndim  # noqa: N806
+    k = tuple(b.shape[i] - 1 for i in range(N))
+    x = x[jnp.newaxis, :]
+
+    for i in range(N):
+        basis = b_basis(k[i], x[:, i])
+        b = jnp.tensordot(b, basis[:, 0], (0, 0))
+
+    return b
+
+
+@jax.jit
+def b_poly_points(b: Array, x: Array) -> Array:
+    return jax.vmap(b_poly_point, in_axes=(None, 0))(b, x)
