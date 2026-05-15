@@ -10,6 +10,7 @@ import numpy as np
 from uncertaintyx.b.jax import b_basis
 from uncertaintyx.b.jax import b_poly
 from uncertaintyx.b.jax import b_poly_grid
+from uncertaintyx.b.jax import b_poly_point
 from uncertaintyx.b.jax import b_poly_points
 
 
@@ -200,6 +201,16 @@ class BPolyPointsTest(unittest.TestCase):
     Tests the evaluation of multivariate Bernstein polynomials
     against values precalculated with Mathematica.
     """
+
+    def test_b_poly_point(self):
+        k = (4, 3, 2)
+        d = tuple([k_ + 1 for k_ in k])
+        b = jnp.arange(jnp.prod(jnp.asarray(d))).reshape(d) + 1.0
+        x = jnp.asarray([0.2718, 0.5772, 0.3141])
+        y = b_poly_point(b, x)
+        precalculated = 19.8694
+        self.assertEqual((), y.shape)
+        self.assertTrue(jnp.allclose(y, precalculated))
 
     def test_b_poly_points(self):
         k = (4, 3, 2)
