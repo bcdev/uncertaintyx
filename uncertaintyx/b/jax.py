@@ -38,8 +38,9 @@ def _b_basis_jvp(k, inputs: tuple[Array], perturbations: tuple[Array]):
         G_{x} B_{i,k}(x) =
         k \left(B_{i-1, k-1}(x) - B_{i, k-1}(x)\right) .
 
-    In the context of automatic differentiation, inputs are termed
-    `primals` while perturbations are termed `tangents`.
+    In the context of automatic differentiation, inputs are usually
+    referred to as `primals` while perturbations are referred to as
+    `tangents`.
 
     :param k: The degree of the basis.
     :param inputs: A tuple containing :math:`x \in \mathbb{R}^{m}`.
