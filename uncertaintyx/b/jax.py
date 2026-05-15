@@ -127,6 +127,20 @@ def b_poly_grid(b: Array, x: tuple[Array, ...]) -> Array:
 
 @jax.jit
 def b_poly_point(b: Array, x: Array) -> Array:
+    r"""
+    Evaluates a multivariate Bernstein polynomial on a single
+    N-dimensional point.
+
+    Let :math:`N \in \mathbb{N}` be the dimension of the Bernstein
+    polynomial. Let :math:`k = (k_{1}, \dots, k_{N}) \in \mathbb{N}^{N}`
+    denote its degrees and let \mathbb{R}^{k + 1} denote the tensor
+    space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
+    Let :math:`x \in \mathbb{R}^{N}` be a point. Then:
+
+    :param b: The Bernstein coefficients :math:`b \in \mathbb{R}^{k + 1}`.
+    :param x: The point :math:`x \in \mathbb{R}^{N}`.
+    :returns: The polynomial value :math:`B(x) \in \mathbb{R}`.
+    """
     N = b.ndim  # noqa: N806
     k = tuple(b.shape[i] - 1 for i in range(N))
     x = x[jnp.newaxis, :]
@@ -140,4 +154,17 @@ def b_poly_point(b: Array, x: Array) -> Array:
 
 @jax.jit
 def b_poly_points(b: Array, x: Array) -> Array:
+    r"""
+    Evaluates a multivariate Bernstein polynomial on a batch of
+    irregularly distributed N-dimensional points.
+
+    Under the same notation as :meth:`b_poly_point` let
+    :math:`X \in \mathbb{R}^{M \times N}` be a batch of
+    points over the outer batch dimension :math:`M `.
+    Then:
+
+    :param b: The Bernstein coefficients :math:`b \in \mathbb{R}^{k + 1}`.
+    :param x: The points :math:`X \in \mathbb{R}^{M \times N}`.
+    :returns: The polynomial values :math:`B(x) \in \mathbb{R}^{M}`.
+    """
     return jax.vmap(b_poly_point, in_axes=(None, 0))(b, x)
