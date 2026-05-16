@@ -89,7 +89,7 @@ class BPolyTest(unittest.TestCase):
         self.assertEqual((m,), y.shape)
         self.assertTrue(jnp.allclose(y, 2.0))
 
-    def test_b_b_poly_of_degree_0_grad(self):
+    def test_b_poly_of_degree_0_grad(self):
         def b_poly_sum(b, x):
             """To test the gradient."""
             return jnp.sum(b_poly(b, x))
