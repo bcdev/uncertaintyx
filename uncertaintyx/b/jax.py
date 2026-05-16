@@ -26,7 +26,9 @@ _b_basis = jax.custom_jvp(
 )
 
 
-def _b_basis_jvp(k: int, inputs: tuple[Array], perturbations: tuple[Array]) -> tuple[Array, Array]:
+def _b_basis_jvp(
+    k: int, inputs: tuple[Array], perturbations: tuple[Array]
+) -> tuple[Array, Array]:
     r"""
     Custom forward-mode differentiation (JVP) for the Bernstein basis.
 
