@@ -6,7 +6,7 @@ from jax import Array
 from jax.scipy.special import gammaln
 
 
-def _binom(i, k) -> Array:
+def _binom(i: Array, k: int) -> Array:
     """
     Returns the binomial coefficients for the Bernstein basis
     of degree :math:`k`.
@@ -26,7 +26,7 @@ _b_basis = jax.custom_jvp(
 )
 
 
-def _b_basis_jvp(k, inputs: tuple[Array], perturbations: tuple[Array]):
+def _b_basis_jvp(k: int, inputs: tuple[Array], perturbations: tuple[Array]) -> tuple[Array, Array]:
     r"""
     Custom forward-mode differentiation (JVP) for the Bernstein basis.
 
