@@ -5,7 +5,6 @@ import unittest
 
 import jax
 import jax.numpy as jnp
-import numpy as np
 
 from uncertaintyx.b.jax import b_basis
 from uncertaintyx.b.jax import b_poly
@@ -39,7 +38,7 @@ class BBasisTest(unittest.TestCase):
         self.assertTrue(jnp.allclose(y[1, 2], 0.5))
         self.assertTrue(jnp.allclose(y[0, -1], 0.0))
         self.assertTrue(jnp.allclose(y[1, -1], 1.0))
-        self.assertTrue(jnp.allclose(np.sum(y, axis=0), 1.0))
+        self.assertTrue(jnp.allclose(jnp.sum(y, axis=0), 1.0))
 
     def test_b_basis_of_degree_2(self):
         m = 5
@@ -55,7 +54,7 @@ class BBasisTest(unittest.TestCase):
         self.assertTrue(jnp.allclose(y[2, 2], 0.25))
         self.assertTrue(jnp.allclose(y[:-1, -1], 0.0))
         self.assertTrue(jnp.allclose(y[-1:, -1], 1.0))
-        self.assertTrue(jnp.allclose(np.sum(y, axis=0), 1.0))
+        self.assertTrue(jnp.allclose(jnp.sum(y, axis=0), 1.0))
 
     def test_b_basis_of_degree_5(self):
         m = 5
@@ -68,7 +67,7 @@ class BBasisTest(unittest.TestCase):
         self.assertTrue(jnp.allclose(y[1:, 0], 0.0))
         self.assertTrue(jnp.allclose(y[:-1, -1], 0.0))
         self.assertTrue(jnp.allclose(y[-1:, -1], 1.0))
-        self.assertTrue(jnp.allclose(np.sum(y, axis=0), 1.0))
+        self.assertTrue(jnp.allclose(jnp.sum(y, axis=0), 1.0))
 
 
 class BPolyTest(unittest.TestCase):
