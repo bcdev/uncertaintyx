@@ -190,6 +190,12 @@ class BernsteinGrid(ToG):
         self._x = tuple([jnp.asarray(x_) for x_ in x])
 
         def f(b: Array) -> Array:
+            """
+            The N-variate Bernstein polynomial on a gegular grid
+            of points.
+
+            :param b: The coefficients :math:`b \in \mathbb{R}^{k + 1}`.
+            """
             return b_poly_grid(b, self._x)
 
         super().__init__(f, rev=False)
@@ -225,7 +231,7 @@ class BernsteinPoly(ToM):
         """
         Creates a new instance of this class.
 
-        :param b: Prior Bernstein coefficients :math:`b \in \mathbb{R}^{k + 1}`.
+        :param prior: Prior coefficients :math:`b \in \mathbb{R}^{k + 1}`.
         """
         self._prior = prior
 
@@ -237,4 +243,4 @@ class BernsteinPoly(ToM):
         y: np.ndarray | None = None,
         preset: str | None = None,
     ) -> np.ndarray:
-        return self._prior
+        return self._prior 
