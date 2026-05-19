@@ -331,7 +331,7 @@ class Fitted(Estimate):
     - The irreducible residual variance
       :math:`u^{2}(Z) \in \mathbb{R}^{n}` with residuals
       :math:`Z = f(\hat{p}, X) - Y \in \mathbb{R}^{n}` and
-      :math:`M - \|k\|` residual degrees of freedom.
+      :math:`M - |k|` residual degrees of freedom.
     - The value of the objective function at its minimum.
     - The exit status, a nonzero value indicating failure.
 
