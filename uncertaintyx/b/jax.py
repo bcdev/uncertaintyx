@@ -108,12 +108,12 @@ def b_poly_grid(b: Array, x: tuple[Array, ...]) -> Array:
 
     Let :math:`N \in \mathbb{N}` be the dimension of the Bernstein
     polynomial. Let :math:`k = (k_{1}, \dots, k_{N}) \in \mathbb{N}^{N}`
-    denote its degrees and let \mathbb{R}^{k + 1} denote the tensor
-    space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
+    denote its degrees and let :math:`\mathbb{R}^{k + 1}` denote the
+    tensor space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
     Likewise, let :math:`m = (m_{1}, \dots , m_{N}) \in \mathbb{N}^{N}`
     denote the dimensions of the grid coordinates
-    :math:`x = (x_{1}, \dots, x_{N})` and let \mathbb{R}^{m} denote
-    the tensor space with dimensions :math:`m`. Then:
+    :math:`x = (x_{1}, \dots, x_{N})` and let :math:`\mathbb{R}^{m}`
+    denote the tensor space with dimensions :math:`m`. Then:
 
     :param b: The Bernstein coefficients :math:`b \in \mathbb{R}^{k + 1}`.
     :param x: The grid coordinates :math:`x`.
@@ -136,8 +136,8 @@ def b_poly_point(b: Array, x: Array) -> Array:
 
     Let :math:`N \in \mathbb{N}` be the dimension of the Bernstein
     polynomial. Let :math:`k = (k_{1}, \dots, k_{N}) \in \mathbb{N}^{N}`
-    denote its degrees and let \mathbb{R}^{k + 1} denote the tensor
-    space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
+    denote its degrees and let :math:`\mathbb{R}^{k + 1}` denote the
+    tensor space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
     Let :math:`x \in \mathbb{R}^{N}` be a point. Then:
 
     :param b: The Bernstein coefficients :math:`b \in \mathbb{R}^{k + 1}`.
