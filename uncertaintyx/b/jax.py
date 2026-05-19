@@ -96,8 +96,8 @@ def b_poly(b: Array, x: Array) -> Array:
 @jax.jit
 def b_poly_grid(b: Array, x: tuple[Array, ...]) -> Array:
     r"""
-    Evaluates a multivariate Bernstein polynomial on a regular
-    N-dimensional grid of points.
+    Evaluates an N-variate Bernstein polynomial on a regular
+    grid of points.
 
     The function is designed to fit coefficients for the efficient
     approximation of N-dimensional lookup tables.
@@ -106,7 +106,7 @@ def b_poly_grid(b: Array, x: tuple[Array, ...]) -> Array:
     the implementation uses sequential tensor contraction (Tucker
     product).
 
-    Let :math:`N \in \mathbb{N}` be the dimension of the Bernstein
+    Let :math:`N \in \mathbb{N}` be the arity of the Bernstein
     polynomial. Let :math:`k = (k_{1}, \dots, k_{N}) \in \mathbb{N}^{N}`
     denote its degrees and let :math:`\mathbb{R}^{k + 1}` denote the
     tensor space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
@@ -131,10 +131,9 @@ def b_poly_grid(b: Array, x: tuple[Array, ...]) -> Array:
 @jax.jit
 def b_poly_point(b: Array, x: Array) -> Array:
     r"""
-    Evaluates a multivariate Bernstein polynomial on a single
-    N-dimensional point.
+    Evaluates an N-variate Bernstein polynomial on a single point.
 
-    Let :math:`N \in \mathbb{N}` be the dimension of the Bernstein
+    Let :math:`N \in \mathbb{N}` be the arity of the Bernstein
     polynomial. Let :math:`k = (k_{1}, \dots, k_{N}) \in \mathbb{N}^{N}`
     denote its degrees and let :math:`\mathbb{R}^{k + 1}` denote the
     tensor space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
