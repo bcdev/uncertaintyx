@@ -90,8 +90,8 @@ class F(ABC):
 
 class G(ABC):
     r"""
-    Interface for a differentiable N-variate function that is
-    evaluated over a regular grid.
+    Interface for a differentiable function evaluated on an
+    N-variate grid.
 
     The interface represents model functions to create lookup
     tables or polynomial approximations that benefit from the
@@ -116,7 +116,7 @@ class G(ABC):
     @abstractmethod
     def eval(self, p: np.ndarray) -> np.ndarray:
         r"""
-        Evaluates :math:`f(p)` over the N-dimensional grid.
+        Evaluates :math:`f(p)` on the N-variate grid.
 
         :param p: :math:`p \in \mathbb{R}^{k}`.
         :returns: :math:`y \in \mathbb{R}^{m}`.
@@ -125,8 +125,7 @@ class G(ABC):
     @abstractmethod
     def jac(self, p: np.ndarray) -> np.ndarray:
         r"""
-        Evaluates the Jacobian :math:`(G_p f)(p)` over
-        the N-dimensional grid.
+        Evaluates the Jacobian :math:`(G_p f)(p)` on the N-variate grid.
 
         :param p: :math:`p \in \mathbb{R}^{k}`.
         :returns: :math:`(G_p f)(p) \in \mathbb{R}^{m \times k}`.
