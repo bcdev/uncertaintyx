@@ -2,8 +2,12 @@
 #  License: MIT
 import jax
 import jax.numpy as jnp
+import numpy as np
 from jax import Array
 from jax.scipy.special import gammaln
+
+from uncertaintyx.g.jax import ToG
+from uncertaintyx.m.jax import ToM
 
 
 def _binom(i: Array, k: int) -> Array:
@@ -154,19 +158,78 @@ def b_poly_point(b: Array, x: Array) -> Array:
     return b
 
 
-@jax.jit
-def b_poly_points(b: Array, x: Array) -> Array:
+class BernsteinGrid(ToG):
     r"""
-    Evaluates a multivariate Bernstein polynomial on a batch of
-    irregularly distributed N-dimensional points.
+    Evaluates an N-variate Bernstein polynomial on a regular
+    grid of points.
 
-    Under the same notation as :meth:`b_poly_point` let
-    :math:`X \in \mathbb{R}^{M \times N}` be a batch of
-    points over the outer batch dimension :math:`M `.
-    Then:
+    Encapsulates the multivariate Bernstein polynomial
 
-    :param b: The Bernstein coefficients :math:`b \in \mathbb{R}^{k + 1}`.
-    :param x: The points :math:`X \in \mathbb{R}^{M \times N}`.
-    :returns: The polynomial values :math:`B(x) \in \mathbb{R}^{M}`.
+    .. math::
+        B: \mathbb{R}^{k + 1} \to \mathbb{R}^{m},
+        b \mapsto B_{k}(b, x)
+
+    where :math:`N \in \mathbb{N}` is the arity of the Bernstein
+    polynomial, :math:`k = (k_{1}, \dots, k_{N}) \in \mathbb{N}^{N}`
+    are its degrees, :math:`\mathbb{R}^{k + 1}` is the tensor space
+    with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`,
+    :math:`m = (m_{1}, \dots , m_{N}) \in \mathbb{N}^{N}` are the
+    dimensions of the grid coordinates :math:`x = (x_{1}, \dots, x_{N})`,
+    and :math:`\mathbb{R}^{m}` is the tensor space with dimensions
+    :math:`m`.
     """
-    return jax.vmap(b_poly_point, in_axes=(None, 0))(b, x)
+
+    def __init__(self, k: tuple[int, ...], x: tuple[np.ndarray, ...]):
+        """
+        Creates a new instance of this class.
+
+        :param k: The degrees :math:`k`.
+        :param x: The grid coordinates :math:`x`.
+        """
+        self._d = tuple([k_ + 1 for k_ in k])
+        self._x = tuple([jnp.asarray(x_) for x_ in x])
+
+        def f(b: Array) -> Array:
+            return b_poly_grid(b, self._x)
+
+        super().__init__(f, rev=False)
+
+    def prior(self, preset: str | None = None) -> np.ndarray:
+        return np.ones(self._d)
+
+
+class BernsteinPoly(ToM):
+    r"""
+    Evaluates an N-variate Bernstein polynomial on a batch of
+    irregularly distributed points.
+
+    Encapsulates the multivariate Bernstein polynomial
+
+    .. math::
+        B: \mathbb{R}^{k + 1} \times \mathbb{R}^{N} \to
+        \mathbb{R},
+        (b, x) \mapsto B(b, x)
+
+    where :math:`N \in \mathbb{N}` is the arity of the Bernstein
+    polynomial, :math:`k = (k_{1}, \dots, k_{N}) \in \mathbb{N}^{N}`
+    denotes its degrees, and :math:`\mathbb{R}^{k + 1}` denotes the
+    tensor space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
+    """
+
+    def __init__(self, b: np.ndarray):
+        """
+        Creates a new instance of this class.
+
+        :param b: The Bernstein coefficients :math:`b \in \mathbb{R}^{k + 1}`.
+        """
+        self._b = b
+
+        super().__init__(b_poly_point)
+
+    def prior(
+        self,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        preset: str | None = None,
+    ) -> np.ndarray:
+        return self._b

@@ -88,6 +88,86 @@ class F(ABC):
         """
 
 
+class G(ABC):
+    r"""
+    Interface for a differentiable N-variate function that is
+    evaluated over a regular grid.
+
+    The interface represents model functions to create lookup
+    tables or polynomial approximations that benefit from the
+    tensor structure of the grid.
+
+    Declares a function
+
+    .. math::
+        f: \mathbb{R}^{k} \to \mathbb{R}^{m}, \quad
+        p \mapsto f(p)
+
+    where :math:`k, m` are shapes (natural numbers or tuples of
+    natural numbers).
+
+    The grid is internal knowledge of the function. For instance, let
+    :math:`m = (m_{1}, \dots , m_{N}) \in \mathbb{N}^{N}` denote the
+    dimensions of the grid coordinates :math:`x = (x_{1}, \dots, x_{N})`.
+    Then :math:`\mathbb{R}^{m}` is the tensor space with dimensions
+    :math:`m`.
+    """
+
+    @abstractmethod
+    def eval(self, p: np.ndarray) -> np.ndarray:
+        r"""
+        Evaluates :math:`f(p)` over the N-dimensional grid.
+
+        :param p: :math:`p \in \mathbb{R}^{k}`.
+        :returns: :math:`y \in \mathbb{R}^{m}`.
+        """
+
+    @abstractmethod
+    def jac(self, p: np.ndarray) -> np.ndarray:
+        r"""
+        Evaluates the Jacobian :math:`(G_p f)(p)` over
+        the N-dimensional grid.
+
+        :param p: :math:`p \in \mathbb{R}^{k}`.
+        :returns: :math:`(G_p f)(p) \in \mathbb{R}^{m \times k}`.
+        """
+
+    def lpu(
+        self, p: np.ndarray, u: np.ndarray, diag: bool = False
+    ) -> np.ndarray:
+        r"""
+        Propagates the parameter uncertainty tensor :math:`U(p)`
+        through the Jacobian, producing the output uncertainty
+        tensor :math:`U(y)`.
+
+        Clients must override this method with a tensor-free
+        implementation for large-scale problems.
+
+        :param p: :math:`p \in \mathbb{R}^{k}`.
+        :param u: :math:`U(p) \in \mathbb{R}^{k \times k}`.
+        :param diag: To return only the diagonal elements of :math:`U(y)`.
+        :returns: :math:`U(y) \in \mathbb{R}^{m \times m}`.
+        """
+        return lpu_p(p.ndim, self.jac(p), u, diag)
+
+    @abstractmethod
+    def prior(self, preset: str | None = None) -> np.ndarray:
+        r"""
+        Returns a prior estimate of the parameters.
+
+        :param preset: The name of a specific parameter preset.
+        :returns: The prior estimate :math:`\check{p} \in \mathbb{R}^{k}`.
+        """
+
+    @property
+    @abstractmethod
+    def f(self) -> Callable[[Any], Any]:
+        r"""
+        Returns the native function
+        :math:`f: \mathbb{R}^{k} \to \mathbb{R}^{m}`.
+        """
+
+
 class M(ABC):
     r"""
     Interface for a differentiable model function that is mappable
@@ -153,6 +233,11 @@ class M(ABC):
 
         Clients must override this method with a tensor-free
         implementation for large-scale problems.
+
+        In what follows, a tensor space
+        :math:`\mathbb{R}^{\cdots \times k}` either denotes
+        :math:`\mathbb{R}^{k \times k}` or :math:`\mathbb{R}^{k}`
+        and no other shapes.
 
         :param p: :math:`p \in \mathbb{R}^{k}`.
         :param u: :math:`U(p) \in \mathbb{R}^{k \times k}`.

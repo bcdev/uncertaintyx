@@ -5,12 +5,12 @@ import unittest
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 
+from uncertaintyx.b.jax import BernsteinGrid
+from uncertaintyx.b.jax import BernsteinPoly
 from uncertaintyx.b.jax import b_basis
 from uncertaintyx.b.jax import b_poly
-from uncertaintyx.b.jax import b_poly_grid
-from uncertaintyx.b.jax import b_poly_point
-from uncertaintyx.b.jax import b_poly_points
 
 
 class BBasisTest(unittest.TestCase):
@@ -156,23 +156,24 @@ class BPolyTest(unittest.TestCase):
         self.assertTrue(jnp.allclose(g, 1.0))
 
 
-class BPolyGridTest(unittest.TestCase):
+class BernsteinGridTest(unittest.TestCase):
     """
     Tests the evaluation of multivariate Bernstein polynomials
     against values precalculated with Mathematica.
     """
 
-    def test_b_poly_grid(self):
+    def test_bernstein_grid(self):
         k = (4, 3, 2)
         d = tuple([k_ + 1 for k_ in k])
-        b = jnp.arange(jnp.prod(jnp.asarray(d))).reshape(d) + 1.0
+        b = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
         x = (
-            jnp.asarray([0.2718, 0.5772, 0.3141]),
-            jnp.asarray([0.5772, 0.3141, 0.2718]),
-            jnp.asarray([0.3141, 0.2718, 0.5772]),
+            np.asarray([0.2718, 0.5772, 0.3141]),
+            np.asarray([0.5772, 0.3141, 0.2718]),
+            np.asarray([0.3141, 0.2718, 0.5772]),
         )
-        y = b_poly_grid(b, x)
-        precalculated = jnp.asarray(
+        f = BernsteinGrid(k, x)
+        y = f.eval(b)
+        precalculated = np.asarray(
             [
                 [
                     [19.8694, 19.7848, 20.3956],
@@ -192,40 +193,56 @@ class BPolyGridTest(unittest.TestCase):
             ]
         )
         self.assertEqual((3, 3, 3), y.shape)
-        self.assertTrue(jnp.allclose(y, precalculated))
+        self.assertTrue(np.allclose(y, precalculated))
+
+        g = f.jac(b)
+        self.assertEqual(y.shape + b.shape, g.shape)
+        self.assertTrue(np.all(g > 0.0))
+
+        u = to_var(0.1 * b)
+        u = f.lpu(b, u, diag=True)
+        self.assertEqual(y.shape, u.shape)
+        self.assertTrue(np.all(u > 0.0))
+
+        u = to_var(0.1 * b)
+        u = f.lpu(b, u)
+        self.assertEqual(y.shape + y.shape, u.shape)
+        self.assertTrue(np.all(u > 0.0))
 
 
-class BPolyPointsTest(unittest.TestCase):
+class BernsteinPolyTest(unittest.TestCase):
     """
     Tests the evaluation of multivariate Bernstein polynomials
     against values precalculated with Mathematica.
     """
 
-    def test_b_poly_point(self):
+    def test_bernstein_poly(self):
         k = (4, 3, 2)
         d = tuple([k_ + 1 for k_ in k])
-        b = jnp.arange(jnp.prod(jnp.asarray(d))).reshape(d) + 1.0
-        x = jnp.asarray([0.2718, 0.5772, 0.3141])
-        y = b_poly_point(b, x)
-        precalculated = 19.8694
-        self.assertEqual((), y.shape)
-        self.assertTrue(jnp.allclose(y, precalculated))
-
-    def test_b_poly_points(self):
-        k = (4, 3, 2)
-        d = tuple([k_ + 1 for k_ in k])
-        b = jnp.arange(jnp.prod(jnp.asarray(d))).reshape(d) + 1.0
-        x = jnp.asarray(
+        b = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
+        x = np.asarray(
             [
                 [0.2718, 0.5772, 0.3141],
                 [0.5772, 0.3141, 0.2718],
                 [0.3141, 0.2718, 0.5772],
             ]
         )
-        y = b_poly_points(b, x)
-        precalculated = jnp.asarray([19.8694, 32.0761, 19.6774])
+        f = BernsteinPoly(b)
+        y = f.eval(b, x)
+        precalculated = np.asarray([19.8694, 32.0761, 19.6774])
         self.assertEqual((3,), y.shape)
         self.assertTrue(jnp.allclose(y, precalculated))
+
+        g = f.jac_p(b, x)
+        self.assertEqual((3,) + d, g.shape)
+        self.assertTrue(np.all(g > 0.0))
+
+
+def to_var(u: np.ndarray) -> np.ndarray:
+    """
+    Converts standard uncertainty to a diagonal uncertainty tensor.
+    """
+    return np.square(u)
 
 
 if __name__ == "__main__":
