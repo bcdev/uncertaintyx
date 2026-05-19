@@ -194,7 +194,12 @@ class BernsteinGrid(ToG):
 
         super().__init__(f, rev=False)
 
-    def prior(self, preset: str | None = None) -> np.ndarray:
+    def prior(
+        self,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        preset: str | None = None,
+    ) -> np.ndarray:
         return np.ones(self._d)
 
 
@@ -216,13 +221,13 @@ class BernsteinPoly(ToM):
     tensor space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
     """
 
-    def __init__(self, b: np.ndarray):
+    def __init__(self, prior: np.ndarray):
         """
         Creates a new instance of this class.
 
-        :param b: The Bernstein coefficients :math:`b \in \mathbb{R}^{k + 1}`.
+        :param b: Prior Bernstein coefficients :math:`b \in \mathbb{R}^{k + 1}`.
         """
-        self._b = b
+        self._prior = prior
 
         super().__init__(b_poly_point)
 
@@ -232,4 +237,4 @@ class BernsteinPoly(ToM):
         y: np.ndarray | None = None,
         preset: str | None = None,
     ) -> np.ndarray:
-        return self._b
+        return self._prior
