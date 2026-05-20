@@ -1,5 +1,8 @@
 #  Copyright (c) Brockmann Consult GmbH, 2026.
 #  License: MIT
+from typing import Any
+from typing import Self
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -89,6 +92,24 @@ def b_basis(k: int, x: Array) -> Array:
     :returns: The basis :math:`B_{k}(x) \in \mathbb{R}^{(k + 1) \times m}`.
     """
     return _b_basis(k, x)
+
+
+@jax.jit(static_argnums=(0,))
+def linear_operators(
+    k: tuple[int, ...], x: tuple[Array, ...]
+) -> tuple[list[jnp.ndarray], list[jnp.ndarray]]:
+    """
+    Returns Bernstein bases and corresponding Gram matrices evaluated
+    on given grid coordinates for use in linear solvers.
+
+    :param k: The degrees of the bases.
+    :param x: The grid coordinates.
+    :returns: A tuple of Bernstein bases and corresponding Gram matrices.
+    """
+    N = len(k)  # noqa: N806
+    bases = [b_basis(k[i], x[i]) for i in range(N)]
+    grams = [jnp.dot(basis.T, basis) for basis in bases]
+    return bases, grams
 
 
 @jax.jit
@@ -192,6 +213,7 @@ class BernsteinGrid(ToG):
         :param k: The degrees :math:`k`.
         :param x: The grid coordinates :math:`x`.
         """
+        self._k = k
         self._d = tuple([k_ + 1 for k_ in k])
         self._x = tuple([jnp.asarray(x_) for x_ in x])
 
@@ -206,13 +228,14 @@ class BernsteinGrid(ToG):
 
         super().__init__(f, rev=False)
 
-    def prior(
-        self,
-        x: np.ndarray | None = None,
-        y: np.ndarray | None = None,
-        preset: str | None = None,
-    ) -> np.ndarray:
-        return np.ones(self._d)
+    def linear_operators(self) -> tuple[list[jnp.ndarray], list[jnp.ndarray]]:
+        """
+        Returns Bernstein bases and corresponding Gram matrices evaluated
+        on the grid coordinates for use in linear solvers.
+
+        :returns: A tuple of Bernstein bases and corresponding Gram matrices.
+        """
+        return linear_operators(self._k, self._x)
 
 
 class BernsteinPoly(ToM):
@@ -242,6 +265,37 @@ class BernsteinPoly(ToM):
         self._prior = prior
 
         super().__init__(b_poly_point)
+
+    @classmethod
+    def from_lookup_table(
+        cls,
+        b: np.ndarray,
+        x: tuple[np.ndarray, ...],
+        y: np.ndarray,
+        non_negative: bool = False,
+        atol: Any = 1.0e-08,
+        rtol: Any = 1.0e-06,
+        max_steps: int = 256,
+    ) -> Self:
+        """
+        Factory method to fit an N-variate Bernstein polynomial to
+        an N-variate lookup table.
+
+        Applies a linear least squares solver.
+
+        :param b: Initial coefficients :math:`b \in \mathbb{R}^{k + 1}`.
+        :param x: The grid coordinates.
+        :param y: The grid values.
+        :param non_negative: Whether coefficients must be non-negative.
+        :param atol: The absolute tolerance for terminating the solver.
+        :param rtol: The relative tolerance for terminating the solver.
+        :param max_steps: The maximum number of steps the solver can take.
+        """
+        N = b.ndim  # noqa: N806
+        k = tuple(b.shape[i] - 1 for i in range(N))
+        bases, grams = linear_operators(k, x)
+        # ...
+        return cls(prior=b)
 
     def prior(
         self,
