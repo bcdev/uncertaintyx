@@ -243,4 +243,4 @@ class BernsteinPoly(ToM):
         y: np.ndarray | None = None,
         preset: str | None = None,
     ) -> np.ndarray:
-        return self._prior 
+        return self._prior
