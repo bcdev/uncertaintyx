@@ -28,6 +28,12 @@ _b_basis = jax.custom_jvp(
     )(jnp.arange(k + 1)[:, jnp.newaxis]),
     nondiff_argnums=(0,),
 )
+r"""
+Evaluates the Bernstein basis of degree :math:`n`.
+
+Internal closure to enable registration of a custom
+Jacobian-vector product (JVP).
+"""
 
 
 def _b_basis_jvp(
