@@ -193,7 +193,7 @@ class BernsteinGrid(ToG):
     Encapsulates the multivariate Bernstein polynomial
 
     .. math::
-        B: \mathbb{R}^{k + 1} \to \mathbb{R}^{m},
+        B: \mathbb{R}^{k + 1} \to \mathbb{R}^{m}, \quad
         b \mapsto B_{k}(b, x)
 
     where :math:`N \in \mathbb{N}` is the arity of the Bernstein
