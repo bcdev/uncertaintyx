@@ -149,22 +149,6 @@ class G(ABC):
         """
         return lpu_p(p.ndim, self.jac(p), u, diag)
 
-    @abstractmethod
-    def prior(
-        self,
-        x: np.ndarray | None = None,
-        y: np.ndarray | None = None,
-        preset: str | None = None,
-    ) -> np.ndarray:
-        r"""
-        Returns a prior estimate of the parameters.
-
-        :param x: Samples :math:`x_{i} \in \mathbb{R}^{N}`.
-        :param y: Samples :math:`y_{i} \in \mathbb{R}`.
-        :param preset: The name of a specific parameter preset.
-        :returns: The prior estimate :math:`\check{p} \in \mathbb{R}^{k}`.
-        """
-
     @property
     @abstractmethod
     def f(self) -> Callable[[Any], Any]:
