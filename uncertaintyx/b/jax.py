@@ -284,8 +284,8 @@ class BernsteinPoly(ToM):
         Applies a linear least squares solver.
 
         :param b: Initial coefficients :math:`b \in \mathbb{R}^{k + 1}`.
-        :param x: The grid coordinates.
-        :param y: The grid values.
+        :param x: The lookup table coordinates.
+        :param y: The lookup table values.
         :param non_negative: Whether coefficients must be non-negative.
         :param atol: The absolute tolerance for terminating the solver.
         :param rtol: The relative tolerance for terminating the solver.
