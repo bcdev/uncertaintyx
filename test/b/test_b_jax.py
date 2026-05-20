@@ -6,6 +6,8 @@ import unittest
 import jax
 import jax.numpy as jnp
 import numpy as np
+import jax.scipy.linalg as jla
+from jax import Array
 
 from uncertaintyx.b.jax import BernsteinGrid
 from uncertaintyx.b.jax import BernsteinPoly
@@ -162,7 +164,7 @@ class BernsteinGridTest(unittest.TestCase):
     against values precalculated with Mathematica.
     """
 
-    def test_bernstein_grid(self):
+    def setUp(self):
         k = (4, 3, 2)
         d = tuple([k_ + 1 for k_ in k])
         b = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
@@ -171,7 +173,13 @@ class BernsteinGridTest(unittest.TestCase):
             np.asarray([0.5772, 0.3141, 0.2718]),
             np.asarray([0.3141, 0.2718, 0.5772]),
         )
-        f = BernsteinGrid(k, x)
+        self.d = d
+        self.b = b
+        self.f = BernsteinGrid(k, x)
+
+    def test_eval(self):
+        b = self.b
+        f = self.f
         y = f.eval(b)
         precalculated = np.asarray(
             [
@@ -208,6 +216,62 @@ class BernsteinGridTest(unittest.TestCase):
         u = f.lpu(b, u)
         self.assertEqual(y.shape + y.shape, u.shape)
         self.assertTrue(np.all(u > 0.0))
+
+    def test_jac(self):
+        b = self.b
+        f = self.f
+        y = f.eval(b)
+
+        g = f.jac(b)
+        self.assertEqual(y.shape + b.shape, g.shape)
+        self.assertTrue(np.all(g > 0.0))
+
+        u = to_var(0.1 * b)
+        u = f.lpu(b, u, diag=True)
+        self.assertEqual(y.shape, u.shape)
+        self.assertTrue(np.all(u > 0.0))
+
+        u = to_var(0.1 * b)
+        u = f.lpu(b, u)
+        self.assertEqual(y.shape + y.shape, u.shape)
+        self.assertTrue(np.all(u > 0.0))
+
+    def test_lpu(self):
+        b = self.b
+        f = self.f
+        y = f.eval(b)
+
+        u = to_var(0.1 * b)
+        u = f.lpu(b, u, diag=True)
+        self.assertEqual(y.shape, u.shape)
+        self.assertTrue(np.all(u > 0.0))
+
+        u = to_var(0.1 * b)
+        u = f.lpu(b, u)
+        self.assertEqual(y.shape + y.shape, u.shape)
+        self.assertTrue(np.all(u > 0.0))
+
+    def test_linear_operators(self):
+        d = self.d
+        f = self.f
+
+        bases, grams = f.linear_operators()
+        self.assertEqual(3, len(bases))
+        self.assertEqual(3, len(grams))
+        self.assertEqual((d[0], 3), bases[0].shape)
+        self.assertEqual((d[1], 3), bases[1].shape)
+        self.assertEqual((d[2], 3), bases[2].shape)
+        self.assertEqual((3, 3), grams[0].shape)
+        self.assertEqual((3, 3), grams[1].shape)
+        self.assertEqual((3, 3), grams[2].shape)
+
+        self.assert_positive_definite(grams[0])
+        self.assert_positive_definite(grams[1])
+        self.assert_positive_definite(grams[2])
+
+    def assert_positive_definite(self, matrix: Array):
+        w, _ = jla.eigh(matrix)
+        self.assertTrue(jnp.min(w) > 0.0)
 
 
 class BernsteinPolyTest(unittest.TestCase):
