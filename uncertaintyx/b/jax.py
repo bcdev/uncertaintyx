@@ -219,7 +219,7 @@ class BernsteinGrid(ToG):
 
         def f(b: Array) -> Array:
             """
-            The N-variate Bernstein polynomial on a gegular grid
+            The N-variate Bernstein polynomial on a regular grid
             of points.
 
             :param b: The coefficients :math:`b \in \mathbb{R}^{k + 1}`.
