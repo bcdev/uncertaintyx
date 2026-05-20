@@ -246,8 +246,8 @@ class BernsteinPoly(ToM):
     Encapsulates the multivariate Bernstein polynomial
 
     .. math::
-        B: \mathbb{R}^{k + 1} \times \mathbb{R}^{N} \to
-        \mathbb{R},
+        B: \mathbb{R}^{k + 1} \times \mathbb{R}^{N}
+        \to \mathbb{R}, \quad
         (b, x) \mapsto B(b, x)
 
     where :math:`N \in \mathbb{N}` is the arity of the Bernstein
