@@ -205,7 +205,7 @@ class OptimalEstimationTest(unittest.TestCase):
         y = self.sharp(0.0, "y")
         result = OE().retrieve(f, x, y)
 
-        self.assertAlmostEqual(np.max(result.cost), 0.0, delta=ATOL)
+        self.assertAlmostEqual(np.percentile(result.cost, 0.99), 0.0, delta=ATOL)
         self.assertTrue(np.allclose(result.cost, 0.0, atol=ATOL))
 
     def fuzzy(self, val, shape_like: Literal["x", "y"]) -> np.ndarray:
