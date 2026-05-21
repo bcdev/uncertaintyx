@@ -10,7 +10,7 @@ import numpy as np
 from uncertaintyx.b.jax import BernsteinGrid
 from uncertaintyx.b.jax import BernsteinPoly
 from uncertaintyx.b.jax import b_basis
-from uncertaintyx.b.jax import solve
+from uncertaintyx.b.jax import b_solve
 
 
 class BBasisTest(unittest.TestCase):
@@ -210,24 +210,24 @@ class BernsteinPolyTest(unittest.TestCase):
         self.assertAlmostEqual(6.0, c[5])
 
 
-class SolveTest(unittest.TestCase):
+class BSolveTest(unittest.TestCase):
     """Tests the solving function."""
 
-    def test_solve_degree_2(self):
+    def test_b_solve_degree_2(self):
         k = 2
         x = jnp.array([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
         y = jnp.array(  # y = x ** 2 + 2 x + 3
             [3.00, 3.44, 3.96, 4.56, 5.24, 6.00]
         )
 
-        c = solve((k,), (x,), y, non_negative=True)
+        c = b_solve((k,), (x,), y, non_negative=True)
         self.assertEqual((k + 1,), c.shape)
         self.assertTrue(jnp.allclose(b_poly(c, x), y))
         self.assertAlmostEqual(3.0, c[0].item())
         self.assertAlmostEqual(4.0, c[1].item())
         self.assertAlmostEqual(6.0, c[2].item())
 
-    def test_solve_degree_5(self):
+    def test_b_solve_degree_5(self):
         k = 5
         x = jnp.array([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
         y = (
@@ -237,7 +237,7 @@ class SolveTest(unittest.TestCase):
             - 0.01
         )
 
-        c = solve((k,), (x,), y)
+        c = b_solve((k,), (x,), y)
         self.assertEqual((k + 1,), c.shape)
         self.assertTrue(jnp.allclose(b_poly(c, x), y))
         self.assertAlmostEqual(-0.01, c[0].item())
@@ -247,7 +247,7 @@ class SolveTest(unittest.TestCase):
         self.assertAlmostEqual(2.19, c[4].item())
         self.assertAlmostEqual(2.99, c[5].item())
 
-        c = solve((k,), (x,), y, non_negative=True)
+        c = b_solve((k,), (x,), y, non_negative=True)
         self.assertEqual((k + 1,), c.shape)
         self.assertTrue(jnp.allclose(b_poly(c, x), y, atol=0.1))
         self.assertAlmostEqual(0.00, c[0].item())
