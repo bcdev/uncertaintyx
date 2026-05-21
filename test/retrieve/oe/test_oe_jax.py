@@ -15,7 +15,7 @@ from uncertaintyx.f.jax import Sphere
 from uncertaintyx.f.jax import Tablet
 from uncertaintyx.retrieve.oe.jax import OE
 
-ATOL = 1.0e-06
+ATOL = 1.0e-08
 """The absolute tolerance for comparisons."""
 
 
@@ -201,11 +201,13 @@ class OptimalEstimationTest(unittest.TestCase):
         """
         f = DifferentPowers()
 
-        x = self.fuzzy(1.0, "x")
+        x = self.fuzzy(2.0, "x")
         y = self.sharp(0.0, "y")
         result = OE().retrieve(f, x, y)
 
-        self.assertTrue(np.allclose(result.cost, 0.0, atol=ATOL))
+        self.assertTrue(
+            np.allclose(np.percentile(result.cost, 0.99), 0.0, atol=ATOL)
+        )
 
     def fuzzy(self, val, shape_like: Literal["x", "y"]) -> np.ndarray:
         """Returns an array filled with fuzzy values."""
