@@ -98,8 +98,69 @@ def b_basis(k: int, x: Array) -> Array:
     return _b_basis(k, x)
 
 
+@jax.jit
+def b_poly_grid(c: Array, x: tuple[Array, ...]) -> Array:
+    r"""
+    Evaluates an N-variate Bernstein polynomial on a regular
+    grid of points.
+
+    The function is designed to fit coefficients for the efficient
+    approximation of N-dimensional lookup tables.
+
+    Facilitated by the tensor product structure of a regular grid,
+    the implementation uses sequential tensor contraction (Tucker
+    product).
+
+    Let :math:`N \in \mathbb{N}` be the arity of the Bernstein
+    polynomial. Let :math:`k = (k_{1}, \dots, k_{N}) \in \mathbb{N}^{N}`
+    denote its degrees and let :math:`\mathbb{R}^{k + 1}` denote the
+    tensor space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
+    Likewise, let :math:`m = (m_{1}, \dots , m_{N}) \in \mathbb{N}^{N}`
+    denote the dimensions of the grid coordinates
+    :math:`x = (x_{1}, \dots, x_{N})` and let :math:`\mathbb{R}^{m}`
+    denote the tensor space with dimensions :math:`m`. Then:
+
+    :param c: The Bernstein coefficients :math:`c \in \mathbb{R}^{k + 1}`.
+    :param x: The grid coordinates :math:`x`.
+    :returns: The polynomial values :math:`B(x) \in \mathbb{R}^{m}`.
+    """
+    N = c.ndim  # noqa: N806
+    k = tuple(c.shape[i] - 1 for i in range(N))
+
+    for i in range(N):  # the Tucker product
+        c = jnp.tensordot(c, b_basis(k[i], x[i]), (0, 0))
+
+    return c
+
+
+@jax.jit
+def b_poly_point(c: Array, x: Array) -> Array:
+    r"""
+    Evaluates an N-variate Bernstein polynomial on a single point.
+
+    Let :math:`N \in \mathbb{N}` be the arity of the Bernstein
+    polynomial. Let :math:`k = (k_{1}, \dots, k_{N}) \in \mathbb{N}^{N}`
+    denote its degrees and let :math:`\mathbb{R}^{k + 1}` denote the
+    tensor space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
+    Let :math:`x \in \mathbb{R}^{N}` be a point. Then:
+
+    :param c: The Bernstein coefficients :math:`c \in \mathbb{R}^{k + 1}`.
+    :param x: The point :math:`x \in \mathbb{R}^{N}`.
+    :returns: The polynomial value :math:`B(x) \in \mathbb{R}`.
+    """
+    N = c.ndim  # noqa: N806
+    k = tuple(c.shape[i] - 1 for i in range(N))
+    x = x[jnp.newaxis, :]
+
+    for i in range(N):
+        basis = b_basis(k[i], x[:, i])
+        c = jnp.tensordot(c, basis[:, 0], (0, 0))
+
+    return c
+
+
 @jax.jit(static_argnums=(0,), static_argnames=("non_negative", "max_steps"))
-def solve(
+def b_solve(
     k: tuple[int, ...],
     x: tuple[Array, ...],
     y: Array,
@@ -179,79 +240,6 @@ def solve(
         lambda _: _,  # forwards the unconstrained solution
         c_unconstrained,
     )
-
-
-@jax.jit
-def b_poly(c: Array, x: Array) -> Array:
-    r"""
-    Evaluates a Bernstein polynomial.
-
-    :param c: The Bernstein coefficients :math:`c \in \mathbb{R}^{(n + 1)}`.
-    :param x: The input :math:`x \in \mathbb{R}^{m}`.
-    :returns: The polynomial values :math:`B(x) \in \mathbb{R}^{m}`.
-    """
-    return jnp.dot(c, b_basis(c.shape[-1] - 1, x))
-
-
-@jax.jit
-def b_poly_grid(c: Array, x: tuple[Array, ...]) -> Array:
-    r"""
-    Evaluates an N-variate Bernstein polynomial on a regular
-    grid of points.
-
-    The function is designed to fit coefficients for the efficient
-    approximation of N-dimensional lookup tables.
-
-    Facilitated by the tensor product structure of a regular grid,
-    the implementation uses sequential tensor contraction (Tucker
-    product).
-
-    Let :math:`N \in \mathbb{N}` be the arity of the Bernstein
-    polynomial. Let :math:`k = (k_{1}, \dots, k_{N}) \in \mathbb{N}^{N}`
-    denote its degrees and let :math:`\mathbb{R}^{k + 1}` denote the
-    tensor space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
-    Likewise, let :math:`m = (m_{1}, \dots , m_{N}) \in \mathbb{N}^{N}`
-    denote the dimensions of the grid coordinates
-    :math:`x = (x_{1}, \dots, x_{N})` and let :math:`\mathbb{R}^{m}`
-    denote the tensor space with dimensions :math:`m`. Then:
-
-    :param c: The Bernstein coefficients :math:`c \in \mathbb{R}^{k + 1}`.
-    :param x: The grid coordinates :math:`x`.
-    :returns: The polynomial values :math:`B(x) \in \mathbb{R}^{m}`.
-    """
-    N = c.ndim  # noqa: N806
-    k = tuple(c.shape[i] - 1 for i in range(N))
-
-    for i in range(N):  # the Tucker product
-        c = jnp.tensordot(c, b_basis(k[i], x[i]), (0, 0))
-
-    return c
-
-
-@jax.jit
-def b_poly_point(c: Array, x: Array) -> Array:
-    r"""
-    Evaluates an N-variate Bernstein polynomial on a single point.
-
-    Let :math:`N \in \mathbb{N}` be the arity of the Bernstein
-    polynomial. Let :math:`k = (k_{1}, \dots, k_{N}) \in \mathbb{N}^{N}`
-    denote its degrees and let :math:`\mathbb{R}^{k + 1}` denote the
-    tensor space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
-    Let :math:`x \in \mathbb{R}^{N}` be a point. Then:
-
-    :param c: The Bernstein coefficients :math:`c \in \mathbb{R}^{k + 1}`.
-    :param x: The point :math:`x \in \mathbb{R}^{N}`.
-    :returns: The polynomial value :math:`B(x) \in \mathbb{R}`.
-    """
-    N = c.ndim  # noqa: N806
-    k = tuple(c.shape[i] - 1 for i in range(N))
-    x = x[jnp.newaxis, :]
-
-    for i in range(N):
-        basis = b_basis(k[i], x[:, i])
-        c = jnp.tensordot(c, basis[:, 0], (0, 0))
-
-    return c
 
 
 def _lower_bounds(
@@ -405,7 +393,7 @@ class BernsteinPoly(ToM):
         b = _upper_bounds(b, x)
         x_ = tuple(jnp.asarray((x_ - a) / (b - a)) for x_ in x)
         y_ = jnp.asarray(y)
-        c_ = solve(
+        c_ = b_solve(
             k,
             x_,
             y_,
