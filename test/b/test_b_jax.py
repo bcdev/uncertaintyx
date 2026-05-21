@@ -191,6 +191,10 @@ class BernsteinPolyTest(unittest.TestCase):
         self.assertEqual((3,) + d, g.shape)
         self.assertTrue(np.all(g > 0.0))
 
+        g = f.jac_x(c, x)
+        self.assertEqual((3, 3) + , g.shape)
+        self.assertTrue(np.all(g > 0.0))
+
     def test_from_lookup_table(self):
         k = 5
         x = np.array([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
