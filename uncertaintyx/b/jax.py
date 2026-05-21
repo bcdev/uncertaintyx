@@ -1,10 +1,12 @@
 #  Copyright (c) Brockmann Consult GmbH, 2026.
 #  License: MIT
 from typing import Any
+from typing import Literal
 from typing import Self
 
 import jax
 import jax.numpy as jnp
+import jax.numpy.linalg as jli
 import numpy as np
 from jax import Array
 from jax.scipy.special import gammaln
@@ -94,38 +96,80 @@ def b_basis(k: int, x: Array) -> Array:
     return _b_basis(k, x)
 
 
-@jax.jit(static_argnums=(0,))
-def linear_operators(
-    k: tuple[int, ...], x: tuple[Array, ...]
-) -> tuple[list[jnp.ndarray], list[jnp.ndarray]]:
+@jax.jit(static_argnums=(0,), static_argnames=("non_negative", "max_steps"))
+def linear_solve(
+    k: tuple[int, ...],
+    x: tuple[Array, ...],
+    y: Array,
+    *,
+    non_negative: bool = False,
+    atol: Any = 1.0e-08,
+    rtol: Any = 1.0e-06,
+    max_steps: int = 256,
+) -> Array:
     """
-    Returns Bernstein bases and corresponding Gram matrices evaluated
-    on given grid coordinates for use in linear solvers.
+    Solves the normal equation in the least squares sense to fit an
+    N-variate Bernstein polynomial to an N-variate lookup table.
 
-    :param k: The degrees of the bases.
+    :param k: The degrees of the Bernstein polynomial.
     :param x: The grid coordinates.
-    :returns: A tuple of Bernstein bases and corresponding Gram matrices.
+    :param y: The grid values.
+    :param non_negative: Whether coefficients must be non-negative.
+    :param atol: The absolute tolerance for terminating the solver.
+    :param rtol: The relative tolerance for terminating the solver.
+    :param max_steps: The maximum number of steps the solver can take.
+    :returns: The Bernstein coefficients.
     """
+
+    def nnls(c: Array):
+        """
+        Non-negative linear least squares solver (yet incomplete).
+        """
+
+        def hvp(c: Array):
+            """The Hessian-vector product."""
+            hvp = c
+            for i in range(N):
+                G = grams[i]  # noqa: N806
+                hvp = jnp.tensordot(hvp, G, axes=(0, 1))
+            return hvp
+
+        return c
+
     N = len(k)  # noqa: N806
     bases = [b_basis(k[i], x[i]) for i in range(N)]
-    grams = [jnp.dot(basis.T, basis) for basis in bases]
-    return bases, grams
+    grams = [jnp.dot(B, B.T) for B in bases]  # noqa: N806
+
+    # compute the right hand side of the normal equation
+    for i in range(N):
+        B = bases[i]  # noqa: N806
+        y = jnp.tensordot(y, B, axes=(0, 1))
+    # solve the normal equation
+    c = y
+    for i in range(N):
+        G = grams[i]  # noqa: N806
+        c = jnp.tensordot(c, jli.inv(G), axes=(0, 1))
+    # solve with non-negativity constraint, if requested
+    if non_negative:
+        c = nnls(jnp.maximum(0.0, c))
+
+    return c
 
 
 @jax.jit
-def b_poly(b: Array, x: Array) -> Array:
+def b_poly(c: Array, x: Array) -> Array:
     r"""
     Evaluates a Bernstein polynomial.
 
-    :param b: The Bernstein coefficients :math:`b \in \mathbb{R}^{(n + 1)}`.
+    :param c: The Bernstein coefficients :math:`c \in \mathbb{R}^{(n + 1)}`.
     :param x: The input :math:`x \in \mathbb{R}^{m}`.
     :returns: The polynomial values :math:`B(x) \in \mathbb{R}^{m}`.
     """
-    return jnp.dot(b, b_basis(b.shape[-1] - 1, x))
+    return jnp.dot(c, b_basis(c.shape[-1] - 1, x))
 
 
 @jax.jit
-def b_poly_grid(b: Array, x: tuple[Array, ...]) -> Array:
+def b_poly_grid(c: Array, x: tuple[Array, ...]) -> Array:
     r"""
     Evaluates an N-variate Bernstein polynomial on a regular
     grid of points.
@@ -146,21 +190,21 @@ def b_poly_grid(b: Array, x: tuple[Array, ...]) -> Array:
     :math:`x = (x_{1}, \dots, x_{N})` and let :math:`\mathbb{R}^{m}`
     denote the tensor space with dimensions :math:`m`. Then:
 
-    :param b: The Bernstein coefficients :math:`b \in \mathbb{R}^{k + 1}`.
+    :param c: The Bernstein coefficients :math:`c \in \mathbb{R}^{k + 1}`.
     :param x: The grid coordinates :math:`x`.
     :returns: The polynomial values :math:`B(x) \in \mathbb{R}^{m}`.
     """
-    N = b.ndim  # noqa: N806
-    k = tuple(b.shape[i] - 1 for i in range(N))
+    N = c.ndim  # noqa: N806
+    k = tuple(c.shape[i] - 1 for i in range(N))
 
     for i in range(N):  # the Tucker product
-        b = jnp.tensordot(b, b_basis(k[i], x[i]), (0, 0))
+        c = jnp.tensordot(c, b_basis(k[i], x[i]), (0, 0))
 
-    return b
+    return c
 
 
 @jax.jit
-def b_poly_point(b: Array, x: Array) -> Array:
+def b_poly_point(c: Array, x: Array) -> Array:
     r"""
     Evaluates an N-variate Bernstein polynomial on a single point.
 
@@ -170,18 +214,38 @@ def b_poly_point(b: Array, x: Array) -> Array:
     tensor space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
     Let :math:`x \in \mathbb{R}^{N}` be a point. Then:
 
-    :param b: The Bernstein coefficients :math:`b \in \mathbb{R}^{k + 1}`.
+    :param c: The Bernstein coefficients :math:`c \in \mathbb{R}^{k + 1}`.
     :param x: The point :math:`x \in \mathbb{R}^{N}`.
     :returns: The polynomial value :math:`B(x) \in \mathbb{R}`.
     """
-    N = b.ndim  # noqa: N806
-    k = tuple(b.shape[i] - 1 for i in range(N))
+    N = c.ndim  # noqa: N806
+    k = tuple(c.shape[i] - 1 for i in range(N))
     x = x[jnp.newaxis, :]
 
     for i in range(N):
         basis = b_basis(k[i], x[:, i])
-        b = jnp.tensordot(b, basis[:, 0], (0, 0))
+        c = jnp.tensordot(c, basis[:, 0], (0, 0))
 
+    return c
+
+
+def _lower_bounds(
+    a: np.ndarray | Literal["auto"] | Any, x: tuple[np.ndarray, ...]
+) -> np.ndarray:
+    """Returns the lower coordinate bounds."""
+    if not isinstance(a, np.ndarray):
+        n = len(x)
+        a = np.asarray([_.min() for _ in x]) if a == "auto" else np.full(n, a)
+    return a
+
+
+def _upper_bounds(
+    b: np.ndarray | Literal["auto"] | Any, x: tuple[np.ndarray, ...]
+) -> np.ndarray:
+    """Returns the upper coordinate bounds."""
+    if not isinstance(b, np.ndarray):
+        n = len(x)
+        b = np.asarray([_.max() for _ in x]) if b == "auto" else np.full(n, b)
     return b
 
 
@@ -194,7 +258,7 @@ class BernsteinGrid(ToG):
 
     .. math::
         B: \mathbb{R}^{k + 1} \to \mathbb{R}^{m}, \quad
-        b \mapsto B_{k}(b, x)
+        c \mapsto B_{k}(c, x)
 
     where :math:`N \in \mathbb{N}` is the arity of the Bernstein
     polynomial, :math:`k = (k_{1}, \dots, k_{N}) \in \mathbb{N}^{N}`
@@ -206,36 +270,33 @@ class BernsteinGrid(ToG):
     :math:`m`.
     """
 
-    def __init__(self, k: tuple[int, ...], x: tuple[np.ndarray, ...]):
+    def __init__(
+        self,
+        x: tuple[np.ndarray, ...],
+        a: np.ndarray | Literal["auto"] | Any = 0.0,
+        b: np.ndarray | Literal["auto"] | Any = 1.0,
+    ):
         """
         Creates a new instance of this class.
 
-        :param k: The degrees :math:`k`.
         :param x: The grid coordinates :math:`x`.
+        :param a: The lower bounds of the grid coordinates.
+        :param b: The upper bounds of the grid coordinates.
         """
-        self._k = k
-        self._d = tuple([k_ + 1 for k_ in k])
-        self._x = tuple([jnp.asarray(x_) for x_ in x])
+        a = _lower_bounds(a, x)
+        b = _upper_bounds(b, x)
+        x = tuple(jnp.asarray((x_ - a) / (b - a)) for x_ in x)
 
-        def f(b: Array) -> Array:
+        def f(c: Array) -> Array:
             """
             The N-variate Bernstein polynomial on a regular grid
             of points.
 
-            :param b: The coefficients :math:`b \in \mathbb{R}^{k + 1}`.
+            :param c: The coefficients :math:`c \in \mathbb{R}^{k + 1}`.
             """
-            return b_poly_grid(b, self._x)
+            return b_poly_grid(c, x)
 
         super().__init__(f, rev=False)
-
-    def linear_operators(self) -> tuple[list[jnp.ndarray], list[jnp.ndarray]]:
-        """
-        Returns Bernstein bases and corresponding Gram matrices evaluated
-        on the grid coordinates for use in linear solvers.
-
-        :returns: A tuple of Bernstein bases and corresponding Gram matrices.
-        """
-        return linear_operators(self._k, self._x)
 
 
 class BernsteinPoly(ToM):
@@ -248,7 +309,7 @@ class BernsteinPoly(ToM):
     .. math::
         B: \mathbb{R}^{k + 1} \times \mathbb{R}^{N}
         \to \mathbb{R}, \quad
-        (b, x) \mapsto B(b, x)
+        (c, x) \mapsto B(c, x)
 
     where :math:`N \in \mathbb{N}` is the arity of the Bernstein
     polynomial, :math:`k = (k_{1}, \dots, k_{N}) \in \mathbb{N}^{N}`
@@ -256,22 +317,44 @@ class BernsteinPoly(ToM):
     tensor space with dimensions :math:`(k_{1} + 1, \dots, k_{N} + 1)`.
     """
 
-    def __init__(self, prior: np.ndarray):
+    def __init__(
+        self,
+        c: np.ndarray,
+        a: np.ndarray | Any = 0.0,
+        b: np.ndarray | Any = 1.0,
+    ):
         """
         Creates a new instance of this class.
 
-        :param prior: Prior coefficients :math:`b \in \mathbb{R}^{k + 1}`.
+        :param c: The prior coefficients :math:`c \in \mathbb{R}^{k + 1}`.
+        :param a: The lower bounds of the point coordinates.
+        :param b: The upper bounds of the point coordinates.
         """
-        self._prior = prior
+        N = c.ndim  # noqa: : N806
+        a = jnp.asarray(a) if isinstance(a, np.ndarray) else jnp.full(N, a)
+        b = jnp.asarray(b) if isinstance(b, np.ndarray) else jnp.full(N, b)
 
-        super().__init__(b_poly_point)
+        def f(c: Array, x: Array) -> Array:
+            """
+            Evaluates an N-variate Bernstein polynomial on a single point.
+
+            :param c: The coefficients :math:`b \in \mathbb{R}^{k + 1}`.
+            :param x: The point :math:`x \in \mathbb{R}^{N}`.
+            """
+            return b_poly_point(c, (x - a) / (b - a))
+
+        super().__init__(f)
+        self._c = c
 
     @classmethod
     def from_lookup_table(
         cls,
-        b: np.ndarray,
+        k: tuple[int, ...],
         x: tuple[np.ndarray, ...],
         y: np.ndarray,
+        a: np.ndarray | Literal["auto"] | Any = 0.0,
+        b: np.ndarray | Literal["auto"] | Any = 1.0,
+        *,
         non_negative: bool = False,
         atol: Any = 1.0e-08,
         rtol: Any = 1.0e-06,
@@ -283,19 +366,30 @@ class BernsteinPoly(ToM):
 
         Applies a linear least squares solver.
 
-        :param b: Initial coefficients :math:`b \in \mathbb{R}^{k + 1}`.
+        :param k: The degrees of the Bernstein polynomial.
         :param x: The lookup table coordinates.
         :param y: The lookup table values.
+        :param a: The lower bounds of the table coordinates.
+        :param b: The upper bounds of the table coordinates.
         :param non_negative: Whether coefficients must be non-negative.
         :param atol: The absolute tolerance for terminating the solver.
         :param rtol: The relative tolerance for terminating the solver.
         :param max_steps: The maximum number of steps the solver can take.
         """
-        N = b.ndim  # noqa: N806
-        k = tuple(b.shape[i] - 1 for i in range(N))
-        bases, grams = linear_operators(k, x)
-        # ...
-        return cls(prior=b)
+        a = _lower_bounds(a, x)
+        b = _upper_bounds(b, x)
+        x_ = tuple(jnp.asarray((x_ - a) / (b - a)) for x_ in x)
+        y_ = jnp.asarray(y)
+        c_ = linear_solve(
+            k,
+            x_,
+            y_,
+            non_negative=non_negative,
+            atol=atol,
+            rtol=rtol,
+            max_steps=max_steps,
+        )
+        return cls(np.array(c_), a, b)
 
     def prior(
         self,
@@ -303,4 +397,4 @@ class BernsteinPoly(ToM):
         y: np.ndarray | None = None,
         preset: str | None = None,
     ) -> np.ndarray:
-        return self._prior
+        return self._c
