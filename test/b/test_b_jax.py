@@ -205,13 +205,13 @@ class BernsteinPolyTest(unittest.TestCase):
         f = BernsteinPoly.from_lookup_table((k,), (x,), y, non_negative=True)
         c = f.prior()
         self.assertEqual((k + 1,), c.shape)
-        self.assertTrue(jnp.allclose(f.eval(c, x), y))
         self.assertAlmostEqual(3.0, c[0])
         self.assertAlmostEqual(3.4, c[1])
         self.assertAlmostEqual(3.9, c[2])
         self.assertAlmostEqual(4.5, c[3])
         self.assertAlmostEqual(5.2, c[4])
         self.assertAlmostEqual(6.0, c[5])
+        self.assertTrue(jnp.allclose(f.eval(c, x), y))
 
 
 class BSolveTest(unittest.TestCase):
