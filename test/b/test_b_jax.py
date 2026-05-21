@@ -11,6 +11,7 @@ from uncertaintyx.b.jax import BernsteinGrid
 from uncertaintyx.b.jax import BernsteinPoly
 from uncertaintyx.b.jax import b_basis
 from uncertaintyx.b.jax import b_poly
+from uncertaintyx.b.jax import solve
 
 
 class BBasisTest(unittest.TestCase):
@@ -276,6 +277,72 @@ class BernsteinPolyTest(unittest.TestCase):
         g = f.jac_p(c, x)
         self.assertEqual((3,) + d, g.shape)
         self.assertTrue(np.all(g > 0.0))
+
+    def test_from_lookup_table(self):
+        k = 5
+        x = np.array([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = np.array(  # y = x ** 2 + 2 x + 3
+            [3.00, 3.44, 3.96, 4.56, 5.24, 6.00]
+        )
+
+        f = BernsteinPoly.from_lookup_table((k,), (x,), y, non_negative=True)
+        c = f.prior()
+        self.assertEqual((k + 1,), c.shape)
+        self.assertTrue(jnp.allclose(f.eval(c, x), y))
+        self.assertAlmostEqual(3.0, c[0])
+        self.assertAlmostEqual(3.4, c[1])
+        self.assertAlmostEqual(3.9, c[2])
+        self.assertAlmostEqual(4.5, c[3])
+        self.assertAlmostEqual(5.2, c[4])
+        self.assertAlmostEqual(6.0, c[5])
+
+
+class SolveTest(unittest.TestCase):
+    """Tests the solving function."""
+
+    def test_solve_degree_2(self):
+        k = 2
+        x = jnp.array([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = jnp.array(  # y = x ** 2 + 2 x + 3
+            [3.00, 3.44, 3.96, 4.56, 5.24, 6.00]
+        )
+
+        c = solve((k,), (x,), y, non_negative=True)
+        self.assertEqual((k + 1,), c.shape)
+        self.assertTrue(jnp.allclose(b_poly(c, x), y))
+        self.assertAlmostEqual(3.0, c[0].item())
+        self.assertAlmostEqual(4.0, c[1].item())
+        self.assertAlmostEqual(6.0, c[2].item())
+
+    def test_solve_degree_5(self):
+        k = 5
+        x = jnp.array([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = (
+            jnp.array(  # y = x ** 2 + 2 x - 1 / 100
+                [0.00, 0.44, 0.96, 1.56, 2.24, 3.00]
+            )
+            - 0.01
+        )
+
+        c = solve((k,), (x,), y)
+        self.assertEqual((k + 1,), c.shape)
+        self.assertTrue(jnp.allclose(b_poly(c, x), y))
+        self.assertAlmostEqual(-0.01, c[0].item())
+        self.assertAlmostEqual(0.39, c[1].item())
+        self.assertAlmostEqual(0.89, c[2].item())
+        self.assertAlmostEqual(1.49, c[3].item())
+        self.assertAlmostEqual(2.19, c[4].item())
+        self.assertAlmostEqual(2.99, c[5].item())
+
+        c = solve((k,), (x,), y, non_negative=True)
+        self.assertEqual((k + 1,), c.shape)
+        self.assertTrue(jnp.allclose(b_poly(c, x), y, atol=0.1))
+        self.assertAlmostEqual(0.00, c[0].item())
+        self.assertAlmostEqual(0.38, c[1].item(), places=2)
+        self.assertAlmostEqual(0.90, c[2].item(), places=2)
+        self.assertAlmostEqual(1.48, c[3].item(), places=2)
+        self.assertAlmostEqual(2.19, c[4].item(), places=2)
+        self.assertAlmostEqual(2.99, c[5].item(), places=2)
 
 
 def to_var(u: np.ndarray) -> np.ndarray:
