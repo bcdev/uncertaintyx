@@ -6,8 +6,6 @@ import unittest
 import jax
 import jax.numpy as jnp
 import numpy as np
-import jax.scipy.linalg as jla
-from jax import Array
 
 from uncertaintyx.b.jax import BernsteinGrid
 from uncertaintyx.b.jax import BernsteinPoly
@@ -78,40 +76,40 @@ class BPolyTest(unittest.TestCase):
     def test_b_poly_of_degree_0(self):
         m = 5
         k = 0
-        b = jnp.ones(k + 1)
+        c = jnp.ones(k + 1)
         x = jnp.linspace(0.0, 1.0, m)
-        y = b_poly(b, x)
+        y = b_poly(c, x)
 
         self.assertEqual((m,), y.shape)
         self.assertTrue(jnp.allclose(y, 1.0))
 
-        b = b * 2.0
-        y = b_poly(b, x)
+        c = c * 2.0
+        y = b_poly(c, x)
 
         self.assertEqual((m,), y.shape)
         self.assertTrue(jnp.allclose(y, 2.0))
 
     def test_b_poly_of_degree_0_grad(self):
-        def b_poly_sum(b, x):
+        def b_poly_sum(c, x):
             """To test the gradient."""
-            return jnp.sum(b_poly(b, x))
+            return jnp.sum(b_poly(c, x))
 
         @jax.jit
-        def b_poly_grad(b, x):
+        def b_poly_grad(c, x):
             """To test the gradient."""
-            return jax.grad(b_poly_sum, argnums=1)(b, x)
+            return jax.grad(b_poly_sum, argnums=1)(c, x)
 
         m = 5
         k = 0
-        b = jnp.ones(k + 1)
+        c = jnp.ones(k + 1)
         x = jnp.linspace(0.0, 1.0, m)
-        g = b_poly_grad(b, x)
+        g = b_poly_grad(c, x)
 
         self.assertEqual((m,), g.shape)
         self.assertTrue(jnp.allclose(g, 0.0))
 
-        b = b * 2.0
-        g = b_poly_grad(b, x)
+        c = c * 2.0
+        g = b_poly_grad(c, x)
 
         self.assertEqual((m,), g.shape)
         self.assertTrue(jnp.allclose(g, 0.0))
@@ -119,40 +117,40 @@ class BPolyTest(unittest.TestCase):
     def test_b_poly_of_degree_5(self):
         m = 5
         k = 5
-        b = jnp.ones(k + 1)
+        c = jnp.ones(k + 1)
         x = jnp.linspace(0.0, 1.0, m)
-        y = b_poly(b, x)
+        y = b_poly(c, x)
 
         self.assertEqual((m,), y.shape)
         self.assertTrue(jnp.allclose(y, 1.0))
 
-        b = jnp.linspace(1.0, 2.0, k + 1)
-        y = b_poly(b, x)
+        c = jnp.linspace(1.0, 2.0, k + 1)
+        y = b_poly(c, x)
 
         self.assertEqual((m,), y.shape)
         self.assertTrue(jnp.allclose(y, 1.0 + x))
 
     def test_b_poly_of_degree_5_grad(self):
-        def b_poly_sum(b, x):
+        def b_poly_sum(c, x):
             """To test the gradient."""
-            return jnp.sum(b_poly(b, x))
+            return jnp.sum(b_poly(c, x))
 
         @jax.jit
-        def b_poly_grad(b, x):
+        def b_poly_grad(c, x):
             """To test the gradient."""
-            return jax.grad(b_poly_sum, argnums=1)(b, x)
+            return jax.grad(b_poly_sum, argnums=1)(c, x)
 
         m = 5
         k = 5
-        b = jnp.ones(k + 1)
+        c = jnp.ones(k + 1)
         x = jnp.linspace(0.0, 1.0, m)
-        g = b_poly_grad(b, x)
+        g = b_poly_grad(c, x)
 
         self.assertEqual((m,), g.shape)
         self.assertTrue(jnp.allclose(g, 0.0))
 
-        b = jnp.linspace(1.0, 2.0, k + 1)
-        g = b_poly_grad(b, x)
+        c = jnp.linspace(1.0, 2.0, k + 1)
+        g = b_poly_grad(c, x)
 
         self.assertEqual((m,), g.shape)
         self.assertTrue(jnp.allclose(g, 1.0))
@@ -167,20 +165,20 @@ class BernsteinGridTest(unittest.TestCase):
     def setUp(self):
         k = (4, 3, 2)
         d = tuple([k_ + 1 for k_ in k])
-        b = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
+        c = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
         x = (
             np.asarray([0.2718, 0.5772, 0.3141]),
             np.asarray([0.5772, 0.3141, 0.2718]),
             np.asarray([0.3141, 0.2718, 0.5772]),
         )
         self.d = d
-        self.b = b
-        self.f = BernsteinGrid(k, x)
+        self.c = c
+        self.f = BernsteinGrid(x)
 
     def test_eval(self):
-        b = self.b
+        c = self.c
         f = self.f
-        y = f.eval(b)
+        y = f.eval(c)
         precalculated = np.asarray(
             [
                 [
@@ -203,75 +201,53 @@ class BernsteinGridTest(unittest.TestCase):
         self.assertEqual((3, 3, 3), y.shape)
         self.assertTrue(np.allclose(y, precalculated))
 
-        g = f.jac(b)
-        self.assertEqual(y.shape + b.shape, g.shape)
+        g = f.jac(c)
+        self.assertEqual(y.shape + c.shape, g.shape)
         self.assertTrue(np.all(g > 0.0))
 
-        u = to_var(0.1 * b)
-        u = f.lpu(b, u, diag=True)
+        u = to_var(0.1 * c)
+        u = f.lpu(c, u, diag=True)
         self.assertEqual(y.shape, u.shape)
         self.assertTrue(np.all(u > 0.0))
 
-        u = to_var(0.1 * b)
-        u = f.lpu(b, u)
+        u = to_var(0.1 * c)
+        u = f.lpu(c, u)
         self.assertEqual(y.shape + y.shape, u.shape)
         self.assertTrue(np.all(u > 0.0))
 
     def test_jac(self):
-        b = self.b
+        c = self.c
         f = self.f
-        y = f.eval(b)
+        y = f.eval(c)
 
-        g = f.jac(b)
-        self.assertEqual(y.shape + b.shape, g.shape)
+        g = f.jac(c)
+        self.assertEqual(y.shape + c.shape, g.shape)
         self.assertTrue(np.all(g > 0.0))
 
-        u = to_var(0.1 * b)
-        u = f.lpu(b, u, diag=True)
+        u = to_var(0.1 * c)
+        u = f.lpu(c, u, diag=True)
         self.assertEqual(y.shape, u.shape)
         self.assertTrue(np.all(u > 0.0))
 
-        u = to_var(0.1 * b)
-        u = f.lpu(b, u)
+        u = to_var(0.1 * c)
+        u = f.lpu(c, u)
         self.assertEqual(y.shape + y.shape, u.shape)
         self.assertTrue(np.all(u > 0.0))
 
     def test_lpu(self):
-        b = self.b
+        c = self.c
         f = self.f
-        y = f.eval(b)
+        y = f.eval(c)
 
-        u = to_var(0.1 * b)
-        u = f.lpu(b, u, diag=True)
+        u = to_var(0.1 * c)
+        u = f.lpu(c, u, diag=True)
         self.assertEqual(y.shape, u.shape)
         self.assertTrue(np.all(u > 0.0))
 
-        u = to_var(0.1 * b)
-        u = f.lpu(b, u)
+        u = to_var(0.1 * c)
+        u = f.lpu(c, u)
         self.assertEqual(y.shape + y.shape, u.shape)
         self.assertTrue(np.all(u > 0.0))
-
-    def test_linear_operators(self):
-        d = self.d
-        f = self.f
-
-        bases, grams = f.linear_operators()
-        self.assertEqual(3, len(bases))
-        self.assertEqual(3, len(grams))
-        self.assertEqual((d[0], 3), bases[0].shape)
-        self.assertEqual((d[1], 3), bases[1].shape)
-        self.assertEqual((d[2], 3), bases[2].shape)
-        self.assertEqual((3, 3), grams[0].shape)
-        self.assertEqual((3, 3), grams[1].shape)
-        self.assertEqual((3, 3), grams[2].shape)
-
-        self.assert_positive_definite(grams[0])
-        self.assert_positive_definite(grams[1])
-        self.assert_positive_definite(grams[2])
-
-    def assert_positive_definite(self, matrix: Array):
-        w, _ = jla.eigh(matrix)
-        self.assertTrue(jnp.min(w) > 0.0)
 
 
 class BernsteinPolyTest(unittest.TestCase):
@@ -283,7 +259,7 @@ class BernsteinPolyTest(unittest.TestCase):
     def test_bernstein_poly(self):
         k = (4, 3, 2)
         d = tuple([k_ + 1 for k_ in k])
-        b = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
+        c = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
         x = np.asarray(
             [
                 [0.2718, 0.5772, 0.3141],
@@ -291,13 +267,13 @@ class BernsteinPolyTest(unittest.TestCase):
                 [0.3141, 0.2718, 0.5772],
             ]
         )
-        f = BernsteinPoly(b)
-        y = f.eval(b, x)
+        f = BernsteinPoly(c)
+        y = f.eval(c, x)
         precalculated = np.asarray([19.8694, 32.0761, 19.6774])
         self.assertEqual((3,), y.shape)
         self.assertTrue(jnp.allclose(y, precalculated))
 
-        g = f.jac_p(b, x)
+        g = f.jac_p(c, x)
         self.assertEqual((3,) + d, g.shape)
         self.assertTrue(np.all(g > 0.0))
 
