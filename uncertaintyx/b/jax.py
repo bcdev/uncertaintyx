@@ -8,6 +8,8 @@ import jax
 import jax.numpy as jnp
 import jax.numpy.linalg as jli
 import numpy as np
+import optax
+import optimistix
 from jax import Array
 from jax.scipy.special import gammaln
 
@@ -97,7 +99,7 @@ def b_basis(k: int, x: Array) -> Array:
 
 
 @jax.jit(static_argnums=(0,), static_argnames=("non_negative", "max_steps"))
-def linear_solve(
+def solve(
     k: tuple[int, ...],
     x: tuple[Array, ...],
     y: Array,
@@ -123,37 +125,60 @@ def linear_solve(
 
     def nnls(c: Array):
         """
-        Non-negative linear least squares solver (yet incomplete).
+        Non-negative least-squares solver.
+
+        Uses a quadratic transformation and an L-BFGS minimizer.
         """
 
         def hvp(c: Array):
             """The Hessian-vector product."""
-            hvp = c
+            res = c
             for i in range(N):
                 G = grams[i]  # noqa: N806
-                hvp = jnp.tensordot(hvp, G, axes=(0, 1))
-            return hvp
+                res = jnp.tensordot(res, G, axes=(0, 1))
+            return res
 
-        return c
+        def misfit(u: Array, _: None = None) -> Array:
+            """The misfit function with quadratic transformation."""
+            c_ = jnp.square(u)
+            return 0.5 * jnp.sum(c_ * hvp(c_)) - jnp.sum(c_ * rhs)
+
+        def make_minimizer():
+            """Returns the minimizer."""
+            return optimistix.OptaxMinimiser(
+                optax.lbfgs(), atol=atol, rtol=rtol, norm=optimistix.max_norm
+            )
+
+        u = jnp.sqrt(jnp.maximum(0.0, c))
+        minimum = optimistix.minimise(
+            misfit, make_minimizer(), u, max_steps=max_steps, throw=False
+        )
+        return jnp.square(minimum.value)
 
     N = len(k)  # noqa: N806
     bases = [b_basis(k[i], x[i]) for i in range(N)]
     grams = [jnp.dot(B, B.T) for B in bases]  # noqa: N806
 
     # compute the right hand side of the normal equation
+    rhs = y
     for i in range(N):
         B = bases[i]  # noqa: N806
-        y = jnp.tensordot(y, B, axes=(0, 1))
+        rhs = jnp.tensordot(rhs, B, axes=(0, 1))
     # solve the normal equation
-    c = y
+    c_unconstrained = rhs
     for i in range(N):
         G = grams[i]  # noqa: N806
-        c = jnp.tensordot(c, jli.inv(G), axes=(0, 1))
-    # solve with non-negativity constraint, if requested
-    if non_negative:
-        c = nnls(jnp.maximum(0.0, c))
-
-    return c
+        c_unconstrained = jnp.tensordot(
+            c_unconstrained, jli.pinv(G), axes=(0, 1)
+        )
+    # solve iteratively with non-negativity constraint, if needed
+    nnls_needed = non_negative and jnp.any(c_unconstrained < 0.0)
+    return jax.lax.cond(
+        nnls_needed,
+        nnls,
+        lambda _: _,  # forwards the unconstrained solution
+        c_unconstrained,
+    )
 
 
 @jax.jit
@@ -380,7 +405,7 @@ class BernsteinPoly(ToM):
         b = _upper_bounds(b, x)
         x_ = tuple(jnp.asarray((x_ - a) / (b - a)) for x_ in x)
         y_ = jnp.asarray(y)
-        c_ = linear_solve(
+        c_ = solve(
             k,
             x_,
             y_,
