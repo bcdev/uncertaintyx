@@ -184,20 +184,20 @@ def b_solve(
     :returns: The Bernstein coefficients.
     """
 
+    def hvp(c: Array):
+        """The Hessian-vector product."""
+        res = c
+        for i in range(N):
+            G = grams[i]  # noqa: N806
+            res = jnp.tensordot(res, G, axes=(0, 1))
+        return res
+
     def nnls(c: Array):
         """
         Non-negative least-squares solver.
 
         Uses a quadratic transformation and an L-BFGS minimizer.
         """
-
-        def hvp(c: Array):
-            """The Hessian-vector product."""
-            res = c
-            for i in range(N):
-                G = grams[i]  # noqa: N806
-                res = jnp.tensordot(res, G, axes=(0, 1))
-            return res
 
         def misfit(u: Array, _: None = None) -> Array:
             """The misfit function with quadratic transformation."""
