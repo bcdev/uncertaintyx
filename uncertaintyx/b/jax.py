@@ -288,7 +288,7 @@ class BernsteinGrid(ToG):
         x = tuple(jnp.asarray((x_ - a) / (b - a)) for x_ in x)
 
         def f(c: Array) -> Array:
-            """
+            r"""
             The N-variate Bernstein polynomial on a regular grid
             of points.
 
@@ -323,7 +323,7 @@ class BernsteinPoly(ToM):
         a: np.ndarray | Any = 0.0,
         b: np.ndarray | Any = 1.0,
     ):
-        """
+        r"""
         Creates a new instance of this class.
 
         :param c: The prior coefficients :math:`c \in \mathbb{R}^{k + 1}`.
@@ -335,10 +335,10 @@ class BernsteinPoly(ToM):
         b = jnp.asarray(b) if isinstance(b, np.ndarray) else jnp.full(N, b)
 
         def f(c: Array, x: Array) -> Array:
-            """
+            r"""
             Evaluates an N-variate Bernstein polynomial on a single point.
 
-            :param c: The coefficients :math:`b \in \mathbb{R}^{k + 1}`.
+            :param c: The coefficients :math:`c \in \mathbb{R}^{k + 1}`.
             :param x: The point :math:`x \in \mathbb{R}^{N}`.
             """
             return b_poly_point(c, (x - a) / (b - a))
