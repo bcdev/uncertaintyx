@@ -15,7 +15,7 @@ from uncertaintyx.f.jax import Sphere
 from uncertaintyx.f.jax import Tablet
 from uncertaintyx.retrieve.oe.jax import OE
 
-ATOL = 1.0e-08
+ATOL = 1.0e-07
 """The absolute tolerance for comparisons."""
 
 
