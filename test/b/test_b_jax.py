@@ -10,7 +10,6 @@ import numpy as np
 from uncertaintyx.b.jax import BernsteinGrid
 from uncertaintyx.b.jax import BernsteinPoly
 from uncertaintyx.b.jax import b_basis
-from uncertaintyx.b.jax import b_poly
 from uncertaintyx.b.jax import solve
 
 
@@ -69,92 +68,6 @@ class BBasisTest(unittest.TestCase):
         self.assertTrue(jnp.allclose(y[:-1, -1], 0.0))
         self.assertTrue(jnp.allclose(y[-1:, -1], 1.0))
         self.assertTrue(jnp.allclose(jnp.sum(y, axis=0), 1.0))
-
-
-class BPolyTest(unittest.TestCase):
-    """Tests the evaluation of Bernstein polynomials."""
-
-    def test_b_poly_of_degree_0(self):
-        m = 5
-        k = 0
-        c = jnp.ones(k + 1)
-        x = jnp.linspace(0.0, 1.0, m)
-        y = b_poly(c, x)
-
-        self.assertEqual((m,), y.shape)
-        self.assertTrue(jnp.allclose(y, 1.0))
-
-        c = c * 2.0
-        y = b_poly(c, x)
-
-        self.assertEqual((m,), y.shape)
-        self.assertTrue(jnp.allclose(y, 2.0))
-
-    def test_b_poly_of_degree_0_grad(self):
-        def b_poly_sum(c, x):
-            """To test the gradient."""
-            return jnp.sum(b_poly(c, x))
-
-        @jax.jit
-        def b_poly_grad(c, x):
-            """To test the gradient."""
-            return jax.grad(b_poly_sum, argnums=1)(c, x)
-
-        m = 5
-        k = 0
-        c = jnp.ones(k + 1)
-        x = jnp.linspace(0.0, 1.0, m)
-        g = b_poly_grad(c, x)
-
-        self.assertEqual((m,), g.shape)
-        self.assertTrue(jnp.allclose(g, 0.0))
-
-        c = c * 2.0
-        g = b_poly_grad(c, x)
-
-        self.assertEqual((m,), g.shape)
-        self.assertTrue(jnp.allclose(g, 0.0))
-
-    def test_b_poly_of_degree_5(self):
-        m = 5
-        k = 5
-        c = jnp.ones(k + 1)
-        x = jnp.linspace(0.0, 1.0, m)
-        y = b_poly(c, x)
-
-        self.assertEqual((m,), y.shape)
-        self.assertTrue(jnp.allclose(y, 1.0))
-
-        c = jnp.linspace(1.0, 2.0, k + 1)
-        y = b_poly(c, x)
-
-        self.assertEqual((m,), y.shape)
-        self.assertTrue(jnp.allclose(y, 1.0 + x))
-
-    def test_b_poly_of_degree_5_grad(self):
-        def b_poly_sum(c, x):
-            """To test the gradient."""
-            return jnp.sum(b_poly(c, x))
-
-        @jax.jit
-        def b_poly_grad(c, x):
-            """To test the gradient."""
-            return jax.grad(b_poly_sum, argnums=1)(c, x)
-
-        m = 5
-        k = 5
-        c = jnp.ones(k + 1)
-        x = jnp.linspace(0.0, 1.0, m)
-        g = b_poly_grad(c, x)
-
-        self.assertEqual((m,), g.shape)
-        self.assertTrue(jnp.allclose(g, 0.0))
-
-        c = jnp.linspace(1.0, 2.0, k + 1)
-        g = b_poly_grad(c, x)
-
-        self.assertEqual((m,), g.shape)
-        self.assertTrue(jnp.allclose(g, 1.0))
 
 
 class BernsteinGridTest(unittest.TestCase):
