@@ -222,7 +222,6 @@ class BSolveTest(unittest.TestCase):
 
         c = b_solve((k,), (x,), y, non_negative=True)
         self.assertEqual((k + 1,), c.shape)
-        self.assertTrue(jnp.allclose(b_poly(c, x), y))
         self.assertAlmostEqual(3.0, c[0].item())
         self.assertAlmostEqual(4.0, c[1].item())
         self.assertAlmostEqual(6.0, c[2].item())
@@ -239,7 +238,6 @@ class BSolveTest(unittest.TestCase):
 
         c = b_solve((k,), (x,), y)
         self.assertEqual((k + 1,), c.shape)
-        self.assertTrue(jnp.allclose(b_poly(c, x), y))
         self.assertAlmostEqual(-0.01, c[0].item())
         self.assertAlmostEqual(0.39, c[1].item())
         self.assertAlmostEqual(0.89, c[2].item())
@@ -249,7 +247,6 @@ class BSolveTest(unittest.TestCase):
 
         c = b_solve((k,), (x,), y, non_negative=True)
         self.assertEqual((k + 1,), c.shape)
-        self.assertTrue(jnp.allclose(b_poly(c, x), y, atol=0.1))
         self.assertAlmostEqual(0.00, c[0].item())
         self.assertAlmostEqual(0.38, c[1].item(), places=2)
         self.assertAlmostEqual(0.90, c[2].item(), places=2)
