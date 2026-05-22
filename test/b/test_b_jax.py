@@ -196,9 +196,9 @@ class BernsteinPolyTest(unittest.TestCase):
         d = tuple([k_ + 1 for k_ in k])
         c = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
         x = (
-            np.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00]),
-            np.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00]),
-            np.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00]),
+            np.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0]),
+            np.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0]),
+            np.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0]),
         )
         y = BernsteinGrid(x).eval(c)
         
@@ -217,7 +217,7 @@ class BSolveTest(unittest.TestCase):
     def test_b_solve_0_2(self):
         r"""Fit :math:`B_{0,2}(x)`."""
         k = 2
-        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        x = jnp.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
         y = jnp.square(1.0 - x)
 
         c = b_solve((k,), (x,), y, non_negative=True)
@@ -230,7 +230,7 @@ class BSolveTest(unittest.TestCase):
     def test_b_solve_1_2(self):
         r"""Fit :math:`B_{1,2}(x)`."""
         k = 2
-        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        x = jnp.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
         y = 2.0 * x * (1.0 - x)
 
         c = b_solve((k,), (x,), y, non_negative=True)
@@ -243,7 +243,7 @@ class BSolveTest(unittest.TestCase):
     def test_b_solve_2_2(self):
         r"""Fit :math:`B_{2,2}(x)`."""
         k = 2
-        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        x = jnp.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
         y = jnp.square(x)
 
         c = b_solve((k,), (x,), y, non_negative=True)
@@ -256,7 +256,7 @@ class BSolveTest(unittest.TestCase):
     def test_b_solve_0_0_2_2(self):
         r"""Fit :math:`B_{(0,0),(2,2)}(x_0, x_1)`."""
         k = 2
-        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        x = jnp.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
         y = jnp.square(1.0 - x[jnp.newaxis, :]) * jnp.square(
             1.0 - x[:, jnp.newaxis]
         )
@@ -277,7 +277,7 @@ class BSolveTest(unittest.TestCase):
     def test_b_solve_1_0_2_2(self):
         r"""Fit :math:`B_{(1,0),(2,2)}(x_0, x_1)`."""
         k = 2
-        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        x = jnp.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
         y = (
             2.0
             * x[:, jnp.newaxis]
@@ -301,7 +301,7 @@ class BSolveTest(unittest.TestCase):
     def test_b_solve_2_0_2_2(self):
         r"""Fit :math:`B_{(2,0),(2,2)}(x_0, x_1)`."""
         k = 2
-        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        x = jnp.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
         y = jnp.square(x[:, jnp.newaxis]) * jnp.square(
             1.0 - x[jnp.newaxis, :]
         )
@@ -322,7 +322,7 @@ class BSolveTest(unittest.TestCase):
     def test_b_solve_0_1_2_2(self):
         r"""Fit :math:`B_{(0,1),(2,2)}(x_0, x_1)`."""
         k = 2
-        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        x = jnp.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
         y = (
             2.0
             * jnp.square(1.0 - x[:, jnp.newaxis])
@@ -346,7 +346,7 @@ class BSolveTest(unittest.TestCase):
     def test_b_solve_1_1_2_2(self):
         r"""Fit :math:`B_{(1,1),(2,2)}(x_0, x_1)`."""
         k = 2
-        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        x = jnp.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
         y = (
             4.0
             * x[:, jnp.newaxis]
@@ -371,7 +371,7 @@ class BSolveTest(unittest.TestCase):
     def test_b_solve_2_1_2_2(self):
         r"""Fit :math:`B_{(2,1),(2,2)}(x_0, x_1)`."""
         k = 2
-        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        x = jnp.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
         y = (
             2.0
             * jnp.square(x[:, jnp.newaxis])
@@ -395,7 +395,7 @@ class BSolveTest(unittest.TestCase):
     def test_b_solve_0_2_2_2(self):
         r"""Fit :math:`B_{(0,2),(2,2)}(x_0, x_1)`."""
         k = 2
-        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        x = jnp.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
         y = jnp.square(1.0 - x[:, jnp.newaxis]) * jnp.square(
             x[jnp.newaxis, :]
         )
@@ -416,7 +416,7 @@ class BSolveTest(unittest.TestCase):
     def test_b_solve_1_2_2_2(self):
         r"""Fit :math:`B_{(1,2),(2,2)}(x_0, x_1)`."""
         k = 2
-        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        x = jnp.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
         y = (
             2.0
             * x[:, jnp.newaxis]
@@ -440,7 +440,7 @@ class BSolveTest(unittest.TestCase):
     def test_b_solve_2_2_2_2(self):
         r"""Fit :math:`B_{(2,2),(2,2)}(x_0, x_1)`."""
         k = 2
-        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        x = jnp.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
         y = jnp.square(x[:, jnp.newaxis]) * jnp.square(x[jnp.newaxis, :])
 
         c = b_solve((k, k), (x, x), y, non_negative=True)
