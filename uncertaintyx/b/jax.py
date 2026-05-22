@@ -184,6 +184,26 @@ def b_solve(
     :returns: The Bernstein coefficients.
     """
 
+    N = len(k)  # noqa: N806
+    bases = [b_basis(k[i], x[i]) for i in range(N)]
+    facts = [jla.qr(B.T, full_matrices=False) for B in bases]  # noqa: N806
+    Q = [_[0] for _ in facts]  # noqa: N806
+    R = [_[1] for _ in facts]  # noqa: N806
+
+    # compute the right hand side of the triangular equation
+    rhs = y
+    for i in range(N):
+        rhs = jnp.tensordot(rhs, Q[i], axes=(0, 0))
+    # solve the triangular equation
+    c_unconstrained = rhs
+    for i in range(N):
+        c_unconstrained = jla.triangular_solve(
+            R[i], c_unconstrained, left_side=True
+        )
+        c_unconstrained = jnp.moveaxis(  # like the tensor dot product
+            c_unconstrained, 0, -1
+        )
+
     def hvp(c: Array):
         """The Hessian-vector product."""
         res = c
@@ -230,33 +250,16 @@ def b_solve(
         for i in range(N):
             rhs = jnp.tensordot(rhs, R[i], axes=(0, 0))
 
-        u = inverse(jnp.abs(c))
+        u = inverse(jnp.abs(c) + jnp.finfo(c.dtype).eps)
         optimum = optimistix.minimise(
             misfit, make_minimizer(), u, max_steps=max_steps, throw=False
         )
         return forward(optimum.value)
 
-    N = len(k)  # noqa: N806
-    bases = [b_basis(k[i], x[i]) for i in range(N)]
-    facts = [jla.qr(B.T, full_matrices=False) for B in bases]  # noqa: N806
-    Q = [_[0] for _ in facts]  # noqa: N806
-    R = [_[1] for _ in facts]  # noqa: N806
-
-    # compute the right hand side of the triangular equation
-    rhs = y
-    for i in range(N):
-        rhs = jnp.tensordot(rhs, Q[i], axes=(0, 0))
-    # solve the triangular equation
-    c_unconstrained = rhs
-    for i in range(N):
-        c_unconstrained = jla.triangular_solve(
-            R[i], c_unconstrained, left_side=True
-        )
-        c_unconstrained = jnp.moveaxis(  # like the tensor dot product
-            c_unconstrained, 0, -1
-        )
     # solve iteratively with non-negativity constraint, if needed
-    nnls_needed = non_negative and jnp.any(c_unconstrained < 0.0)
+    nnls_needed = jnp.logical_and(
+        non_negative, jnp.any(c_unconstrained < 0.0)
+    )
     return jax.lax.cond(
         nnls_needed,
         nnls,
