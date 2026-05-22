@@ -204,9 +204,9 @@ class BernsteinPolyTest(unittest.TestCase):
         
         f = BernsteinPoly.from_lookup_table(k, x, y)
         z = BernsteinGrid(x).eval(f.prior())
-        self.assertAlmostEquals(y[0, 0, 0], z[0, 0, 0])
-        self.assertAlmostEquals(y[0, 0, 1], z[0, 0, 1])
-        self.assertAlmostEquals(y[0, 0, 2], z[0, 0, 2])
+        self.assertAlmostEqual(y[0, 0, 0], z[0, 0, 0])
+        self.assertAlmostEqual(y[0, 0, 1], z[0, 0, 1])
+        self.assertAlmostEqual(y[0, 0, 2], z[0, 0, 2])
 
 
 class BSolveTest(unittest.TestCase):
