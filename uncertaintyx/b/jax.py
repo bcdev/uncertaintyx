@@ -192,11 +192,6 @@ def b_solve(
         for i in range(N):
             res = jnp.tensordot(res, R[i], axes=(0, 0))
         return res
-        # res = c
-        # for i in range(N):
-        #    G = grams[i]  # noqa: N806
-        #    res = jnp.tensordot(res, G, axes=(0, 1))
-        # return res
 
     def nnls(c: Array, rhs: Array):
         """
