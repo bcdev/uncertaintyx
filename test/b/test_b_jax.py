@@ -180,8 +180,8 @@ class BernsteinPolyTest(unittest.TestCase):
         f = BernsteinPoly(c)
         y = f.eval(c, x)
         y_precalculated = np.asarray([19.8694, 32.0761, 19.6774])
-        self.assertEqual(y_precalculated, y.shape)
-        self.assertTrue(jnp.allclose(y, y_precalculated))
+        self.assertEqual(y_precalculated.shape, y.shape)
+        self.assertTrue(np.allclose(y, y_precalculated))
 
         g = f.jac_p(c, x)
         self.assertEqual((3,) + d, g.shape)
