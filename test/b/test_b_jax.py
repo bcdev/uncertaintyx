@@ -92,7 +92,7 @@ class BernsteinGridTest(unittest.TestCase):
         c = self.c
         f = self.f
         y = f.eval(c)
-        precalculated = np.asarray(
+        y_precalculated = np.asarray(
             [
                 [
                     [19.8694, 19.7848, 20.3956],
@@ -111,8 +111,8 @@ class BernsteinGridTest(unittest.TestCase):
                 ],
             ]
         )
-        self.assertEqual((3, 3, 3), y.shape)
-        self.assertTrue(np.allclose(y, precalculated))
+        self.assertEqual(y_precalculated.shape, y.shape)
+        self.assertTrue(np.allclose(y, y_precalculated))
 
         g = f.jac(c)
         self.assertEqual(y.shape + c.shape, g.shape)
@@ -179,9 +179,9 @@ class BernsteinPolyTest(unittest.TestCase):
         )
         f = BernsteinPoly(c)
         y = f.eval(c, x)
-        precalculated = np.asarray([19.8694, 32.0761, 19.6774])
-        self.assertEqual((3,), y.shape)
-        self.assertTrue(jnp.allclose(y, precalculated))
+        y_precalculated = np.asarray([19.8694, 32.0761, 19.6774])
+        self.assertEqual(y_precalculated, y.shape)
+        self.assertTrue(jnp.allclose(y, y_precalculated))
 
         g = f.jac_p(c, x)
         self.assertEqual((3,) + d, g.shape)
@@ -192,21 +192,39 @@ class BernsteinPolyTest(unittest.TestCase):
         self.assertTrue(np.all(g > 0.0))
 
     def test_from_lookup_table(self):
-        k = 5
-        x = np.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
-        y = np.square(x) + 2.0 * x + 3.0
-
-        f = BernsteinPoly.from_lookup_table((k,), (x,), y, non_negative=True)
+        k = (4, 3, 2)
+        d = tuple([k_ + 1 for k_ in k])
+        x = (
+            np.asarray([0.2718, 0.5772, 0.3141]),
+            np.asarray([0.5772, 0.3141, 0.2718]),
+            np.asarray([0.3141, 0.2718, 0.5772]),
+        )
+        y = np.asarray(
+            [
+                [
+                    [19.8694, 19.7848, 20.3956],
+                    [17.5015, 17.4169, 18.0277],
+                    [17.1208, 17.0362, 17.6470],
+                ],
+                [
+                    [34.5286, 34.4440, 35.0548],
+                    [32.1607, 32.0761, 32.6869],
+                    [31.7800, 31.6954, 32.3062],
+                ],
+                [
+                    [21.8998, 21.8152, 22.4260],
+                    [19.5319, 19.4473, 20.0581],
+                    [19.1512, 19.0666, 19.6774],
+                ],
+            ]
+        )
+        
+        f = BernsteinPoly.from_lookup_table(k, x,, y, non_negative=True)
         c = f.prior()
-        self.assertEqual((k + 1,), c.shape)
-        self.assertAlmostEqual(3.0, c[0])
-        self.assertAlmostEqual(3.4, c[1])
-        self.assertAlmostEqual(3.9, c[2])
-        self.assertAlmostEqual(4.5, c[3])
-        self.assertAlmostEqual(5.2, c[4])
-        self.assertAlmostEqual(6.0, c[5])
-        self.assertTrue(jnp.allclose(f.eval(c, x), y))
-
+        c_expected = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
+        self.assertEqual(c_expected.shape, c.shape)
+        self.assertTrue(np.allclose(c, c_expected))
+        
 
 class BSolveTest(unittest.TestCase):
     """
