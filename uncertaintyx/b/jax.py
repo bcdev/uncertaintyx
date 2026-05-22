@@ -226,14 +226,14 @@ def b_solve(
             r"""
             The forward (Charbonnier) transformation.
 
-            Asymptotic limits are :math:`2u` for :math:`u \to \infty` and
+            The asymptotic limit is :math:`u` for :math:`u \to \infty` and
             zero for :math:`u \to -\infty`.
             """
-            return 0.25 * jnp.square(u + jnp.sqrt(jnp.square(u) + 4.0))
+            return 0.5 * (u + jnp.sqrt(jnp.square(u) + 4.0))
 
         def inverse(c: Array) -> Array:
             """The inverse (Charbonnier) transformation."""
-            return (c - 1.0) / jnp.sqrt(c)
+            return c - 1.0 / c
 
         def misfit(u: Array, _: None = None) -> Array:
             """The misfit function with quadratic transformation."""
