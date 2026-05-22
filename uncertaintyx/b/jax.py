@@ -222,8 +222,7 @@ def b_solve(
         """
         Non-negative least-squares solver.
 
-        Uses QR factorization to compute a stable unconstrained
-        solution. Applies a positive transformation and an L-BFGS
+        Applies a positive transformation and an L-BFGS
         optimizer to ensure non-negativity.
         """
 
