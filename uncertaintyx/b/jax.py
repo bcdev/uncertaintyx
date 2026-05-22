@@ -327,7 +327,7 @@ class BernsteinGrid(ToG):
         :param a: The lower bounds of the grid coordinates.
         :param b: The upper bounds of the grid coordinates.
         """
-        N = len(k)  # noqa: : N806
+        N = len(x)  # noqa: : N806
         a = _lower_bounds(a, x)
         b = _upper_bounds(b, x)
         x_ = tuple(jnp.asarray((x[i] - a[i]) / (b[i] - a[i])) for i in range(N))
