@@ -241,7 +241,7 @@ class BSolveTest(unittest.TestCase):
 
         c = b_solve((k,), (x,), y)
         self.assertEqual((k + 1,), c.shape)
-        self.assertAlmostEqual(-0.01, c[0].item())
+        self.assertAlmostEqual(0.00, c[0].item() + 0.01)
         self.assertAlmostEqual(0.39, c[1].item())
         self.assertAlmostEqual(0.89, c[2].item())
         self.assertAlmostEqual(1.49, c[3].item())

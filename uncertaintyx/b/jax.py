@@ -11,6 +11,8 @@ import numpy as np
 import optax
 import optimistix
 from jax import Array
+from jax import Array
+from jax import Array
 from jax.scipy.special import gammaln
 
 from uncertaintyx.g.jax import ToG
@@ -196,12 +198,21 @@ def b_solve(
         """
         Non-negative least-squares solver.
 
-        Uses a quadratic transformation and an L-BFGS minimizer.
+        Uses a softplus transformation and an L-BFGS minimizer to ensure
+        non-negativity when needed.
         """
+
+        def forward(u: Array) -> Array:
+            """The forward softplus transformation."""
+            return jnp.log(1.0 + jnp.exp(u))
+
+        def inverse(c_: Array) -> Array:
+            """The inverse softplus transformation."""
+            return jnp.log(jnp.expm1(c_))
 
         def misfit(u: Array, _: None = None) -> Array:
             """The misfit function with quadratic transformation."""
-            c_ = jnp.square(u)
+            c_ = forward(u)
             return 0.5 * jnp.sum(c_ * hvp(c_)) - jnp.sum(c_ * rhs)
 
         def make_minimizer():
@@ -210,11 +221,11 @@ def b_solve(
                 optax.lbfgs(), atol=atol, rtol=rtol, norm=optimistix.max_norm
             )
 
-        u = jnp.sqrt(jnp.maximum(0.0, c))
+        u = inverse(jnp.abs(c))
         minimum = optimistix.minimise(
             misfit, make_minimizer(), u, max_steps=max_steps, throw=False
         )
-        return jnp.square(minimum.value)
+        return forward(minimum.value)
 
     N = len(k)  # noqa: N806
     bases = [b_basis(k[i], x[i]) for i in range(N)]
