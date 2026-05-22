@@ -194,37 +194,19 @@ class BernsteinPolyTest(unittest.TestCase):
     def test_from_lookup_table(self):
         k = (2, 2, 2)
         d = tuple([k_ + 1 for k_ in k])
+        c = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
         x = (
             np.asarray([0.2718, 0.5772, 0.3141]),
             np.asarray([0.5772, 0.3141, 0.2718]),
             np.asarray([0.3141, 0.2718, 0.5772]),
         )
-        y = np.asarray(
-            [
-                [
-                    [19.8694, 19.7848, 20.3956],
-                    [17.5015, 17.4169, 18.0277],
-                    [17.1208, 17.0362, 17.6470],
-                ],
-                [
-                    [34.5286, 34.4440, 35.0548],
-                    [32.1607, 32.0761, 32.6869],
-                    [31.7800, 31.6954, 32.3062],
-                ],
-                [
-                    [21.8998, 21.8152, 22.4260],
-                    [19.5319, 19.4473, 20.0581],
-                    [19.1512, 19.0666, 19.6774],
-                ],
-            ]
-        )
+        y = BernsteinGrid(x).eval(c)
         
         f = BernsteinPoly.from_lookup_table(k, x, y, non_negative=True)
-        c = f.prior()
-        c_expected = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
-        self.assertEqual(c_expected.shape, c.shape)
-        self.assertTrue(np.all(c > 0.0))
-        self.assertTrue(np.allclose(c, c_expected))
+        b = f.prior()
+        self.assertEqual(c.shape, b.shape)
+        self.assertFalse(np.any(b < 0.0))
+        self.assertTrue(np.allclose(b, c))
         
 
 class BSolveTest(unittest.TestCase):
@@ -241,6 +223,7 @@ class BSolveTest(unittest.TestCase):
 
         c = b_solve((k,), (x,), y, non_negative=True)
         self.assertEqual((k + 1,), c.shape)
+        self.assertFalse(np.any(c < 0.0))
         self.assertAlmostEqual(1.0, c[0].item())
         self.assertAlmostEqual(0.0, c[1].item())
         self.assertAlmostEqual(0.0, c[2].item())
@@ -253,6 +236,7 @@ class BSolveTest(unittest.TestCase):
 
         c = b_solve((k,), (x,), y, non_negative=True)
         self.assertEqual((k + 1,), c.shape)
+        self.assertFalse(np.any(c < 0.0))
         self.assertAlmostEqual(0.0, c[0].item())
         self.assertAlmostEqual(1.0, c[1].item())
         self.assertAlmostEqual(0.0, c[2].item())
@@ -265,6 +249,7 @@ class BSolveTest(unittest.TestCase):
 
         c = b_solve((k,), (x,), y, non_negative=True)
         self.assertEqual((k + 1,), c.shape)
+        self.assertFalse(np.any(c < 0.0))
         self.assertAlmostEqual(0.0, c[0].item())
         self.assertAlmostEqual(0.0, c[1].item())
         self.assertAlmostEqual(1.0, c[2].item())
@@ -279,6 +264,7 @@ class BSolveTest(unittest.TestCase):
 
         c = b_solve((k, k), (x, x), y, non_negative=True)
         self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertFalse(np.any(c < 0.0))
         self.assertAlmostEqual(1.0, c[0, 0].item())
         self.assertAlmostEqual(0.0, c[0, 1].item())
         self.assertAlmostEqual(0.0, c[0, 2].item())
@@ -302,6 +288,7 @@ class BSolveTest(unittest.TestCase):
 
         c = b_solve((k, k), (x, x), y, non_negative=True)
         self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertFalse(np.any(c < 0.0))
         self.assertAlmostEqual(0.0, c[0, 0].item())
         self.assertAlmostEqual(0.0, c[0, 1].item())
         self.assertAlmostEqual(0.0, c[0, 2].item())
@@ -322,6 +309,7 @@ class BSolveTest(unittest.TestCase):
 
         c = b_solve((k, k), (x, x), y, non_negative=True)
         self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertFalse(np.any(c < 0.0))
         self.assertAlmostEqual(0.0, c[0, 0].item())
         self.assertAlmostEqual(0.0, c[0, 1].item())
         self.assertAlmostEqual(0.0, c[0, 2].item())
@@ -345,6 +333,7 @@ class BSolveTest(unittest.TestCase):
 
         c = b_solve((k, k), (x, x), y, non_negative=True)
         self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertFalse(np.any(c < 0.0))
         self.assertAlmostEqual(0.0, c[0, 0].item())
         self.assertAlmostEqual(1.0, c[0, 1].item())
         self.assertAlmostEqual(0.0, c[0, 2].item())
@@ -369,6 +358,7 @@ class BSolveTest(unittest.TestCase):
 
         c = b_solve((k, k), (x, x), y, non_negative=True)
         self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertFalse(np.any(c < 0.0))
         self.assertAlmostEqual(0.0, c[0, 0].item())
         self.assertAlmostEqual(0.0, c[0, 1].item())
         self.assertAlmostEqual(0.0, c[0, 2].item())
@@ -391,6 +381,7 @@ class BSolveTest(unittest.TestCase):
         )
 
         c = b_solve((k, k), (x, x), y, non_negative=True)
+        self.assertFalse(np.any(c < 0.0))
         self.assertEqual((k + 1, k + 1), c.shape)
         self.assertAlmostEqual(0.0, c[0, 0].item())
         self.assertAlmostEqual(0.0, c[0, 1].item())
@@ -411,6 +402,7 @@ class BSolveTest(unittest.TestCase):
         )
 
         c = b_solve((k, k), (x, x), y, non_negative=True)
+        self.assertFalse(np.any(c < 0.0))
         self.assertEqual((k + 1, k + 1), c.shape)
         self.assertAlmostEqual(0.0, c[0, 0].item())
         self.assertAlmostEqual(0.0, c[0, 1].item())
@@ -435,6 +427,7 @@ class BSolveTest(unittest.TestCase):
 
         c = b_solve((k, k), (x, x), y, non_negative=True)
         self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertFalse(np.any(c < 0.0))
         self.assertAlmostEqual(0.0, c[0, 0].item())
         self.assertAlmostEqual(0.0, c[0, 1].item())
         self.assertAlmostEqual(0.0, c[0, 2].item())
@@ -453,6 +446,7 @@ class BSolveTest(unittest.TestCase):
 
         c = b_solve((k, k), (x, x), y, non_negative=True)
         self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertFalse(np.any(c < 0.0))
         self.assertAlmostEqual(0.0, c[0, 0].item())
         self.assertAlmostEqual(0.0, c[0, 1].item())
         self.assertAlmostEqual(0.0, c[0, 2].item())
