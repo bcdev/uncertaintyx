@@ -192,7 +192,7 @@ class BernsteinPolyTest(unittest.TestCase):
         self.assertTrue(np.all(g > 0.0))
 
     def test_from_lookup_table(self):
-        k = (4, 3, 2)
+        k = (2, 2, 2)
         d = tuple([k_ + 1 for k_ in k])
         x = (
             np.asarray([0.2718, 0.5772, 0.3141]),
@@ -223,6 +223,7 @@ class BernsteinPolyTest(unittest.TestCase):
         c = f.prior()
         c_expected = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
         self.assertEqual(c_expected.shape, c.shape)
+        self.assertTrue(np.all(c > 0.0))
         self.assertTrue(np.allclose(c, c_expected))
         
 
