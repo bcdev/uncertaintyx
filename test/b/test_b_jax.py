@@ -194,7 +194,7 @@ class BernsteinPolyTest(unittest.TestCase):
     def test_from_lookup_table(self):
         k = (3, 4, 2)
         d = tuple([k_ + 1 for k_ in k])
-        c = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
+        c = np.arange(np.prod(np.asarray(d))).reshape(d)
         x = (
             np.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0]),
             np.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0]),
@@ -202,7 +202,7 @@ class BernsteinPolyTest(unittest.TestCase):
         )
         y = BernsteinGrid(x).eval(c)
         
-        f = BernsteinPoly.from_lookup_table(k, x, y)
+        f = BernsteinPoly.from_lookup_table(k, x, y, non_negative=True)
         b = f.prior()
         self.assertEqual(c.shape, b.shape)
         self.assertTrue(np.allclose(b, c))
