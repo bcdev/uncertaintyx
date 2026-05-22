@@ -192,21 +192,20 @@ class BernsteinPolyTest(unittest.TestCase):
         self.assertTrue(np.all(g > 0.0))
 
     def test_from_lookup_table(self):
-        k = (2, 2, 2)
+        k = (3, 4, 2)
         d = tuple([k_ + 1 for k_ in k])
         c = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
         x = (
-            np.asarray([0.2718, 0.5772, 0.3141]),
-            np.asarray([0.5772, 0.3141, 0.2718]),
-            np.asarray([0.3141, 0.2718, 0.5772]),
+            np.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00]),
+            np.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00]),
+            np.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00]),
         )
         y = BernsteinGrid(x).eval(c)
         
         f = BernsteinPoly.from_lookup_table(k, x, y)
-        z = BernsteinGrid(x).eval(f.prior())
-        self.assertAlmostEqual(y[0, 0, 0], z[0, 0, 0])
-        self.assertAlmostEqual(y[0, 0, 1], z[0, 0, 1])
-        self.assertAlmostEqual(y[0, 0, 2], z[0, 0, 2])
+        b = f.prior()
+        self.assertEqual(c.shape, b.shape)
+        self.assertTrue(np.allclose(b, c))
 
 
 class BSolveTest(unittest.TestCase):
