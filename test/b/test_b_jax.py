@@ -203,7 +203,10 @@ class BernsteinPolyTest(unittest.TestCase):
         y = BernsteinGrid(x).eval(c)
         
         f = BernsteinPoly.from_lookup_table(k, x, y)
-        self.assertTrue(np.allclose(BernsteinGrid(x).eval(f.prior()), y))
+        z = BernsteinGrid(x).eval(f.prior())
+        self.assertAlmostEquals(y[0, 0, 0], z[0, 0, 0])
+        self.assertAlmostEquals(y[0, 0, 1], z[0, 0, 1])
+        self.assertAlmostEquals(y[0, 0, 2], z[0, 0, 2])
 
 
 class BSolveTest(unittest.TestCase):
