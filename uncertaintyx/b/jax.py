@@ -5,8 +5,8 @@ from typing import Literal
 from typing import Self
 
 import jax
-import jax.lax.linalg as jla
 import jax.numpy as jnp
+import jax.numpy.linalg as jli
 import numpy as np
 import optax
 import optimistix
@@ -186,44 +186,35 @@ def b_solve(
 
     N = len(k)  # noqa: N806
     bases = [b_basis(k[i], x[i]) for i in range(N)]
-    facts = [jla.qr(B.T, full_matrices=False) for B in bases]  # noqa: N806
-    Q = [_[0] for _ in facts]  # noqa: N806
-    R = [_[1] for _ in facts]  # noqa: N806
+    grams = [jnp.dot(B, B.T) for B in bases]  # noqa: N806
 
-    # compute the right hand side of the triangular equation
+    # compute the right hand side of the normal equation
     rhs = y
     for i in range(N):
-        rhs = jnp.tensordot(rhs, Q[i], axes=(0, 0))
-    # solve the triangular equation
+        B = bases[i]  # noqa: N806
+        rhs = jnp.tensordot(rhs, B, axes=(0, 1))
+    # solve the normal equation
     c_unconstrained = rhs
-    if N > 1:
-        for i in range(N):
-            solve = jax.vmap(
-                lambda a, b: jla.triangular_solve(a, b, left_side=True),
-                in_axes=(None, i),
-                out_axes=i,
-            )
-            c_unconstrained = solve(R[i], c_unconstrained)
-    else:
-        c_unconstrained = jla.triangular_solve(
-            R[0], c_unconstrained, left_side=True
+    for i in range(N):
+        G = grams[i]  # noqa: N806
+        c_unconstrained = jnp.tensordot(
+            c_unconstrained, jli.pinv(G), axes=(0, 1)
         )
 
     def hvp(c: Array):
         """The Hessian-vector product."""
         res = c
         for i in range(N):
-            res = jnp.tensordot(res, R[i], axes=(0, 1))
-        for i in range(N):
-            res = jnp.tensordot(res, R[i], axes=(0, 0))
+            G = grams[i]  # noqa: N806
+            res = jnp.tensordot(res, G, axes=(0, 1))
         return res
 
-    def nnls(c: Array, rhs: Array):
+    def nnls(c: Array):
         """
         Non-negative least-squares solver.
 
-        Applies a positive transformation and an L-BFGS
-        optimizer to ensure non-negativity.
+        Applies a positive transformation and an L-BFGS optimizer
+        to ensure non-negativity.
         """
 
         def forward(u: Array) -> Array:
@@ -250,10 +241,6 @@ def b_solve(
                 optax.lbfgs(), atol=atol, rtol=rtol, norm=optimistix.max_norm
             )
 
-        # compute the right hand side of the normal equation
-        for i in range(N):
-            rhs = jnp.tensordot(rhs, R[i], axes=(0, 0))
-
         u = inverse(jnp.abs(c) + jnp.finfo(c.dtype).eps)
         optimum = optimistix.minimise(
             misfit, make_minimizer(), u, max_steps=max_steps, throw=False
@@ -264,13 +251,7 @@ def b_solve(
     nnls_needed = jnp.logical_and(
         non_negative, jnp.any(c_unconstrained < 0.0)
     )
-    return jax.lax.cond(
-        nnls_needed,
-        nnls,
-        lambda c, _: c,
-        c_unconstrained,
-        rhs,
-    )
+    return jax.lax.cond(nnls_needed, nnls, lambda c: c, c_unconstrained)
 
 
 def _lower_bounds(
@@ -327,9 +308,10 @@ class BernsteinGrid(ToG):
         :param a: The lower bounds of the grid coordinates.
         :param b: The upper bounds of the grid coordinates.
         """
+        N = len(x)  # noqa: : N806
         a = _lower_bounds(a, x)
         b = _upper_bounds(b, x)
-        x = tuple(jnp.asarray((x_ - a) / (b - a)) for x_ in x)
+        x_ = tuple(jnp.asarray((x[i] - a[i]) / (b[i] - a[i])) for i in range(N))
 
         def f(c: Array) -> Array:
             r"""
@@ -420,9 +402,10 @@ class BernsteinPoly(ToM):
         :param rtol: The relative tolerance for terminating the solver.
         :param max_steps: The maximum number of steps the solver can take.
         """
+        N = len(k)  # noqa: : N806
         a = _lower_bounds(a, x)
         b = _upper_bounds(b, x)
-        x_ = tuple(jnp.asarray((x_ - a) / (b - a)) for x_ in x)
+        x_ = tuple(jnp.asarray((x[i] - a[i]) / (b[i] - a[i])) for i in range(N))
         y_ = jnp.asarray(y)
         c_ = b_solve(
             k,
