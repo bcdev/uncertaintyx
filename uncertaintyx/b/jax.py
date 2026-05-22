@@ -198,22 +198,27 @@ def b_solve(
         Non-negative least-squares solver.
 
         Uses QR factorization to compute a stable unconstrained
-        solution. Applies a softplus transformation and an L-BFGS
+        solution. Applies a positive transformation and an L-BFGS
         optimizer to ensure non-negativity.
         """
 
         def forward(u: Array) -> Array:
-            """The forward softplus transformation."""
-            return jnp.log(1.0 + jnp.exp(u))
+            r"""
+            The forward (Charbonnier) transformation.
 
-        def inverse(c_: Array) -> Array:
-            """The inverse softplus transformation."""
-            return jnp.log(jnp.expm1(c_))
+            Asymptotic limits are :math:`2u` for :math:`u \to \infty` and
+            zero for :math:`u \to -\infty`.
+            """
+            return 0.25 * jnp.square(u + jnp.sqrt(jnp.square(u) + 4.0))
+
+        def inverse(c: Array) -> Array:
+            """The inverse (Charbonnier) transformation."""
+            return (c - 1.0) / jnp.sqrt(c)
 
         def misfit(u: Array, _: None = None) -> Array:
             """The misfit function with quadratic transformation."""
             c_ = forward(u)
-            return 0.5 * jnp.sum(c_ * hvp(c_)) - jnp.sum(c_ * rhs)
+            return 0.5 * jnp.vdot(c_, hvp(c_)) - jnp.vdot(c_, rhs)
 
         def make_minimizer():
             """Returns the minimizer."""
