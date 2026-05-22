@@ -327,9 +327,10 @@ class BernsteinGrid(ToG):
         :param a: The lower bounds of the grid coordinates.
         :param b: The upper bounds of the grid coordinates.
         """
+        N = len(k)  # noqa: : N806
         a = _lower_bounds(a, x)
         b = _upper_bounds(b, x)
-        x = tuple(jnp.asarray((x_ - a) / (b - a)) for x_ in x)
+        x_ = tuple(jnp.asarray((x[i] - a[i]) / (b[i] - a[i])) for i in range(N))
 
         def f(c: Array) -> Array:
             r"""
@@ -420,9 +421,10 @@ class BernsteinPoly(ToM):
         :param rtol: The relative tolerance for terminating the solver.
         :param max_steps: The maximum number of steps the solver can take.
         """
+        N = len(k)  # noqa: : N806
         a = _lower_bounds(a, x)
         b = _upper_bounds(b, x)
-        x_ = tuple(jnp.asarray((x_ - a) / (b - a)) for x_ in x)
+        x_ = tuple(jnp.asarray((x[i] - a[i]) / (b[i] - a[i])) for i in range(N))
         y_ = jnp.asarray(y)
         c_ = b_solve(
             k,
