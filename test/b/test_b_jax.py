@@ -118,15 +118,14 @@ class BernsteinGridTest(unittest.TestCase):
         self.assertEqual(y.shape + c.shape, g.shape)
         self.assertTrue(np.all(g > 0.0))
 
-        u = to_var(0.1 * c)
-        u = f.lpu(c, u, diag=True)
-        self.assertEqual(y.shape, u.shape)
-        self.assertTrue(np.all(u > 0.0))
+        u = np.square(0.1 * c)
+        v = f.lpu(c, u, diag=True)
+        self.assertEqual(y.shape, v.shape)
+        self.assertTrue(np.all(v > 0.0))
 
-        u = to_var(0.1 * c)
-        u = f.lpu(c, u)
-        self.assertEqual(y.shape + y.shape, u.shape)
-        self.assertTrue(np.all(u > 0.0))
+        v = f.lpu(c, u)
+        self.assertEqual(y.shape + y.shape, v.shape)
+        self.assertTrue(np.all(v > 0.0))
 
     def test_jac(self):
         c = self.c
@@ -137,30 +136,28 @@ class BernsteinGridTest(unittest.TestCase):
         self.assertEqual(y.shape + c.shape, g.shape)
         self.assertTrue(np.all(g > 0.0))
 
-        u = to_var(0.1 * c)
-        u = f.lpu(c, u, diag=True)
-        self.assertEqual(y.shape, u.shape)
-        self.assertTrue(np.all(u > 0.0))
+        u = np.square(0.1 * c)
+        v = f.lpu(c, u, diag=True)
+        self.assertEqual(y.shape, v.shape)
+        self.assertTrue(np.all(v > 0.0))
 
-        u = to_var(0.1 * c)
-        u = f.lpu(c, u)
-        self.assertEqual(y.shape + y.shape, u.shape)
-        self.assertTrue(np.all(u > 0.0))
+        v = f.lpu(c, u)
+        self.assertEqual(y.shape + y.shape, v.shape)
+        self.assertTrue(np.all(v > 0.0))
 
     def test_lpu(self):
         c = self.c
         f = self.f
         y = f.eval(c)
 
-        u = to_var(0.1 * c)
-        u = f.lpu(c, u, diag=True)
-        self.assertEqual(y.shape, u.shape)
-        self.assertTrue(np.all(u > 0.0))
+        u = np.square(0.1 * c)
+        v = f.lpu(c, u, diag=True)
+        self.assertEqual(y.shape, v.shape)
+        self.assertTrue(np.all(v > 0.0))
 
-        u = to_var(0.1 * c)
-        u = f.lpu(c, u)
-        self.assertEqual(y.shape + y.shape, u.shape)
-        self.assertTrue(np.all(u > 0.0))
+        v = f.lpu(c, u)
+        self.assertEqual(y.shape + y.shape, v.shape)
+        self.assertTrue(np.all(v > 0.0))
 
 
 class BernsteinPolyTest(unittest.TestCase):
@@ -196,10 +193,8 @@ class BernsteinPolyTest(unittest.TestCase):
 
     def test_from_lookup_table(self):
         k = 5
-        x = np.array([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
-        y = np.array(  # y = x ** 2 + 2 x + 3
-            [3.00, 3.44, 3.96, 4.56, 5.24, 6.00]
-        )
+        x = np.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = np.square(x) + 2.0 * x + 3.0
 
         f = BernsteinPoly.from_lookup_table((k,), (x,), y, non_negative=True)
         c = f.prior()
@@ -214,55 +209,240 @@ class BernsteinPolyTest(unittest.TestCase):
 
 
 class BSolveTest(unittest.TestCase):
-    """Tests the solving function."""
+    """
+    Tests the solving function by fitting coefficients to
+    Bernstein basis polynomials.
+    """
 
-    def test_b_solve_degree_2(self):
+    def test_b_solve_0_2(self):
+        r"""Fit :math:`B_{0,2}(x)`."""
         k = 2
-        x = jnp.array([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
-        y = jnp.array(  # y = x ** 2 + 2 x + 3
-            [3.00, 3.44, 3.96, 4.56, 5.24, 6.00]
-        )
+        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = jnp.square(1.0 - x)
 
         c = b_solve((k,), (x,), y, non_negative=True)
         self.assertEqual((k + 1,), c.shape)
-        self.assertAlmostEqual(3.0, c[0].item())
-        self.assertAlmostEqual(4.0, c[1].item())
-        self.assertAlmostEqual(6.0, c[2].item())
+        self.assertAlmostEqual(1.0, c[0].item())
+        self.assertAlmostEqual(0.0, c[1].item())
+        self.assertAlmostEqual(0.0, c[2].item())
 
-    def test_b_solve_degree_5(self):
-        k = 5
-        x = jnp.array([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+    def test_b_solve_1_2(self):
+        r"""Fit :math:`B_{1,2}(x)`."""
+        k = 2
+        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = 2.0 * x * (1.0 - x)
+
+        c = b_solve((k,), (x,), y, non_negative=True)
+        self.assertEqual((k + 1,), c.shape)
+        self.assertAlmostEqual(0.0, c[0].item())
+        self.assertAlmostEqual(1.0, c[1].item())
+        self.assertAlmostEqual(0.0, c[2].item())
+
+    def test_b_solve_2_2(self):
+        r"""Fit :math:`B_{2,2}(x)`."""
+        k = 2
+        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = jnp.square(x)
+
+        c = b_solve((k,), (x,), y, non_negative=True)
+        self.assertEqual((k + 1,), c.shape)
+        self.assertAlmostEqual(0.0, c[0].item())
+        self.assertAlmostEqual(0.0, c[1].item())
+        self.assertAlmostEqual(1.0, c[2].item())
+
+    def test_b_solve_0_0_2_2(self):
+        r"""Fit :math:`B_{(0,0),(2,2)}(x_0, x_1)`."""
+        k = 2
+        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = jnp.square(1.0 - x[jnp.newaxis, :]) * jnp.square(
+            1.0 - x[:, jnp.newaxis]
+        )
+
+        c = b_solve((k, k), (x, x), y, non_negative=True)
+        self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertAlmostEqual(1.0, c[0, 0].item())
+        self.assertAlmostEqual(0.0, c[0, 1].item())
+        self.assertAlmostEqual(0.0, c[0, 2].item())
+        self.assertAlmostEqual(0.0, c[1, 0].item())
+        self.assertAlmostEqual(0.0, c[1, 1].item())
+        self.assertAlmostEqual(0.0, c[1, 2].item())
+        self.assertAlmostEqual(0.0, c[2, 0].item())
+        self.assertAlmostEqual(0.0, c[2, 1].item())
+        self.assertAlmostEqual(0.0, c[2, 2].item())
+
+    def test_b_solve_1_0_2_2(self):
+        r"""Fit :math:`B_{(1,0),(2,2)}(x_0, x_1)`."""
+        k = 2
+        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
         y = (
-            jnp.array(  # y = x ** 2 + 2 x - 1 / 100
-                [0.00, 0.44, 0.96, 1.56, 2.24, 3.00]
-            )
-            - 0.01
+            2.0
+            * x[:, jnp.newaxis]
+            * (1.0 - x[:, jnp.newaxis])
+            * jnp.square(1.0 - x[jnp.newaxis, :])
         )
 
-        c = b_solve((k,), (x,), y)
-        self.assertEqual((k + 1,), c.shape)
-        self.assertAlmostEqual(0.00, c[0].item() + 0.01)
-        self.assertAlmostEqual(0.39, c[1].item())
-        self.assertAlmostEqual(0.89, c[2].item())
-        self.assertAlmostEqual(1.49, c[3].item())
-        self.assertAlmostEqual(2.19, c[4].item())
-        self.assertAlmostEqual(2.99, c[5].item())
+        c = b_solve((k, k), (x, x), y, non_negative=True)
+        self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertAlmostEqual(0.0, c[0, 0].item())
+        self.assertAlmostEqual(0.0, c[0, 1].item())
+        self.assertAlmostEqual(0.0, c[0, 2].item())
+        self.assertAlmostEqual(1.0, c[1, 0].item())
+        self.assertAlmostEqual(0.0, c[1, 1].item())
+        self.assertAlmostEqual(0.0, c[1, 2].item())
+        self.assertAlmostEqual(0.0, c[2, 0].item())
+        self.assertAlmostEqual(0.0, c[2, 1].item())
+        self.assertAlmostEqual(0.0, c[2, 2].item())
 
-        c = b_solve((k,), (x,), y, non_negative=True)
-        self.assertEqual((k + 1,), c.shape)
-        self.assertAlmostEqual(0.00, c[0].item())
-        self.assertAlmostEqual(0.38, c[1].item(), places=2)
-        self.assertAlmostEqual(0.90, c[2].item(), places=2)
-        self.assertAlmostEqual(1.48, c[3].item(), places=2)
-        self.assertAlmostEqual(2.19, c[4].item(), places=2)
-        self.assertAlmostEqual(2.99, c[5].item(), places=2)
+    def test_b_solve_2_0_2_2(self):
+        r"""Fit :math:`B_{(2,0),(2,2)}(x_0, x_1)`."""
+        k = 2
+        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = jnp.square(x[:, jnp.newaxis]) * jnp.square(
+            1.0 - x[jnp.newaxis, :]
+        )
 
+        c = b_solve((k, k), (x, x), y, non_negative=True)
+        self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertAlmostEqual(0.0, c[0, 0].item())
+        self.assertAlmostEqual(0.0, c[0, 1].item())
+        self.assertAlmostEqual(0.0, c[0, 2].item())
+        self.assertAlmostEqual(0.0, c[1, 0].item())
+        self.assertAlmostEqual(0.0, c[1, 1].item())
+        self.assertAlmostEqual(0.0, c[1, 2].item())
+        self.assertAlmostEqual(1.0, c[2, 0].item())
+        self.assertAlmostEqual(0.0, c[2, 1].item())
+        self.assertAlmostEqual(0.0, c[2, 2].item())
 
-def to_var(u: np.ndarray) -> np.ndarray:
-    """
-    Converts standard uncertainty to a diagonal uncertainty tensor.
-    """
-    return np.square(u)
+    def test_b_solve_0_1_2_2(self):
+        r"""Fit :math:`B_{(0,1),(2,2)}(x_0, x_1)`."""
+        k = 2
+        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = (
+            2.0
+            * jnp.square(1.0 - x[:, jnp.newaxis])
+            * x[jnp.newaxis, :]
+            * (1.0 - x[jnp.newaxis, :])
+        )
+
+        c = b_solve((k, k), (x, x), y, non_negative=True)
+        self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertAlmostEqual(0.0, c[0, 0].item())
+        self.assertAlmostEqual(1.0, c[0, 1].item())
+        self.assertAlmostEqual(0.0, c[0, 2].item())
+        self.assertAlmostEqual(0.0, c[1, 0].item())
+        self.assertAlmostEqual(0.0, c[1, 1].item())
+        self.assertAlmostEqual(0.0, c[1, 2].item())
+        self.assertAlmostEqual(0.0, c[2, 0].item())
+        self.assertAlmostEqual(0.0, c[2, 1].item())
+        self.assertAlmostEqual(0.0, c[2, 2].item())
+
+    def test_b_solve_1_1_2_2(self):
+        r"""Fit :math:`B_{(1,1),(2,2)}(x_0, x_1)`."""
+        k = 2
+        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = (
+            4.0
+            * x[:, jnp.newaxis]
+            * (1.0 - x[:, jnp.newaxis])
+            * x[jnp.newaxis, :]
+            * (1.0 - x[jnp.newaxis, :])
+        )
+
+        c = b_solve((k, k), (x, x), y, non_negative=True)
+        self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertAlmostEqual(0.0, c[0, 0].item())
+        self.assertAlmostEqual(0.0, c[0, 1].item())
+        self.assertAlmostEqual(0.0, c[0, 2].item())
+        self.assertAlmostEqual(0.0, c[1, 0].item())
+        self.assertAlmostEqual(1.0, c[1, 1].item())
+        self.assertAlmostEqual(0.0, c[1, 2].item())
+        self.assertAlmostEqual(0.0, c[2, 0].item())
+        self.assertAlmostEqual(0.0, c[2, 1].item())
+        self.assertAlmostEqual(0.0, c[2, 2].item())
+
+    def test_b_solve_2_1_2_2(self):
+        r"""Fit :math:`B_{(2,1),(2,2)}(x_0, x_1)`."""
+        k = 2
+        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = (
+            2.0
+            * jnp.square(x[:, jnp.newaxis])
+            * x[jnp.newaxis, :]
+            * (1.0 - x[jnp.newaxis, :])
+        )
+
+        c = b_solve((k, k), (x, x), y, non_negative=True)
+        self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertAlmostEqual(0.0, c[0, 0].item())
+        self.assertAlmostEqual(0.0, c[0, 1].item())
+        self.assertAlmostEqual(0.0, c[0, 2].item())
+        self.assertAlmostEqual(0.0, c[1, 0].item())
+        self.assertAlmostEqual(0.0, c[1, 1].item())
+        self.assertAlmostEqual(0.0, c[1, 2].item())
+        self.assertAlmostEqual(0.0, c[2, 0].item())
+        self.assertAlmostEqual(1.0, c[2, 1].item())
+        self.assertAlmostEqual(0.0, c[2, 2].item())
+
+    def test_b_solve_0_2_2_2(self):
+        r"""Fit :math:`B_{(0,2),(2,2)}(x_0, x_1)`."""
+        k = 2
+        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = jnp.square(1.0 - x[:, jnp.newaxis]) * jnp.square(
+            x[jnp.newaxis, :]
+        )
+
+        c = b_solve((k, k), (x, x), y, non_negative=True)
+        self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertAlmostEqual(0.0, c[0, 0].item())
+        self.assertAlmostEqual(0.0, c[0, 1].item())
+        self.assertAlmostEqual(1.0, c[0, 2].item())
+        self.assertAlmostEqual(0.0, c[1, 0].item())
+        self.assertAlmostEqual(0.0, c[1, 1].item())
+        self.assertAlmostEqual(0.0, c[1, 2].item())
+        self.assertAlmostEqual(0.0, c[2, 0].item())
+        self.assertAlmostEqual(0.0, c[2, 1].item())
+        self.assertAlmostEqual(0.0, c[2, 2].item())
+
+    def test_b_solve_1_2_2_2(self):
+        r"""Fit :math:`B_{(1,2),(2,2)}(x_0, x_1)`."""
+        k = 2
+        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = (
+            2.0
+            * x[:, jnp.newaxis]
+            * (1.0 - x[:, jnp.newaxis])
+            * jnp.square(x[jnp.newaxis, :])
+        )
+
+        c = b_solve((k, k), (x, x), y, non_negative=True)
+        self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertAlmostEqual(0.0, c[0, 0].item())
+        self.assertAlmostEqual(0.0, c[0, 1].item())
+        self.assertAlmostEqual(0.0, c[0, 2].item())
+        self.assertAlmostEqual(0.0, c[1, 0].item())
+        self.assertAlmostEqual(0.0, c[1, 1].item())
+        self.assertAlmostEqual(1.0, c[1, 2].item())
+        self.assertAlmostEqual(0.0, c[2, 0].item())
+        self.assertAlmostEqual(0.0, c[2, 1].item())
+        self.assertAlmostEqual(0.0, c[2, 2].item())
+
+    def test_b_solve_2_2_2_2(self):
+        r"""Fit :math:`B_{(2,2),(2,2)}(x_0, x_1)`."""
+        k = 2
+        x = jnp.asarray([0.00, 0.20, 0.40, 0.60, 0.80, 1.00])
+        y = jnp.square(x[:, jnp.newaxis]) * jnp.square(x[jnp.newaxis, :])
+
+        c = b_solve((k, k), (x, x), y, non_negative=True)
+        self.assertEqual((k + 1, k + 1), c.shape)
+        self.assertAlmostEqual(0.0, c[0, 0].item())
+        self.assertAlmostEqual(0.0, c[0, 1].item())
+        self.assertAlmostEqual(0.0, c[0, 2].item())
+        self.assertAlmostEqual(0.0, c[1, 0].item())
+        self.assertAlmostEqual(0.0, c[1, 1].item())
+        self.assertAlmostEqual(0.0, c[1, 2].item())
+        self.assertAlmostEqual(0.0, c[2, 0].item())
+        self.assertAlmostEqual(0.0, c[2, 1].item())
+        self.assertAlmostEqual(1.0, c[2, 2].item())
 
 
 if __name__ == "__main__":

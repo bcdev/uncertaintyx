@@ -196,12 +196,17 @@ def b_solve(
         rhs = jnp.tensordot(rhs, Q[i], axes=(0, 0))
     # solve the triangular equation
     c_unconstrained = rhs
-    for i in range(N):
+    if N > 1:
+        for i in range(N):
+            solve = jax.vmap(
+                lambda a, b: jla.triangular_solve(a, b, left_side=True),
+                in_axes=(None, i),
+                out_axes=i,
+            )
+            c_unconstrained = solve(R[i], c_unconstrained)
+    else:
         c_unconstrained = jla.triangular_solve(
-            R[i], c_unconstrained, left_side=True
-        )
-        c_unconstrained = jnp.moveaxis(  # like the tensor dot product
-            c_unconstrained, 0, -1
+            R[0], c_unconstrained, left_side=True
         )
 
     def hvp(c: Array):
