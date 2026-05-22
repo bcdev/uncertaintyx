@@ -240,7 +240,7 @@ def b_solve(
             return c - 1.0 / c
 
         def misfit(u: Array, _: None = None) -> Array:
-            """The misfit function with quadratic transformation."""
+            """The misfit function with positive transformation."""
             c_ = forward(u)
             return 0.5 * jnp.vdot(c_, hvp(c_)) - jnp.vdot(c_, rhs)
 
