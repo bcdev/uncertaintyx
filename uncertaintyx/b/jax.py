@@ -5,13 +5,11 @@ from typing import Literal
 from typing import Self
 
 import jax
+import jax.lax.linalg as jla
 import jax.numpy as jnp
-import jax.numpy.linalg as jli
 import numpy as np
 import optax
 import optimistix
-from jax import Array
-from jax import Array
 from jax import Array
 from jax.scipy.special import gammaln
 
@@ -190,16 +188,23 @@ def b_solve(
         """The Hessian-vector product."""
         res = c
         for i in range(N):
-            G = grams[i]  # noqa: N806
-            res = jnp.tensordot(res, G, axes=(0, 1))
+            res = jnp.tensordot(res, R[i], axes=(0, 1))
+        for i in range(N):
+            res = jnp.tensordot(res, R[i], axes=(0, 0))
         return res
+        # res = c
+        # for i in range(N):
+        #    G = grams[i]  # noqa: N806
+        #    res = jnp.tensordot(res, G, axes=(0, 1))
+        # return res
 
-    def nnls(c: Array):
+    def nnls(c: Array, rhs: Array):
         """
         Non-negative least-squares solver.
 
-        Uses a softplus transformation and an L-BFGS minimizer to ensure
-        non-negativity when needed.
+        Uses QR factorization to compute a stable unconstrained
+        solution. Applies a softplus transformation and an L-BFGS
+        optimizer to ensure non-negativity.
         """
 
         def forward(u: Array) -> Array:
@@ -221,35 +226,43 @@ def b_solve(
                 optax.lbfgs(), atol=atol, rtol=rtol, norm=optimistix.max_norm
             )
 
+        # compute the right hand side of the normal equation
+        for i in range(N):
+            rhs = jnp.tensordot(rhs, R[i], axes=(0, 0))
+
         u = inverse(jnp.abs(c))
-        minimum = optimistix.minimise(
+        optimum = optimistix.minimise(
             misfit, make_minimizer(), u, max_steps=max_steps, throw=False
         )
-        return forward(minimum.value)
+        return forward(optimum.value)
 
     N = len(k)  # noqa: N806
     bases = [b_basis(k[i], x[i]) for i in range(N)]
-    grams = [jnp.dot(B, B.T) for B in bases]  # noqa: N806
+    facts = [jla.qr(B.T, full_matrices=False) for B in bases]  # noqa: N806
+    Q = [_[0] for _ in facts]  # noqa: N806
+    R = [_[1] for _ in facts]  # noqa: N806
 
-    # compute the right hand side of the normal equation
+    # compute the right hand side of the triangular equation
     rhs = y
     for i in range(N):
-        B = bases[i]  # noqa: N806
-        rhs = jnp.tensordot(rhs, B, axes=(0, 1))
-    # solve the normal equation
+        rhs = jnp.tensordot(rhs, Q[i], axes=(0, 0))
+    # solve the triangular equation
     c_unconstrained = rhs
     for i in range(N):
-        G = grams[i]  # noqa: N806
-        c_unconstrained = jnp.tensordot(
-            c_unconstrained, jli.pinv(G), axes=(0, 1)
+        c_unconstrained = jla.triangular_solve(
+            R[i], c_unconstrained, left_side=True
+        )
+        c_unconstrained = jnp.moveaxis(  # like the tensor dot product
+            c_unconstrained, 0, -1
         )
     # solve iteratively with non-negativity constraint, if needed
     nnls_needed = non_negative and jnp.any(c_unconstrained < 0.0)
     return jax.lax.cond(
         nnls_needed,
         nnls,
-        lambda _: _,  # forwards the unconstrained solution
+        lambda c, _: c,
         c_unconstrained,
+        rhs,
     )
 
 
