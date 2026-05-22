@@ -219,7 +219,7 @@ class BernsteinPolyTest(unittest.TestCase):
             ]
         )
         
-        f = BernsteinPoly.from_lookup_table(k, x,, y, non_negative=True)
+        f = BernsteinPoly.from_lookup_table(k, x, y, non_negative=True)
         c = f.prior()
         c_expected = np.arange(np.prod(np.asarray(d))).reshape(d) + 1.0
         self.assertEqual(c_expected.shape, c.shape)
