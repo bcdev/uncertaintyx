@@ -201,7 +201,7 @@ class BernsteinPolyTest(unittest.TestCase):
             np.asarray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0]),
         )
         y = BernsteinGrid(x).eval(c)
-        
+
         f = BernsteinPoly.from_lookup_table(k, x, y, non_negative=True)
         b = f.prior()
         self.assertEqual(c.shape, b.shape)
