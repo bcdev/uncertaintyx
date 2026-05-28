@@ -9,7 +9,6 @@ from uncertaintyx.plot.plots import BernsteinBasisPlot
 
 
 class BernsteinBasisPlotTest(unittest.TestCase):
-
     def test_plot_bernstein_basis(self):
         plot = BernsteinBasisPlot("paper")
         grid_size = 100
@@ -22,5 +21,5 @@ class BernsteinBasisPlotTest(unittest.TestCase):
         self.assertIsNotNone(fig)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

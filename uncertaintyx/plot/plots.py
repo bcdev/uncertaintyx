@@ -108,11 +108,34 @@ class BernsteinBasisPlot(Plotting):
                 ax.text2D(
                     0.50,
                     0.95,
-                    f"$B_{{{i},{j}}}^{{{degree}}}(x,y)$",
+                    rf"$B_{{{i},{j}}}^{{{degree}}}(x,y)$",
                     transform=ax.transAxes,
-                    horizontalalignment="center",
-                    verticalalignment="top",
+                    ha="center",
+                    va="top",
                 )
+
+        mid_x = margin_l + n // 2 * (cell_w + gap_x) + cell_w * 0.5
+        top_y = margin_b + n * (cell_h + gap_y)
+        fig.suptitle(
+            rf"Bernstein basis polynomials $B^{{{degree}}}_{{i,j}}(x, y)$",
+            x=mid_x,
+            y=top_y,
+            ha="center",
+            va="top",
+        )
+        caption = (
+            r"Approximation with Bernstein polynomials smoothly and "
+            r"simultaneously fits both the target function and its "
+            r"derivatives"
+        )
+        plt.figtext(
+            mid_x,
+            0.02,
+            caption,
+            wrap=False,
+            ha="center",
+            va="bottom",
+        )
 
         if savefig:
             fig.savefig(savefig, dpi=300, bbox_inches="tight", pad_inches=0.1)
