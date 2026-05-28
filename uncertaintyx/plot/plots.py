@@ -38,7 +38,7 @@ class BernsteinBasisPlot(Plotting):
         *,
         degree: int = 2,
         figsize: tuple[int, int] = (14, 14),
-        cmap: Literal["coolwarm", "viridis"] = "viridis",
+        cmap: Literal["cividis", "coolwarm", "viridis"] = "viridis",
         savefig: str | None = None,
         **kwargs,
     ) -> Figure:
