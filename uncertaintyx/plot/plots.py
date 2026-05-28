@@ -9,8 +9,116 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
+from ..b.jax import BernsteinGrid
 from ..plotting import Plotting
 from ..tyx import Fitted
+
+
+class BernsteinBasisPlot(Plotting):
+    """
+    A plot to display bivariate Bernstein basis functions of a given degree.
+    """
+
+    def __init__(
+        self,
+        context: Literal["paper", "notebook"] = "paper",
+    ):
+        """
+        Creates a new plot.
+
+        :param context: The plot context.
+        """
+        self._context = context
+
+    # noinspection PyUnresolvedReferences,PyTypeChecker
+    def plot(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        *,
+        degree: int = 2,
+        figsize: tuple[int, int] = (14, 14),
+        cmap: Literal["coolwarm", "viridis"] = "viridis",
+        savefig: str | None = None,
+        **kwargs,
+    ) -> Figure:
+        """
+        Plots the bivariate Bernstein basis polynomials of the given degree.
+        """
+
+        def basis(i: int, j: int) -> np.ndarray:
+            """
+            Returns the Bernstein coefficients for only a specific basis
+            polynomial.
+            """
+            c = np.zeros((n, n))
+            c[i, j] = 1.0
+            return c
+
+        sns.set_theme(context=self._context)
+        sns.set_style("ticks")
+        sns.set_palette(sns.color_palette("colorblind"))
+
+        n = degree + 1
+        X, Y = np.meshgrid(x, y)  # noqa: N806
+        g = BernsteinGrid((x, y))
+
+        fig = plt.figure(figsize=figsize, facecolor="white")
+
+        margin_l = 0.05
+        margin_b = 0.05
+        cell_w = 0.16
+        cell_h = 0.16
+        gap_x = 0.03
+        gap_y = 0.03
+
+        for i in range(n):
+            for j in range(n):
+                pos_x = margin_l + j * (cell_w + gap_x)
+                pos_y = margin_b + (n - 1 - i) * (cell_h + gap_y)
+                ax = fig.add_axes(
+                    (pos_x, pos_y, cell_w, cell_h), projection="3d"
+                )
+                ax.plot_surface(
+                    X,
+                    Y,
+                    g.eval(basis(i, j)),
+                    cmap=cmap,
+                    edgecolor="#444444",
+                    linewidth=0.3,
+                    rstride=5,
+                    cstride=5,
+                    antialiased=True,
+                    alpha=1.0,
+                )
+                ax.set_box_aspect((1.0, 1.0, 0.5))
+                ax.grid(False)
+                ax.set_xlabel(r"$x$")
+                ax.set_ylabel(r"$y$")
+                ax.set_xticks([0.0, 0.5, 1.0])
+                ax.set_yticks([0.0, 0.5, 1.0])
+                ax.set_zticks([0.0, 0.5, 1.0])
+                ax.tick_params(axis="both", which="major")
+
+                ax.view_init(elev=20.0, azim=-60.0)
+                ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+                ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+                ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+
+                ax.text2D(
+                    0.50,
+                    0.95,
+                    f"$B_{{{i},{j}}}^{{{degree}}}(x,y)$",
+                    transform=ax.transAxes,
+                    horizontalalignment="center",
+                    verticalalignment="top",
+                )
+
+        if savefig:
+            fig.savefig(savefig, dpi=300, bbox_inches="tight", pad_inches=0.1)
+        plt.close(fig)
+
+        return fig
 
 
 class MatrixPlot(Plotting):
@@ -41,6 +149,7 @@ class MatrixPlot(Plotting):
         cbar_max: Any | None = None,
         cmap: str | None = "viridis",
         savefig: str | None = None,
+        **kwargs,
     ) -> Figure:
         """Plots a matrix."""
         sns.set_theme(context=self._context)
@@ -124,6 +233,7 @@ class RegressionPlot(Plotting):
         xrange: tuple[Any, Any] | None = None,
         yrange: tuple[Any, Any] | None = None,
         savefig: str | None = None,
+        **kwargs,
     ):
         """
         Plots the regression result along with data supplied as arguments.

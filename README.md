@@ -1,4 +1,4 @@
-![Matrix plot](assets/img/qaa2-ycov.png)
+![Matrix plot](assets/img/bernstein_basis.png)
 
 # Context
 
