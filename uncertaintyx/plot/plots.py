@@ -38,6 +38,7 @@ class BernsteinBasisPlot(Plotting):
         *,
         degree: int = 2,
         figsize: tuple[int, int] = (14, 14),
+        caption: str | None = None,
         cmap: Literal["cividis", "coolwarm", "viridis"] = "viridis",
         savefig: str | None = None,
         **kwargs,
@@ -123,19 +124,15 @@ class BernsteinBasisPlot(Plotting):
             ha="center",
             va="top",
         )
-        caption = (
-            r"Approximation with Bernstein polynomials smoothly and "
-            r"simultaneously fits both the target function and its "
-            r"derivatives"
-        )
-        plt.figtext(
-            mid_x,
-            0.02,
-            caption,
-            wrap=False,
-            ha="center",
-            va="bottom",
-        )
+        if caption is not None:
+            plt.figtext(
+                mid_x,
+                0.02,
+                caption,
+                wrap=False,
+                ha="center",
+                va="bottom",
+            )
 
         if savefig:
             fig.savefig(savefig, dpi=300, bbox_inches="tight", pad_inches=0.1)
