@@ -1,4 +1,4 @@
-![Bernstein basis](https://github.com/user-attachments/assets/80d2ee7c-3e1f-4242-ac07-6880516eaf8e)
+![Bernstein basis](https://github.com/user-attachments/assets/80d2ee7c-3e1f-4242-ac07-6880516eaf8e "Bernstein basis")
 
 # Context
 
