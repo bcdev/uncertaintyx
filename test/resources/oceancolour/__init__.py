@@ -11,6 +11,7 @@ The following files are provided:
    a.csv, Total absorption, m-1, Lee et al. (2015)
    adg.csv, Absorption by detritus and gelbstoff, m-1, Lee et al. (2015)
    aph.csv, Absorption by phytoplankton, m-1, Lee et al. (2015)
+   bbp.csv, Particulate back-scattering, m-1, Lee et al. (2015)
    owt.csv, Optical water type classes, Jackson et al. (2017)
    rrs.csv, Remote sensing reflectance, sr-1, Lee et al. (2015)
    fig2.csv, Plot data,, Lee et al. (2010; Figure 2)
