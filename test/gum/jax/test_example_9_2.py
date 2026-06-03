@@ -52,6 +52,8 @@ class ExampleTest(unittest.TestCase):
 
         U = f.lpu(X, U)  # noqa: N806
         self.assertAlmostEqual(2.0, U[0, 0, 0])
+        self.assertAlmostEqual(1.0, U[0, 0, 1])
+        self.assertAlmostEqual(1.0, U[0, 1, 0])
         self.assertAlmostEqual(2.0, U[0, 1, 1])
 
         R = to_cor(1, U)  # noqa: N806
