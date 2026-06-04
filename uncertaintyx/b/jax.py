@@ -36,7 +36,7 @@ _b_basis = jax.custom_jvp(
     nondiff_argnums=(0,),
 )
 r"""
-Evaluates the Bernstein basis of degree :math:`n`.
+Evaluates the Bernstein basis of degree :math:`k`.
 
 Internal closure to enable registration of a custom
 Jacobian-vector product (JVP).
@@ -89,7 +89,7 @@ _b_basis.defjvp(_b_basis_jvp)
 @jax.jit(static_argnums=(0,))
 def b_basis(k: int, x: Array) -> Array:
     r"""
-    Evaluates the Bernstein basis of degree :math:`n`.
+    Evaluates the Bernstein basis of degree :math:`k`.
 
     :param k: The degree of the basis.
     :param x: The input :math:`x \in \mathbb{R}^{m}`.

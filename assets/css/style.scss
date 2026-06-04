@@ -8,11 +8,11 @@ body {
   // background-color: #cdcdcd;
 }
 
-video {
+img[title="Bernstein basis"] {
   display: block;
   margin-left: auto;
   margin-right: auto;
-  min-height: 135px;
-  max-height: 450px;
+  min-height: 160px;
+  max-height: 800px;
   object-fit: scale-down;
 }
