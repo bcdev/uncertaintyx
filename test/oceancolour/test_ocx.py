@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from uncertaintyx.oceancolour.ocx import CI
-from uncertaintyx.oceancolour.ocx import OC4
+from uncertaintyx.oceancolour.ocx import OCX
 from uncertaintyx.oceancolour.ocx import OCI
 
 
@@ -95,7 +95,7 @@ class OCxTest(unittest.TestCase):
             "test.resources.oceancolour", "owt.csv"
         )
 
-        f = OC4()
+        f = OCX()
         x = R[:, 1:-1]
         u = u[:, 1:-1]
         p = f.prior()

@@ -123,13 +123,13 @@ class CI(ToM):
         return np.array([-0.4287, 230.47])
 
 
-class OC4(ToM):
+class OCX(ToM):
     """
-    NASA's OC4 (and OC3) chlorophyll model function.
+    NASA's OCX chlorophyll model function.
 
-    The three (or two) nearest wavebands to 412, 443, 490 and 510 nm
-    are used for the blue, while the nearest waveband to 555 nm is
-    used for the green, for all sensors.
+    The 2-4 nearest wavebands to 412, 443, 490 and 510 nm are used
+    for the blue, while the nearest waveband to 555 nm is used for
+    the green, for all sensors.
     """
 
     def __init__(self):
@@ -142,7 +142,7 @@ class OC4(ToM):
             Let :math:`p = (p_0, \dots p_4) \in \mathbb{R}^{5}` be the
             model parameters and let :math:`\lambda = (\lambda_1,\dots
             \lambda_\mathrm{m}) \in \mathbb{R}^{m}` denote the central
-            wavelengths of :math:`2 \le m-1 \le 3` wavebands in the blue,
+            wavelengths of :math:`2 \le m-1 \le 4` wavebands in the blue,
             and a single waveband :math:`\lambda_{m}` in the green.
             Further let
 
@@ -165,17 +165,17 @@ class OC4(ToM):
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
         preset: Literal[
-            "CZCS",
-            "GOCI",
-            "HAWKEYE",
-            "MERIS",
-            "MODIS",
-            "OCTS",
-            "OLCI",
-            "PACE",
-            "SEAWIFS",
-            "VIIRS20",
-            "VIIRS21",
+            "OC3_CZCS",
+            "OC4_GOCI",
+            "OC4_HAWKEYE",
+            "OC4_MERIS",
+            "OC3_MODIS",
+            "OC4_OCTS",
+            "OC4_OLCI",
+            "OC4_OCI",
+            "OC4_SEAWIFS",
+            "OC3_VIIRS20",
+            "OC3_VIIRS21",
         ]
         | None = None,
     ) -> np.ndarray:
@@ -186,27 +186,27 @@ class OC4(ToM):
         """
         params = [0.32814, -3.20725, 3.22969, -1.36769, -0.81739]
         match preset:
-            case "CZCS":
+            case "OC3_CZCS":
                 params = [0.31841, -4.56386, 8.63979, -8.41411, 1.91532]
-            case "GOCI":
+            case "OC4_GOCI":
                 params = [0.28043, -2.49033, 1.53980, -0.09926, -0.68403]
-            case "HAWKEYE":
+            case "OC4_HAWKEYE":
                 params = [0.32814, -3.20725, 3.22969, -1.36769, -0.81739]
-            case "MERIS":
+            case "OC4_MERIS":
                 params = [0.42487, -3.20974, 2.89721, -0.75258, -0.98259]
-            case "MODIS":
+            case "OC3_MODIS":
                 params = [0.26294, -2.64669, 1.28364, 1.08209, -1.76828]
-            case "OCTS":
+            case "OC4_OCTS":
                 params = [0.54655, -3.51799, 3.39128, -0.91567, -0.97112]
-            case "OLCI":
+            case "OC4_OLCI":
                 params = [0.42540, -3.21679, 2.86907, -0.62628, -1.09333]
-            case "PACE":  # OCI
+            case "OC4_OCI":
                 params = [0.32814, -3.20725, 3.22969, -1.36769, -0.81739]
-            case "SEAWIFS":
+            case "OC4_SEAWIFS":
                 params = [0.32814, -3.20725, 3.22969, -1.36769, -0.81739]
-            case "VIIRS20":  # NOAA-20
+            case "OC3_VIIRS20":  # NOAA-20
                 params = [0.28153, -2.65472, 1.30882, 1.31521, -2.08622]
-            case "VIIRS21":  # NOAA-21
+            case "OC3_VIIRS21":  # NOAA-21
                 params = [0.24765, -2.54926, 1.55323, 0.39485, -1.54632]
             case _:
                 pass
@@ -215,12 +215,12 @@ class OC4(ToM):
 
 class OCI(ToM):
     """
-    The blended OC4/CI model function.
+    The blended OCX/CI model function.
 
-    The two or three nearest wavebands to 412, 443, 490 and 510 nm
-    are used for the blue, while the nearest waveband to 555 nm is
-    used for the green, and the nearest waveband to 670 nm is used
-    for the red.
+    The 2-4 nearest wavebands to 412, 443, 490 and 510 nm are used
+    for the blue, while the nearest waveband to 555 nm is used for
+    the green, and the nearest waveband to 670 nm is used for the
+    red.
 
     The blending occurs when :class:`OC4` is between, e.g.,
     0.25-0.35 mg m-3, creating a smooth handover between :class:`OCI`
@@ -239,7 +239,7 @@ class OCI(ToM):
         :param b: The index of the blue waveband near 443 nm.
         """
         self.m_ci: ToM = CI()
-        self.m_oc: ToM = OC4()
+        self.m_oc: ToM = OCX()
 
         def f(p, x):
             r"""
@@ -250,7 +250,7 @@ class OCI(ToM):
             Let :math:`p = \in \mathbb{R}^{k}, k = 2 + 2 + 5` be the
             model parameters and let :math:`\lambda = (\lambda_1,\dots
             \lambda_\mathrm{m}) \in \mathbb{R}^{m}` denote the central
-            wavelengths of :math:`2 \le m-2 \le 3` wavebands in the blue,
+            wavelengths of :math:`2 \le m-2 \le 4` wavebands in the blue,
             and a single waveband :math:`\lambda_{m-1}` in the green, and
             a single waveband :math:`\lambda_{m}` in the red. Further let
 
@@ -287,26 +287,26 @@ class OCI(ToM):
         x: np.ndarray | None = None,
         y: np.ndarray | None = None,
         preset: Literal[
-            "CZCS",
-            "GOCI",
-            "HAWKEYE",
-            "MERIS",
-            "MODIS",
-            "OCTS",
-            "OLCI",
-            "PACE",
-            "SEAWIFS",
-            "VIIRS20",
-            "VIIRS21",
+            "OC3_CZCS",
+            "OC4_GOCI",
+            "OC4_HAWKEYE",
+            "OC4_MERIS",
+            "OC3_MODIS",
+            "OC4_OCTS",
+            "OC4_OLCI",
+            "OC4_OCI",
+            "OC4_SEAWIFS",
+            "OC3_VIIRS20",
+            "OC3_VIIRS21",
         ]
         | None = None,
     ) -> np.ndarray:
         """
-        Returns the OC4/CI default parameter values.
+        Returns the OCX/CI default parameter values.
 
         Elements ``[0:2]`` refer to the blending, elements ``[2:4]``
         refer to CI, and elements ``[4:9]`` refer to OC4. The default
-        OC4 parameter set returned is for SeaWiFS.
+        OCX parameter set returned is for SeaWiFS.
         """
         return np.concatenate(
             (
