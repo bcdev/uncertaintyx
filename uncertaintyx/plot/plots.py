@@ -6,6 +6,7 @@ from typing import Literal
 
 import numpy as np
 import seaborn as sns
+from cycler import cycler
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
@@ -239,7 +240,7 @@ class RegressionPlot(Plotting):
 
     @property
     def _colors(self) -> List[Any]:
-        """Returns a list of colors available."""
+        """Returns a list of colours available."""
         return sns.color_palette("colorblind")
 
     def plot(
@@ -273,7 +274,9 @@ class RegressionPlot(Plotting):
         y_opt = self._result.f(x)
         y_unp = self._result.yunc_p(x)
         y_unc = self._result.yunc_t(x)
-        ax.plot(x, y_opt, "-", color=self._colors[1], label="regression")
+        ax.plot(
+            x, y_opt, linestyle="-", color=self._colors[1], label="regression"
+        )
         ax.plot(
             x,
             y_opt - y_unp,
@@ -281,7 +284,7 @@ class RegressionPlot(Plotting):
             color=self._colors[2],
             label="standard uncertainty of regression",
         )
-        ax.plot(x, y_opt + y_unp, "--", color=self._colors[2])
+        ax.plot(x, y_opt + y_unp, linestyle="--", color=self._colors[2])
         ax.plot(
             x,
             y_opt - y_unc,
@@ -289,7 +292,7 @@ class RegressionPlot(Plotting):
             color=self._colors[3],
             label="standard uncertainty of residuals",
         )
-        ax.plot(x, y_opt + y_unc, "-.", color=self._colors[3])
+        ax.plot(x, y_opt + y_unc, linestyle="-.", color=self._colors[3])
         ax.legend()
 
         if title:
@@ -360,3 +363,76 @@ class ScatterPlot(Plotting):
         plt.close(fig)
 
         return fig
+
+
+class WaterClassPlot(Plotting):
+    """A water class line plot."""
+
+    def __init__(
+        self,
+        context: Literal["paper", "notebook", "talk", "poster"] = "paper",
+    ):
+        """
+        Creates a new line plot.
+
+        :param context: The plot context.
+        """
+        self._context = context
+
+    def plot(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        u: np.ndarray,
+        *,
+        title: str | None = None,
+        xlabel: str | None = None,
+        ylabel: str | None = None,
+        xrange: tuple[Any, Any] | None = None,
+        yrange: tuple[Any, Any] | None = None,
+        savefig: str | None = None,
+    ):
+        """
+        Plots the data supplied as arguments.
+        """
+        sns.set_theme(context=self._context)
+        sns.set_style("ticks")
+        sns.set_palette(sns.color_palette("colorblind"))
+
+        styles = list(
+            cycler("linestyle", self._styles) * cycler("color", self._colors)
+        )
+
+        fig, ax = plt.subplots()
+        for k, (y_, u_) in enumerate(zip(y, u)):
+            style = styles[k]
+            ax.plot(x, y_, **style, label=f"class {k + 1}")
+            ax.fill_between(x, y_, y_ + u_, **style, alpha=0.3)
+            ax.fill_between(x, y_, y_ - u_, **style, alpha=0.3)
+        ax.legend()
+
+        if title:
+            ax.set_title(title)
+        if xlabel:
+            ax.set_xlabel(xlabel)
+        if ylabel:
+            ax.set_ylabel(ylabel)
+        if xrange:
+            ax.set_ylim(xrange)
+        if yrange:
+            ax.set_ylim(yrange)
+        if savefig:
+            fig.savefig(savefig, dpi=300)
+        plt.close(fig)
+
+        return fig
+
+    @property
+    def _colors(self) -> List[Any]:
+        """Returns a list of colours available."""
+        return sns.color_palette("colorblind")
+
+    @property
+    def _styles(self) -> list[str]:
+        """Returns a list of line styles available."""
+        return ["-", "--", ":", "-."]
