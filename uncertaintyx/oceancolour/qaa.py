@@ -166,7 +166,7 @@ class QAA(ToM):
                 )
 
             def h(x, h0, h1, h2):
-                return jnp.power(10.0, h0 + (h1 + h2 * x) * x)
+                return 10.0 ** (h0 + (h1 + h2 * x) * x)
 
             return aw[i555] + h(g(r), h0, h1, h2)
 

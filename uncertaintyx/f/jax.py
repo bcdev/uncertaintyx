@@ -213,7 +213,7 @@ class Ellipsoid(ToF):
         def f(x):
             """The test function."""
             m = x.size
-            p = jnp.pow(1.0e06, jnp.arange(0, m) / (m - 1))
+            p = jnp.power(1.0e06, jnp.arange(0, m) / (m - 1))
             return jnp.sum(p * jnp.square(x))
 
         super().__init__(f)
@@ -284,7 +284,7 @@ class DifferentPowers(ToF):
         def f(x):
             """The test function."""
             m = x.size
-            p = jnp.pow(
+            p = jnp.power(
                 jnp.square(x), 1.0 + (5.0 * jnp.arange(0, m)) / (m - 1)
             )
             return jnp.sum(p)

@@ -96,7 +96,7 @@ class CI(ToM):
                 sw, a1, b1, a2, b2 = c
                 return jnp.where(
                     x < sw,
-                    jnp.power(10.0, a1 * jnp.log10(x) - b1),
+                    10.0 ** (a1 * jnp.log10(x) - b1),
                     a2 * x - b2,
                 )
 
@@ -109,7 +109,7 @@ class CI(ToM):
             R = x[1, 2]  # noqa: N806
             c = G - (B + (R - B) * (g - b) / (r - b))
 
-            return jnp.power(10.0, a0 + a1 * c)
+            return 10.0 ** (a0 + a1 * c)
 
         super().__init__(f)
 
@@ -156,7 +156,7 @@ class OCX(ToM):
             :returns: The chlorophyll concentration (mg m-3).
             """
             b = jnp.log10(jnp.nanmax(x[:-1]) / x[-1])
-            return jnp.power(10.0, jnp.polyval(p[::-1], b))
+            return 10.0 ** jnp.polyval(p[::-1], b)
 
         super().__init__(f)
 
