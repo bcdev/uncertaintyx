@@ -348,7 +348,7 @@ class QAA(ToM):
                 params["t1"] = 0.0
             case _:
                 pass
-        return np.array([p for _, p in params.items()])
+        return np.asarray([p for _, p in params.items()])
 
 
 class E(ToM):
@@ -371,7 +371,7 @@ class E(ToM):
         y: np.ndarray | None = None,
         preset: str | None = None,
     ) -> np.ndarray:
-        return np.array([2.0, 1.2, 0.9])
+        return np.asarray([2.0, 1.2, 0.9])
 
 
 class S(ToM):
@@ -394,4 +394,4 @@ class S(ToM):
         y: np.ndarray | None = None,
         preset: str | None = None,
     ) -> np.ndarray:
-        return np.array([0.015, 0.002, 0.6])
+        return np.asarray([0.015, 0.002, 0.6])

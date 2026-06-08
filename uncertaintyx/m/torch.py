@@ -310,4 +310,4 @@ class Linear(ToM):
         y: np.ndarray | None = None,
         preset: str | None = None,
     ) -> np.ndarray:
-        return np.array([1.0, 0.0])
+        return np.asarray([1.0, 0.0])

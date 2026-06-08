@@ -120,7 +120,7 @@ class CI(ToM):
         preset: str | None = None,
     ) -> np.ndarray:
         """Returns the OCI default parameter values (Hu et al., 2019)."""
-        return np.array([-0.4287, 230.47])
+        return np.asarray([-0.4287, 230.47])
 
 
 class OCX(ToM):
@@ -210,7 +210,7 @@ class OCX(ToM):
                 params = [0.24765, -2.54926, 1.55323, 0.39485, -1.54632]
             case _:
                 pass
-        return np.array(params)
+        return np.asarray(params)
 
 
 class OCI(ToM):
@@ -310,7 +310,7 @@ class OCI(ToM):
         """
         return np.concatenate(
             (
-                np.array([0.25, 0.35]),
+                np.asarray([0.25, 0.35]),
                 self.m_ci.prior(x, y),
                 self.m_oc.prior(x, y, preset),
             )

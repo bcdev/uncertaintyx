@@ -418,7 +418,7 @@ class BernsteinPoly(ToM):
             rtol=rtol,
             max_steps=max_steps,
         )
-        return cls(np.array(c_), a, b)
+        return cls(np.asarray(c_), a, b)
 
     def prior(
         self,
