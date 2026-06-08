@@ -72,8 +72,8 @@ class ErrorsInVariablesTest(unittest.TestCase):
             ylabel=r"$y$",
             xrange=(-10.0, 110.0),
             yrange=(-10.0, 110.0),
-            savefig="eiv.png",
-            title="Errors-in-variables regression",
+            savefig="eiv.png" if False else None,
+            title="Errors-in-variables regression" if False else None,
         )
         MatrixPlot().plot(
             matrix(result, self.n),
@@ -84,7 +84,7 @@ class ErrorsInVariablesTest(unittest.TestCase):
             cbar_max=5.0,
             cbar_min=0.0,
             cbar_label=r"variance-covariance $U_p(y)$",
-            savefig="eiv-ycov.png",
+            savefig="eiv-ycov.png" if False else None,
             title="Errors-in-variables regression",
         )
 

@@ -65,7 +65,7 @@ class RegressionTest(unittest.TestCase):
             ylabel=r"$y$",
             xrange=(-10.0, 110.0),
             yrange=(-10.0, 110.0),
-            savefig="lin1.png",
+            savefig="lin1.png" if False else None,
             title="Homoscedastic regression",
         )
         MatrixPlot().plot(
@@ -77,7 +77,7 @@ class RegressionTest(unittest.TestCase):
             cbar_max=5.0,
             cbar_min=0.0,
             cbar_label=r"variance-covariance $U_p(y)$",
-            savefig="lin1-ycov.png",
+            savefig="lin1-ycov.png" if False else None,
             title="Homoscedastic regression",
         )
 
@@ -119,7 +119,7 @@ class RegressionTest(unittest.TestCase):
             ylabel=r"$y$",
             xrange=(-10.0, 110.0),
             yrange=(-10.0, 110.0),
-            savefig="lin2.png",
+            savefig="lin2.png" if False else None,
             title="Homo-heteroscedastic regression",
         )
         MatrixPlot().plot(
@@ -131,7 +131,7 @@ class RegressionTest(unittest.TestCase):
             cbar_max=5.0,
             cbar_min=0.0,
             cbar_label=r"variance-covariance $U_p(y)$",
-            savefig="lin2-ycov.png",
+            savefig="lin2-ycov.png" if False else None,
             title="Homo-heteroscedastic regression",
         )
 
@@ -173,7 +173,7 @@ class RegressionTest(unittest.TestCase):
             ylabel=r"$y$",
             xrange=(-10.0, 110.0),
             yrange=(-10.0, 110.0),
-            savefig="lin3.png",
+            savefig="lin3.png" if False else None,
             title="Hetero-homoscedastic regression",
         )
         MatrixPlot().plot(
@@ -185,7 +185,7 @@ class RegressionTest(unittest.TestCase):
             cbar_max=5.0,
             cbar_min=0.0,
             cbar_label=r"variance-covariance $U_p(y)$",
-            savefig="lin3-ycov.png",
+            savefig="lin3-ycov.png" if False else None,
             title="Hetero-homoscedastic regression",
         )
 
@@ -226,7 +226,7 @@ class RegressionTest(unittest.TestCase):
             ylabel=r"$y$",
             xrange=(-10.0, 110.0),
             yrange=(-10.0, 110.0),
-            savefig="lin4.png",
+            savefig="lin4.png" if False else None,
             title="Heteroscedastic regression",
         )
         MatrixPlot().plot(
@@ -238,7 +238,7 @@ class RegressionTest(unittest.TestCase):
             cbar_max=5.0,
             cbar_min=0.0,
             cbar_label=r"variance-covariance $U_p(y)$",
-            savefig="lin4-ycov.png",
+            savefig="lin4-ycov.png" if False else None,
             title="Heteroscedastic regression",
         )
 

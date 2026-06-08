@@ -175,7 +175,7 @@ class QaaTest(unittest.TestCase):
             ylabel=r"$\eta$",
             xrange=(0.5, 4.5),
             yrange=(-0.5, 2.5),
-            savefig="qaa2.png",
+            savefig="qaa2.png" if False else None,
         )
         MatrixPlot().plot(
             matrix(result, 0.5, 4.5, 1000),
@@ -187,7 +187,7 @@ class QaaTest(unittest.TestCase):
             cbar_label=r"variance-covariance $U_p(\eta)$",
             cbar_max=0.01,
             cbar_min=0.00,
-            savefig="qaa2-ycov.png",
+            savefig="qaa2-ycov.png" if False else None,
         )
 
     def test_lee_2010_figure_3(self):
@@ -222,7 +222,7 @@ class QaaTest(unittest.TestCase):
             ylabel=r"$S$ ($\mathrm{nm}^{-1}$)",
             xrange=(0.050, 9.950),
             yrange=(0.005, 0.035),
-            savefig="qaa3.png",
+            savefig="qaa3.png" if False else None,
         )
         MatrixPlot().plot(
             matrix(result, 0.05, 9.95),
@@ -234,7 +234,7 @@ class QaaTest(unittest.TestCase):
             cbar_label=r"variance-covariance $U_p(S)$ ($\mathrm{nm}^{-2}$)",
             cbar_max=4.0e-06,
             cbar_min=0.0e-06,
-            savefig="qaa3-ycov.png",
+            savefig="qaa3-ycov.png" if False else None,
         )
 
     def test_qaa_single_batch_case_1(self):

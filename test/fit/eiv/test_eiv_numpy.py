@@ -53,7 +53,7 @@ class ErrorsInVariablesTest(unittest.TestCase):
         self.assertAlmostEqual(0.0, result.pcov[1, 1], delta=1.000)
 
         dof = self.n - 2
-        self.assertAlmostEqual(
+        self.assertAlmostEqual(  # noqa
             dof, 2.0 * result.cost, delta=np.sqrt(2.0 * dof)
         )
 
@@ -64,7 +64,7 @@ class ErrorsInVariablesTest(unittest.TestCase):
             ylabel=r"$y$",
             xrange=(-10.0, 110.0),
             yrange=(-10.0, 110.0),
-            savefig="eiv.png",
+            savefig="eiv.png" if False else None,
             title="Errors-in-variables regression",
         )
         MatrixPlot().plot(
@@ -76,7 +76,7 @@ class ErrorsInVariablesTest(unittest.TestCase):
             cbar_max=5.0,
             cbar_min=0.0,
             cbar_label=r"variance-covariance $U_p(y)$",
-            savefig="eiv-ycov.png",
+            savefig="eiv-ycov.png" if False else None,
             title="Errors-in-variables regression",
         )
 

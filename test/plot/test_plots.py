@@ -55,7 +55,7 @@ class BernsteinBasisPlotTest(unittest.TestCase):
             degree=2,
             caption=caption,
             cmap="viridis",
-            savefig="bernstein_basis.png",
+            savefig="bernstein_basis.png" if False else None,
         )
         self.assertIsNotNone(fig)
 
@@ -76,7 +76,7 @@ class WaterClassPlotTest(unittest.TestCase):
             ylabel=r"remote sensing reflectance "
             r"$R_{\mathrm{rs}}(\lambda)$ (sr$^{-1}$)",
             title="Water classes (Jackson et al., 2017)",
-            savefig="water_classes.png",
+            savefig="water_classes.png" if False else None,
         )
         self.assertIsNotNone(fig)
 
