@@ -365,7 +365,7 @@ class ScatterPlot(Plotting):
         return fig
 
 
-class WaterClassPlot(Plotting):
+class WaterClassLinePlot(Plotting):
     """A water class line plot."""
 
     def __init__(
@@ -383,13 +383,15 @@ class WaterClassPlot(Plotting):
         self,
         x: np.ndarray,
         y: np.ndarray,
-        u: np.ndarray,
+        u: np.ndarray | None = None,
         *,
         title: str | None = None,
         xlabel: str | None = None,
         ylabel: str | None = None,
         xrange: tuple[Any, Any] | None = None,
         yrange: tuple[Any, Any] | None = None,
+        xticks: tuple[Any, ...] | None = None,
+        yticks: tuple[Any, ...] | None = None,
         savefig: str | None = None,
     ):
         """
@@ -404,11 +406,16 @@ class WaterClassPlot(Plotting):
         )
 
         fig, ax = plt.subplots()
-        for k, (y_, u_) in enumerate(zip(y, u)):
-            style = styles[k]
-            ax.plot(x, y_, **style, label=f"class {k + 1}")
-            ax.fill_between(x, y_, y_ + u_, **style, alpha=0.3)
-            ax.fill_between(x, y_, y_ - u_, **style, alpha=0.3)
+        if u is not None:
+            for k, (y_, u_) in enumerate(zip(y, u)):
+                style = styles[k]
+                ax.plot(x, y_, **style, marker="|", label=f"class {k + 1}")
+                ax.fill_between(x, y_, y_ + u_, **style, alpha=0.3)
+                ax.fill_between(x, y_, y_ - u_, **style, alpha=0.3)
+        else:
+            for k, y_ in enumerate(y):
+                style = styles[k]
+                ax.plot(x, y_, **style, marker="|", label=f"class {k + 1}")
         ax.legend()
 
         if title:
@@ -421,6 +428,92 @@ class WaterClassPlot(Plotting):
             ax.set_xlim(xrange)
         if yrange:
             ax.set_ylim(yrange)
+        if xticks:
+            ax.set_xticks(xticks)
+        else:
+            ax.set_xticks(tuple(x))
+        if yticks:
+            ax.set_yticks(yticks)
+        if savefig:
+            fig.savefig(savefig, dpi=300)
+        plt.close(fig)
+
+        return fig
+
+    @property
+    def _colors(self) -> List[Any]:
+        """Returns a list of colours available."""
+        return sns.color_palette("colorblind")
+
+    @property
+    def _styles(self) -> list[str]:
+        """Returns a list of line styles available."""
+        return ["-", "--", ":", "-."]
+
+
+class WaterClassScatterPlot(Plotting):
+    """A water class scatter plot."""
+
+    def __init__(
+        self,
+        context: Literal["paper", "notebook", "talk", "poster"] = "paper",
+    ):
+        """
+        Creates a new line plot.
+
+        :param context: The plot context.
+        """
+        self._context = context
+
+    def plot(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        ux: np.ndarray,
+        uy: np.ndarray,
+        *,
+        title: str | None = None,
+        xlabel: str | None = None,
+        ylabel: str | None = None,
+        xrange: tuple[Any, Any] | None = None,
+        yrange: tuple[Any, Any] | None = None,
+        xticks: tuple[Any, ...] | None = None,
+        yticks: tuple[Any, ...] | None = None,
+        savefig: str | None = None,
+    ):
+        """
+        Plots the data supplied as arguments.
+        """
+        sns.set_theme(context=self._context)
+        sns.set_style("ticks")
+        sns.set_palette(sns.color_palette("colorblind"))
+
+        styles = list(
+            cycler("linestyle", self._styles) * cycler("color", self._colors)
+        )
+
+        fig, ax = plt.subplots()
+        for k, (x_, y_, ux_, uy_) in enumerate(zip(x, y, ux, uy)):
+            style = styles[k]
+            ax.scatter(x_, y_, **style, label=f"class {k + 1}", s=6)
+            ax.hlines(y_, xmin=x_ - ux_, xmax=x_ + ux_, **style)
+            ax.vlines(x_, ymin=y_ - uy_, ymax=y_ + uy_, **style)
+        ax.legend()
+
+        if title:
+            ax.set_title(title)
+        if xlabel:
+            ax.set_xlabel(xlabel)
+        if ylabel:
+            ax.set_ylabel(ylabel)
+        if xrange:
+            ax.set_xlim(xrange)
+        if yrange:
+            ax.set_ylim(yrange)
+        if xticks:
+            ax.set_xticks(xticks)
+        if yticks:
+            ax.set_yticks(yticks)
         if savefig:
             fig.savefig(savefig, dpi=300)
         plt.close(fig)
