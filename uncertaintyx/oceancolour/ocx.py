@@ -232,14 +232,15 @@ class OCI(ToM):
     :class:`OC4` acts as regime detector.
     """
 
-    def __init__(self, b: Literal[0, 1] = 0):
+    def __init__(self, as_log10: bool = False, b: Literal[0, 1] = 0):
         """
         Creates a new model function instance.
 
+        :param as_log10: To return the logarithmic chlorophyll concentration.
         :param b: The index of the blue waveband near 443 nm.
         """
-        self.m_ci: ToM = CI()
-        self.m_oc: ToM = OCX()
+        ci: ToM = CI()
+        oc: ToM = OCX()
 
         def f(p, x):
             r"""
@@ -271,16 +272,18 @@ class OCI(ToM):
                 tx = ci - p[0]
                 return (ci * ti + cx * tx) / (p[1] - p[0])
 
-            ci = self.m_ci.f(p[2:4], x[:, [b, -2, -1]])
-            oc = self.m_oc.f(p[4:9], x[1, 0:-1])
-
-            return jnp.where(
-                oc < p[0],
-                ci,
-                jnp.where(oc > p[1], oc, blend(p, ci, oc)),
+            ci_ = ci.f(p[2:4], x[:, [b, -2, -1]])
+            oc_ = oc.f(p[4:9], x[1, 0:-1])
+            chl = jnp.where(
+                oc_ < p[0],
+                ci_,
+                jnp.where(oc_ > p[1], oc_, blend(p, ci_, oc_)),
             )
+            return jnp.log10(chl) if as_log10 else chl
 
         super().__init__(f)
+        self.ci = ci
+        self.oc = oc
 
     def prior(
         self,
@@ -311,7 +314,7 @@ class OCI(ToM):
         return np.concatenate(
             (
                 np.asarray([0.25, 0.35]),
-                self.m_ci.prior(x, y),
-                self.m_oc.prior(x, y, preset),
+                self.ci.prior(x, y),
+                self.oc.prior(x, y, preset),
             )
         )
