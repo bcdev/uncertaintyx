@@ -53,6 +53,41 @@ class Maranon(ToM):
         return np.asarray([0.89, 1.79])
 
 
+class MaranonOCI(ToM):
+    """
+    Concatenation of the Maranon et al. (2014) phytoplankton biomass
+    model and the OCI chlorophyll algorithm.
+    """
+
+    def __init__(self, as_log10: bool = False):
+        """
+        Creates a new model function instance.
+
+        :param as_log10: To return the logarithmic biomass concentration.
+        """
+
+        oc = OCI()
+        pc = Maranon(as_log10)
+        
+        def f(p, x):
+            """
+            Returns the phytoplankton biomass (mg C m-3).
+            """
+            return pc.f(p[-2:], oc.f(p[:-2], x))
+
+        super().__init__(f)
+        self.oc: ToM = oc
+        self.pc: ToM = pc
+
+    def prior(
+        self,
+        x: np.ndarray | None = None,
+        y: np.ndarray | None = None,
+        preset: str | None = None,
+    ) -> np.ndarray:
+        return np.concatenate((self.oc.prior(x, y, preset), self.pc.prior()))
+
+
 class PhytoplanktonCarbon(ToM):
     """
     Concatenation of an OCX chlorophyll algorithm with a phytoplankton
