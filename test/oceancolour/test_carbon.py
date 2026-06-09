@@ -7,8 +7,7 @@ from importlib import resources
 import numpy as np
 import pandas as pd
 
-from uncertaintyx.oceancolour.carbon import Maranon
-from uncertaintyx.oceancolour.carbon import PhytoplanktonCarbon
+from uncertaintyx.oceancolour.carbon import MaranonOCI
 
 
 def read_owt_data(
@@ -34,9 +33,9 @@ def read_owt_data(
     return wav, rrs, unc, rrs.shape[0], rrs.shape[1]
 
 
-class PhytoplanktonCarbonTest(unittest.TestCase):
+class MaranonTest(unittest.TestCase):
     """
-    Tests the phytoplankton carbon model function
+    Tests the Maranon et al. (2014) phytoplankton biomass model
     on optical water type classes.
     """
 
@@ -47,7 +46,7 @@ class PhytoplanktonCarbonTest(unittest.TestCase):
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
 
-        f = PhytoplanktonCarbon(Maranon(True))
+        f = MaranonOCI(True)
         x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
         u = np.stack(
             [
