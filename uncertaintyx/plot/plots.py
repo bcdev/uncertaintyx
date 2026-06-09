@@ -416,7 +416,7 @@ class WaterClassLinePlot(Plotting):
             for k, y_ in enumerate(y):
                 style = styles[k]
                 ax.plot(x, y_, **style, marker="|", label=f"class {k + 1}")
-        ax.legend()
+        ax.legend(ncol=3)
 
         if title:
             ax.set_title(title)
@@ -498,7 +498,7 @@ class WaterClassScatterPlot(Plotting):
             ax.scatter(x_, y_, **style, label=f"class {k + 1}", s=6)
             ax.hlines(y_, xmin=x_ - ux_, xmax=x_ + ux_, **style)
             ax.vlines(x_, ymin=y_ - uy_, ymax=y_ + uy_, **style)
-        ax.legend()
+        ax.legend(ncol=3)
 
         if title:
             ax.set_title(title)

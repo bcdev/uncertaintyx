@@ -84,9 +84,34 @@ class WaterClassLinePlotTest(unittest.TestCase):
             xlabel=r"wavelength $\lambda$ (nm)",
             ylabel=r"remote sensing reflectance "
             r"$R_{\mathrm{rs}}(\lambda)$ (sr$^{-1}$)",
-            yrange=(-0.002, 0.032),
+            yrange=(-0.002, 0.037),
             title="Water classes (Jackson et al., 2017)",
             savefig="water_classes.png" if True else None,
+        )
+        self.assertIsNotNone(fig)
+
+    def test_plot_chlorophyll_elasticity(self):
+        w, R, _, M, m = read_owt_data(  # noqa : N806
+            "test.resources.oceancolour", "owt.csv"
+        )
+        W = np.broadcast_to(w, (M, m))  # noqa : N806
+
+        f = OCI(True)
+        x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
+        p = f.prior(preset="OC4_MERIS")
+        y = f.eval(p, x)
+        g = f.jac_x(p, x)
+
+        fig = WaterClassLinePlot().plot(
+            w[1:],
+            elasticity(x[:, 1, :], y[:, np.newaxis], g[:, 1, :]),
+            xlabel=r"wavelength $\lambda$ (nm)",
+            ylabel=r"elasticity "
+            r"$\epsilon(\log_{10} C_{\mathrm{chl}}, "
+            r"R_{\mathrm{rs}}(\lambda))$",
+            yrange=(-14.0, 14.0),
+            title="Typical elasticity",
+            savefig="chlorophyll_elasticity.png" if True else None,
         )
         self.assertIsNotNone(fig)
 
