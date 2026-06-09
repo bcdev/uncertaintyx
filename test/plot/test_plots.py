@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from uncertaintyx.oceancolour.carbon import Maranon
-from uncertaintyx.oceancolour.carbon import PhytoplanktonCarbon
+from uncertaintyx.oceancolour.carbon import MaranonOCI
 from uncertaintyx.oceancolour.ocx import OCI
 from uncertaintyx.plot.plots import BernsteinBasisPlot
 from uncertaintyx.plot.plots import WaterClassLinePlot
@@ -121,7 +121,7 @@ class WaterClassLinePlotTest(unittest.TestCase):
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
 
-        f = PhytoplanktonCarbon(Maranon(True))
+        f = MaranonOCI(True)
         x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
         p = f.prior(preset="OC4_MERIS")
         y = f.eval(p, x)
@@ -151,7 +151,7 @@ class WaterClassScatterPlotTest(unittest.TestCase):
         W = np.broadcast_to(w, (M, m))  # noqa : N806
 
         f_oc = OCI(True)
-        f_pc = PhytoplanktonCarbon(Maranon(True))
+        f_pc = MaranonOCI(True)
         x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
         u = np.stack(
             [
