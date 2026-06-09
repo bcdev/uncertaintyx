@@ -355,7 +355,7 @@ class ScatterPlot(Plotting):
         if ylabel:
             ax.set_ylabel(ylabel)
         if xrange:
-            ax.set_ylim(xrange)
+            ax.set_xlim(xrange)
         if yrange:
             ax.set_ylim(yrange)
         if savefig:
@@ -418,7 +418,7 @@ class WaterClassPlot(Plotting):
         if ylabel:
             ax.set_ylabel(ylabel)
         if xrange:
-            ax.set_ylim(xrange)
+            ax.set_xlim(xrange)
         if yrange:
             ax.set_ylim(yrange)
         if savefig:
