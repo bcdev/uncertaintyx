@@ -10,7 +10,7 @@ from ..m.jax import ToM
 
 class Maranon(ToM):
     r"""
-    The Maranon et al. (2014) phytoplankton biomass algorithm:
+    The Maranon et al. (2014) phytoplankton biomass model:
 
     .. math::
         y = x^{a} \times 10^{b}
@@ -39,8 +39,8 @@ class Maranon(ToM):
             :returns: The phytoplankton biomass :math:`y` (mg C m-3).
             """
             a, b = p
-            pc = jnp.power(x, a) * 10.0**b
-            return jnp.log10(pc) if as_log10 else pc
+            y = jnp.power(x, a) * 10.0**b
+            return jnp.log10(y) if as_log10 else y
 
         super().__init__(f)
 
