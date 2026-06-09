@@ -68,7 +68,7 @@ class MaranonOCI(ToM):
 
         oc = OCI()
         pc = Maranon(as_log10)
-        
+
         def f(p, x):
             """
             Returns the phytoplankton biomass (mg C m-3).
