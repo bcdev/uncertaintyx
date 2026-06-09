@@ -35,156 +35,168 @@ def read_owt_data(
     return wav, rrs, unc, rrs.shape[0], rrs.shape[1]
 
 
-class OCxTest(unittest.TestCase):
-    """Tests OCX model functions on optical water type classes."""
+class OceanColourTest(unittest.TestCase):
+    """Tests Ocean Colour model functions on optical water type classes."""
 
     def test_ci(self):
         """Tests the chlorophyll index (CI) model function."""
-        w, R, u, M, m = read_owt_data(  # noqa : N806
+        w, R, _, M, m = read_owt_data(  # noqa : N806
             "test.resources.oceancolour", "owt.csv"
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
 
         f = CI()
         x = np.stack([W[:, [1, 4, 5]], R[:, [1, 4, 5]]], axis=1)
-        u = np.stack([np.broadcast_to(0.5, (M, 3)), u[:, [1, 4, 5]]], axis=1)
+        u = np.stack(
+            [
+                np.broadcast_to(0.0, (M, 3)),
+                np.asarray([[0.05, 0.05, 0.10]] * R[:, [1, 4, 5]]),
+            ],
+            axis=1,
+        )
         p = f.prior()
         y = f.eval(p, x)
 
         self.assertEqual((M,), y.shape)
-        self.assertAlmostEqual(0.022, y[0], delta=0.001)
-        self.assertAlmostEqual(0.033, y[1], delta=0.001)
-        self.assertAlmostEqual(0.048, y[2], delta=0.001)
-        self.assertAlmostEqual(0.074, y[3], delta=0.001)
-        self.assertAlmostEqual(0.111, y[4], delta=0.001)
-        self.assertAlmostEqual(0.152, y[5], delta=0.001)
-        self.assertAlmostEqual(0.205, y[6], delta=0.001)
-        self.assertAlmostEqual(0.259, y[7], delta=0.001)
-        self.assertAlmostEqual(0.350, y[8], delta=0.001)
-        self.assertAlmostEqual(0.426, y[9], delta=0.001)
-        self.assertAlmostEqual(0.538, y[10], delta=0.001)
-        self.assertAlmostEqual(3.897, y[11], delta=0.001)
+        self.assertAlmostEqual(0.022, y[0], places=3)
+        self.assertAlmostEqual(0.033, y[1], places=3)
+        self.assertAlmostEqual(0.048, y[2], places=3)
+        self.assertAlmostEqual(0.074, y[3], places=3)
+        self.assertAlmostEqual(0.111, y[4], places=3)
+        self.assertAlmostEqual(0.152, y[5], places=3)
+        self.assertAlmostEqual(0.205, y[6], places=3)
+        self.assertAlmostEqual(0.259, y[7], places=3)
+        self.assertAlmostEqual(0.350, y[8], places=3)
+        self.assertAlmostEqual(0.426, y[9], places=3)
+        self.assertAlmostEqual(0.538, y[10], places=3)
+        self.assertAlmostEqual(3.897, y[11], places=3)
         # 12 and 13 are out of domain
-        self.assertTrue(np.isfinite(y[12]))
-        self.assertTrue(np.isfinite(y[13]))
+        self.assertAlmostEqual(11.95, y[12], places=2)
+        self.assertAlmostEqual(360.8, y[13], places=1)
 
         U = np.square(u)  # noqa : N806
-        V = f.lpu_x(p, x, U)  # noqa : N806
-        self.assertEqual((M,), V.shape)
+        U = f.lpu_x(p, x, U)  # noqa : N806
+        self.assertEqual((M,), U.shape)
 
-        v = np.sqrt(V)
-        self.assertAlmostEqual(0.026, v[0], delta=0.001)
-        self.assertAlmostEqual(0.024, v[1], delta=0.001)
-        self.assertAlmostEqual(0.042, v[2], delta=0.001)
-        self.assertAlmostEqual(0.068, v[3], delta=0.001)
-        self.assertAlmostEqual(0.070, v[4], delta=0.001)
-        self.assertAlmostEqual(0.074, v[5], delta=0.001)
-        self.assertAlmostEqual(0.107, v[6], delta=0.001)
-        self.assertAlmostEqual(0.100, v[7], delta=0.001)
-        self.assertAlmostEqual(0.174, v[8], delta=0.001)
-        self.assertAlmostEqual(0.204, v[9], delta=0.001)
-        self.assertAlmostEqual(0.200, v[10], delta=0.001)
-        self.assertAlmostEqual(5.461, v[11], delta=0.001)
+        u = np.sqrt(U)
+        self.assertAlmostEqual(0.004, u[0], places=3)
+        self.assertAlmostEqual(0.005, u[1], places=3)
+        self.assertAlmostEqual(0.007, u[2], places=3)
+        self.assertAlmostEqual(0.010, u[3], places=3)
+        self.assertAlmostEqual(0.012, u[4], places=3)
+        self.assertAlmostEqual(0.015, u[5], places=3)
+        self.assertAlmostEqual(0.018, u[6], places=3)
+        self.assertAlmostEqual(0.020, u[7], places=3)
+        self.assertAlmostEqual(0.025, u[8], places=3)
+        self.assertAlmostEqual(0.027, u[9], places=3)
+        self.assertAlmostEqual(0.027, u[10], places=3)
+        self.assertAlmostEqual(0.828, u[11], places=3)
         # 12 and 13 are out of domain
-        self.assertTrue(np.isfinite(v[12]))
-        self.assertTrue(np.isfinite(y[13]))
+        self.assertAlmostEqual(4.367, u[12], places=3)
+        self.assertAlmostEqual(237.2, u[13], places=1)
 
     def test_oc4(self):
         """Tests the OC4 model function."""
-        _, R, u, M, m = read_owt_data(  # noqa : N806
+        _, R, _, M, m = read_owt_data(  # noqa : N806
             "test.resources.oceancolour", "owt.csv"
         )
 
         f = OCX()
         x = R[:, 1:-1]
-        u = u[:, 1:-1]
+        u = np.asarray([[0.05, 0.05, 0.05, 0.05]] * R[:, 1:-1])
         p = f.prior()
         y = f.eval(p, x)
 
         self.assertEqual((M,), y.shape)
-        self.assertAlmostEqual(0.024, y[0], delta=0.001)
-        self.assertAlmostEqual(0.034, y[1], delta=0.001)
-        self.assertAlmostEqual(0.052, y[2], delta=0.001)
-        self.assertAlmostEqual(0.082, y[3], delta=0.001)
-        self.assertAlmostEqual(0.118, y[4], delta=0.001)
-        self.assertAlmostEqual(0.157, y[5], delta=0.001)
-        self.assertAlmostEqual(0.212, y[6], delta=0.001)
-        self.assertAlmostEqual(0.270, y[7], delta=0.001)
-        self.assertAlmostEqual(0.426, y[8], delta=0.001)
-        self.assertAlmostEqual(0.572, y[9], delta=0.001)
-        self.assertAlmostEqual(1.022, y[10], delta=0.001)
-        self.assertAlmostEqual(4.174, y[11], delta=0.001)
-        self.assertAlmostEqual(3.295, y[12], delta=0.001)
-        self.assertAlmostEqual(3.427, y[13], delta=0.001)
+        self.assertAlmostEqual(0.024, y[0], places=3)
+        self.assertAlmostEqual(0.034, y[1], places=3)
+        self.assertAlmostEqual(0.052, y[2], places=3)
+        self.assertAlmostEqual(0.082, y[3], places=3)
+        self.assertAlmostEqual(0.118, y[4], places=3)
+        self.assertAlmostEqual(0.157, y[5], places=3)
+        self.assertAlmostEqual(0.212, y[6], places=3)
+        self.assertAlmostEqual(0.270, y[7], places=3)
+        self.assertAlmostEqual(0.426, y[8], places=3)
+        self.assertAlmostEqual(0.572, y[9], places=3)
+        self.assertAlmostEqual(1.022, y[10], places=3)
+        self.assertAlmostEqual(4.174, y[11], places=3)
+        self.assertAlmostEqual(3.295, y[12], places=3)
+        self.assertAlmostEqual(3.427, y[13], places=3)
 
         U = np.square(u)  # noqa : N806
-        V = f.lpu_x(p, x, U)  # noqa : N806
-        self.assertEqual((M,), V.shape)
+        U = f.lpu_x(p, x, U)  # noqa : N806
+        self.assertEqual((M,), U.shape)
 
-        v = np.sqrt(V)
-        self.assertAlmostEqual(0.116, v[0], delta=0.001)
-        self.assertAlmostEqual(0.093, v[1], delta=0.001)
-        self.assertAlmostEqual(0.136, v[2], delta=0.001)
-        self.assertAlmostEqual(0.171, v[3], delta=0.001)
-        self.assertAlmostEqual(0.135, v[4], delta=0.001)
-        self.assertAlmostEqual(0.120, v[5], delta=0.001)
-        self.assertAlmostEqual(0.159, v[6], delta=0.001)
-        self.assertAlmostEqual(0.159, v[7], delta=0.001)
-        self.assertAlmostEqual(0.360, v[8], delta=0.001)
-        self.assertAlmostEqual(0.559, v[9], delta=0.001)
-        self.assertAlmostEqual(1.158, v[10], delta=0.001)
-        self.assertAlmostEqual(6.411, v[11], delta=0.001)
-        self.assertAlmostEqual(4.170, v[12], delta=0.001)
-        self.assertAlmostEqual(4.362, v[13], delta=0.001)
+        u = np.sqrt(U)
+        self.assertAlmostEqual(0.006, u[0], places=3)
+        self.assertAlmostEqual(0.007, u[1], places=3)
+        self.assertAlmostEqual(0.009, u[2], places=3)
+        self.assertAlmostEqual(0.012, u[3], places=3)
+        self.assertAlmostEqual(0.014, u[4], places=3)
+        self.assertAlmostEqual(0.016, u[5], places=3)
+        self.assertAlmostEqual(0.021, u[6], places=3)
+        self.assertAlmostEqual(0.028, u[7], places=3)
+        self.assertAlmostEqual(0.053, u[8], places=3)
+        self.assertAlmostEqual(0.081, u[9], places=3)
+        self.assertAlmostEqual(0.184, u[10], places=3)
+        self.assertAlmostEqual(1.115, u[11], places=3)
+        self.assertAlmostEqual(0.834, u[12], places=3)
+        self.assertAlmostEqual(0.876, u[13], places=3)
 
     def test_oci(self):
         """Tests the OCI model function."""
-        w, R, u, M, m = read_owt_data(  # noqa : N806
+        w, R, _, M, m = read_owt_data(  # noqa : N806
             "test.resources.oceancolour", "owt.csv"
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
 
         f = OCI()
         x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
-        u = np.stack([np.broadcast_to(0.5, (M, 5)), u[:, 1:]], axis=1)
+        u = np.stack(
+            [
+                np.broadcast_to(0.0, (M, 5)),
+                np.asarray([[0.05, 0.05, 0.05, 0.05, 0.10]] * R[:, 1:]),
+            ],
+            axis=1,
+        )
         p = f.prior()
         y = f.eval(p, x)
 
         self.assertEqual((M,), y.shape)
-        self.assertAlmostEqual(0.022, y[0], delta=0.001)
-        self.assertAlmostEqual(0.033, y[1], delta=0.001)
-        self.assertAlmostEqual(0.048, y[2], delta=0.001)
-        self.assertAlmostEqual(0.074, y[3], delta=0.001)
-        self.assertAlmostEqual(0.111, y[4], delta=0.001)
-        self.assertAlmostEqual(0.152, y[5], delta=0.001)
-        self.assertAlmostEqual(0.205, y[6], delta=0.001)
-        self.assertAlmostEqual(0.260, y[7], delta=0.001)  # blend
-        self.assertAlmostEqual(0.426, y[8], delta=0.001)
-        self.assertAlmostEqual(0.572, y[9], delta=0.001)
-        self.assertAlmostEqual(1.022, y[10], delta=0.001)
-        self.assertAlmostEqual(4.174, y[11], delta=0.001)
-        self.assertAlmostEqual(3.295, y[12], delta=0.001)
-        self.assertAlmostEqual(3.427, y[13], delta=0.001)
+        self.assertAlmostEqual(0.022, y[0], places=3)
+        self.assertAlmostEqual(0.033, y[1], places=3)
+        self.assertAlmostEqual(0.048, y[2], places=3)
+        self.assertAlmostEqual(0.074, y[3], places=3)
+        self.assertAlmostEqual(0.111, y[4], places=3)
+        self.assertAlmostEqual(0.152, y[5], places=3)
+        self.assertAlmostEqual(0.205, y[6], places=3)
+        self.assertAlmostEqual(0.260, y[7], places=3)  # blend
+        self.assertAlmostEqual(0.426, y[8], places=3)
+        self.assertAlmostEqual(0.572, y[9], places=3)
+        self.assertAlmostEqual(1.022, y[10], places=3)
+        self.assertAlmostEqual(4.174, y[11], places=3)
+        self.assertAlmostEqual(3.295, y[12], places=3)
+        self.assertAlmostEqual(3.427, y[13], places=3)
 
         U = np.square(u)  # noqa : N806
         U = f.lpu_x(p, x, U)  # noqa : N806
         self.assertEqual((M,), U.shape)
 
-        v = np.sqrt(U)
-        self.assertAlmostEqual(0.026, v[0], delta=0.001)
-        self.assertAlmostEqual(0.024, v[1], delta=0.001)
-        self.assertAlmostEqual(0.042, v[2], delta=0.001)
-        self.assertAlmostEqual(0.068, v[3], delta=0.001)
-        self.assertAlmostEqual(0.070, v[4], delta=0.001)
-        self.assertAlmostEqual(0.074, v[5], delta=0.001)
-        self.assertAlmostEqual(0.107, v[6], delta=0.001)
-        self.assertAlmostEqual(0.117, v[7], delta=0.001)  # blend
-        self.assertAlmostEqual(0.360, v[8], delta=0.001)
-        self.assertAlmostEqual(0.559, v[9], delta=0.001)
-        self.assertAlmostEqual(1.158, v[10], delta=0.001)
-        self.assertAlmostEqual(6.411, v[11], delta=0.001)
-        self.assertAlmostEqual(4.170, v[12], delta=0.001)
-        self.assertAlmostEqual(4.362, v[13], delta=0.001)
+        u = np.sqrt(U)
+        self.assertAlmostEqual(0.004, u[0], places=3)
+        self.assertAlmostEqual(0.005, u[1], places=3)
+        self.assertAlmostEqual(0.007, u[2], places=3)
+        self.assertAlmostEqual(0.010, u[3], places=3)
+        self.assertAlmostEqual(0.012, u[4], places=3)
+        self.assertAlmostEqual(0.015, u[5], places=3)
+        self.assertAlmostEqual(0.018, u[6], places=3)
+        self.assertAlmostEqual(0.023, u[7], places=3)  # blend
+        self.assertAlmostEqual(0.053, u[8], places=3)
+        self.assertAlmostEqual(0.081, u[9], places=3)
+        self.assertAlmostEqual(0.184, u[10], places=3)
+        self.assertAlmostEqual(1.115, u[11], places=3)
+        self.assertAlmostEqual(0.834, u[12], places=3)
+        self.assertAlmostEqual(0.876, u[13], places=3)
 
 
 if __name__ == "__main__":
