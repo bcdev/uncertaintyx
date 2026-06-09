@@ -85,7 +85,7 @@ class WaterClassLinePlotTest(unittest.TestCase):
             r"$R_{\mathrm{rs}}(\lambda)$ (sr$^{-1}$)",
             yrange=(-0.002, 0.037),
             title="Water classes (Jackson et al., 2017)",
-            savefig="water_classes.png" if True else None,
+            savefig="water_classes.png" if False else None,
         )
         self.assertIsNotNone(fig)
 
