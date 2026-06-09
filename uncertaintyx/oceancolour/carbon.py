@@ -86,36 +86,3 @@ class MaranonOCI(ToM):
         preset: str | None = None,
     ) -> np.ndarray:
         return np.concatenate((self.oc.prior(x, y, preset), self.pc.prior()))
-
-
-class PhytoplanktonCarbon(ToM):
-    """
-    Concatenation of an OCX chlorophyll algorithm with a phytoplankton
-    biomass model.
-    """
-
-    def __init__(self, pc: Maranon, oc: OCI = OCI()):
-        """
-        Creates a new model function instance.
-
-        :param pc: The phytoplankton biomass model.
-        :param oc: The OCX chlorophyll model.
-        """
-
-        def f(p, x):
-            """
-            Returns the phytoplankton biomass (mg C m-3).
-            """
-            return pc.f(p[-2:], oc.f(p[:-2], x))
-
-        super().__init__(f)
-        self.oc: ToM = oc
-        self.pc: ToM = pc
-
-    def prior(
-        self,
-        x: np.ndarray | None = None,
-        y: np.ndarray | None = None,
-        preset: str | None = None,
-    ) -> np.ndarray:
-        return np.concatenate((self.oc.prior(x, y, preset), self.pc.prior()))
