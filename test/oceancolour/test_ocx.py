@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from uncertaintyx.oceancolour.ocx import CI
-from uncertaintyx.oceancolour.ocx import OCX
+from uncertaintyx.oceancolour.ocx import OCx
 from uncertaintyx.oceancolour.ocx import OCI
 
 
@@ -50,7 +50,7 @@ class OceanColourTest(unittest.TestCase):
         u = np.stack(
             [
                 np.broadcast_to(0.0, (M, 3)),
-                np.asarray([[0.05, 0.05, 0.10]] * R[:, [1, 4, 5]]),
+                np.asarray([[0.05, 0.10, 0.20]] * R[:, [1, 4, 5]]),
             ],
             axis=1,
         )
@@ -80,20 +80,20 @@ class OceanColourTest(unittest.TestCase):
 
         u = np.sqrt(U)
         self.assertAlmostEqual(0.004, u[0], places=3)
-        self.assertAlmostEqual(0.005, u[1], places=3)
-        self.assertAlmostEqual(0.007, u[2], places=3)
-        self.assertAlmostEqual(0.010, u[3], places=3)
-        self.assertAlmostEqual(0.012, u[4], places=3)
-        self.assertAlmostEqual(0.015, u[5], places=3)
-        self.assertAlmostEqual(0.018, u[6], places=3)
-        self.assertAlmostEqual(0.020, u[7], places=3)
-        self.assertAlmostEqual(0.025, u[8], places=3)
-        self.assertAlmostEqual(0.027, u[9], places=3)
-        self.assertAlmostEqual(0.027, u[10], places=3)
-        self.assertAlmostEqual(0.828, u[11], places=3)
+        self.assertAlmostEqual(0.006, u[1], places=3)
+        self.assertAlmostEqual(0.008, u[2], places=3)
+        self.assertAlmostEqual(0.011, u[3], places=3)
+        self.assertAlmostEqual(0.015, u[4], places=3)
+        self.assertAlmostEqual(0.019, u[5], places=3)
+        self.assertAlmostEqual(0.025, u[6], places=3)
+        self.assertAlmostEqual(0.030, u[7], places=3)
+        self.assertAlmostEqual(0.040, u[8], places=3)
+        self.assertAlmostEqual(0.045, u[9], places=3)
+        self.assertAlmostEqual(0.050, u[10], places=3)
+        self.assertAlmostEqual(1.617, u[11], places=3)
         # 12 and 13 are out of domain
-        self.assertAlmostEqual(4.367, u[12], places=3)
-        self.assertAlmostEqual(237.2, u[13], places=1)
+        self.assertAlmostEqual(8.484, u[12], places=3)
+        self.assertAlmostEqual(462.8, u[13], places=1)
 
     def test_oc4(self):
         """Tests the OC4 model function."""
@@ -101,9 +101,9 @@ class OceanColourTest(unittest.TestCase):
             "test.resources.oceancolour", "owt.csv"
         )
 
-        f = OCX()
+        f = OCx()
         x = R[:, 1:-1]
-        u = np.asarray([[0.05, 0.05, 0.05, 0.05]] * R[:, 1:-1])
+        u = np.asarray([[0.05, 0.05, 0.05, 0.10]] * R[:, 1:-1])
         p = f.prior()
         y = f.eval(p, x)
 
@@ -128,20 +128,20 @@ class OceanColourTest(unittest.TestCase):
         self.assertEqual((M,), U.shape)
 
         u = np.sqrt(U)
-        self.assertAlmostEqual(0.006, u[0], places=3)
-        self.assertAlmostEqual(0.007, u[1], places=3)
-        self.assertAlmostEqual(0.009, u[2], places=3)
-        self.assertAlmostEqual(0.012, u[3], places=3)
-        self.assertAlmostEqual(0.014, u[4], places=3)
-        self.assertAlmostEqual(0.016, u[5], places=3)
-        self.assertAlmostEqual(0.021, u[6], places=3)
-        self.assertAlmostEqual(0.028, u[7], places=3)
-        self.assertAlmostEqual(0.053, u[8], places=3)
-        self.assertAlmostEqual(0.081, u[9], places=3)
-        self.assertAlmostEqual(0.184, u[10], places=3)
-        self.assertAlmostEqual(1.115, u[11], places=3)
-        self.assertAlmostEqual(0.834, u[12], places=3)
-        self.assertAlmostEqual(0.876, u[13], places=3)
+        self.assertAlmostEqual(0.009, u[0], places=3)
+        self.assertAlmostEqual(0.012, u[1], places=3)
+        self.assertAlmostEqual(0.015, u[2], places=3)
+        self.assertAlmostEqual(0.019, u[3], places=3)
+        self.assertAlmostEqual(0.022, u[4], places=3)
+        self.assertAlmostEqual(0.026, u[5], places=3)
+        self.assertAlmostEqual(0.033, u[6], places=3)
+        self.assertAlmostEqual(0.044, u[7], places=3)
+        self.assertAlmostEqual(0.084, u[8], places=3)
+        self.assertAlmostEqual(0.129, u[9], places=3)
+        self.assertAlmostEqual(0.291, u[10], places=3)
+        self.assertAlmostEqual(1.762, u[11], places=3)
+        self.assertAlmostEqual(1.319, u[12], places=3)
+        self.assertAlmostEqual(1.384, u[13], places=3)
 
     def test_oci(self):
         """Tests the OCI model function."""
@@ -155,7 +155,7 @@ class OceanColourTest(unittest.TestCase):
         u = np.stack(
             [
                 np.broadcast_to(0.0, (M, 5)),
-                np.asarray([[0.05, 0.05, 0.05, 0.05, 0.10]] * R[:, 1:]),
+                np.asarray([[0.05, 0.05, 0.05, 0.10, 0.20]] * R[:, 1:]),
             ],
             axis=1,
         )
@@ -184,19 +184,19 @@ class OceanColourTest(unittest.TestCase):
 
         u = np.sqrt(U)
         self.assertAlmostEqual(0.004, u[0], places=3)
-        self.assertAlmostEqual(0.005, u[1], places=3)
-        self.assertAlmostEqual(0.007, u[2], places=3)
-        self.assertAlmostEqual(0.010, u[3], places=3)
-        self.assertAlmostEqual(0.012, u[4], places=3)
-        self.assertAlmostEqual(0.015, u[5], places=3)
-        self.assertAlmostEqual(0.018, u[6], places=3)
-        self.assertAlmostEqual(0.023, u[7], places=3)  # blend
-        self.assertAlmostEqual(0.053, u[8], places=3)
-        self.assertAlmostEqual(0.081, u[9], places=3)
-        self.assertAlmostEqual(0.184, u[10], places=3)
-        self.assertAlmostEqual(1.115, u[11], places=3)
-        self.assertAlmostEqual(0.834, u[12], places=3)
-        self.assertAlmostEqual(0.876, u[13], places=3)
+        self.assertAlmostEqual(0.006, u[1], places=3)
+        self.assertAlmostEqual(0.008, u[2], places=3)
+        self.assertAlmostEqual(0.011, u[3], places=3)
+        self.assertAlmostEqual(0.015, u[4], places=3)
+        self.assertAlmostEqual(0.019, u[5], places=3)
+        self.assertAlmostEqual(0.025, u[6], places=3)
+        self.assertAlmostEqual(0.034, u[7], places=3)  # blend
+        self.assertAlmostEqual(0.084, u[8], places=3)
+        self.assertAlmostEqual(0.129, u[9], places=3)
+        self.assertAlmostEqual(0.291, u[10], places=3)
+        self.assertAlmostEqual(1.762, u[11], places=3)
+        self.assertAlmostEqual(1.319, u[12], places=3)
+        self.assertAlmostEqual(1.384, u[13], places=3)
 
 
 if __name__ == "__main__":

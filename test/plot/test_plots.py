@@ -7,6 +7,7 @@ from importlib import resources
 import numpy as np
 import pandas as pd
 
+from uncertaintyx.oceancolour.carbon import Maranon
 from uncertaintyx.oceancolour.carbon import MaranonOCI
 from uncertaintyx.oceancolour.ocx import OCI
 from uncertaintyx.plot.plots import BernsteinBasisPlot
@@ -95,7 +96,7 @@ class WaterClassLinePlotTest(unittest.TestCase):
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
 
-        f = OCI(True)
+        f = OCI()
         x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
         p = f.prior(preset="OC4_MERIS")
         y = f.eval(p, x)
@@ -106,11 +107,9 @@ class WaterClassLinePlotTest(unittest.TestCase):
             elasticity(x[:, 1, :], y[:, np.newaxis], g[:, 1, :]),
             xlabel=r"wavelength $\lambda$ (nm)",
             ylabel=r"elasticity "
-            r"$\epsilon(\log_{10} C_{\mathrm{chl}}, "
-            r"R_{\mathrm{rs}}(\lambda))$",
-            yrange=(-14.0, 14.0),
-            title="Typical elasticity",
-            savefig="chlorophyll_elasticity.png" if True else None,
+            r"$\epsilon(C_{\mathrm{chl}}, R_{\mathrm{rs}}(\lambda))$",
+            yrange=(-4.5, 4.5),
+            savefig="chlorophyll_elasticity.png" if False else None,
         )
         self.assertIsNotNone(fig)
 
@@ -120,7 +119,7 @@ class WaterClassLinePlotTest(unittest.TestCase):
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
 
-        f = MaranonOCI(True)
+        f = MaranonOCI()
         x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
         p = f.prior(preset="OC4_MERIS")
         y = f.eval(p, x)
@@ -131,11 +130,9 @@ class WaterClassLinePlotTest(unittest.TestCase):
             elasticity(x[:, 1, :], y[:, np.newaxis], g[:, 1, :]),
             xlabel=r"wavelength $\lambda$ (nm)",
             ylabel=r"elasticity "
-            r"$\epsilon(\log_{10} C_{\mathrm{phy}}, "
-            r"R_{\mathrm{rs}}(\lambda))$",
-            yrange=(-5.5, 1.5),
-            title="Typical elasticity",
-            savefig="phytoplankton_elasticity.png" if True else None,
+            r"$\epsilon(C_{\mathrm{phy}}, R_{\mathrm{rs}}(\lambda))$",
+            yrange=(-4.5, 4.5),
+            savefig="phytoplankton_elasticity.png" if False else None,
         )
         self.assertIsNotNone(fig)
 
@@ -155,7 +152,7 @@ class WaterClassScatterPlotTest(unittest.TestCase):
         u = np.stack(
             [
                 np.broadcast_to(0.0, (M, 5)),
-                np.asarray([[0.05, 0.05, 0.05, 0.05, 0.10]] * R[:, 1:]),
+                np.asarray([[0.05, 0.05, 0.05, 0.10, 0.20]] * R[:, 1:]),
             ],
             axis=1,
         )
@@ -177,8 +174,7 @@ class WaterClassScatterPlotTest(unittest.TestCase):
             u_pc,
             xlabel=r"$\log_{10} C_{\mathrm{chl}}$ (mg m$^{-3}$)",
             ylabel=r"$\log_{10} C_{\mathrm{phy}}$ (mg C m$^{-3}$)",
-            title="Typical uncertainty",
-            savefig="phytoplankton_uncertainty.png" if True else None,
+            savefig="phytoplankton_uncertainty.png" if False else None,
         )
         self.assertIsNotNone(fig)
 

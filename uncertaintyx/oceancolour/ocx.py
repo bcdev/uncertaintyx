@@ -123,9 +123,9 @@ class CI(ToM):
         return np.asarray([-0.4287, 230.47])
 
 
-class OCX(ToM):
+class OCx(ToM):
     """
-    NASA's OCX chlorophyll model function.
+    NASA's OCx chlorophyll model function.
 
     The 2-4 nearest wavebands to 412, 443, 490 and 510 nm are used
     for the blue, while the nearest waveband to 555 nm is used for
@@ -215,21 +215,21 @@ class OCX(ToM):
 
 class OCI(ToM):
     """
-    The blended OCX/CI model function.
+    The blended OCx/CI model function.
 
     The 2-4 nearest wavebands to 412, 443, 490 and 510 nm are used
     for the blue, while the nearest waveband to 555 nm is used for
     the green, and the nearest waveband to 670 nm is used for the
     red.
 
-    The blending occurs when :class:`OC4` is between, e.g.,
+    The blending occurs when :class:`OCx` is between, e.g.,
     0.25-0.35 mg m-3, creating a smooth handover between :class:`OCI`
-    (low chlorophyll specialist) and :class:`OC4` (baseline). The
+    (low chlorophyll specialist) and :class:`OCx` (baseline). The
     blending uses perfectly normalized weights. Low :class:`CI`
     values favour :class:`CI` while high :class:`CI` values
-    favour :class:`OC4` through self-weighting. A quadratic term
+    favour :class:`OCx` through self-weighting. A quadratic term
     creates curvature that eliminates boundary discontinuities while
-    :class:`OC4` acts as regime detector.
+    :class:`OCx` acts as regime detector.
     """
 
     def __init__(self, as_log10: bool = False, b: Literal[0, 1] = 0):
@@ -240,7 +240,7 @@ class OCI(ToM):
         :param b: The index of the blue waveband near 443 nm.
         """
         ci: ToM = CI()
-        oc: ToM = OCX()
+        oc: ToM = OCx()
 
         def f(p, x):
             r"""
