@@ -7,7 +7,6 @@ from importlib import resources
 import numpy as np
 import pandas as pd
 
-from uncertaintyx.oceancolour.carbon import Maranon
 from uncertaintyx.oceancolour.carbon import MaranonOCI
 from uncertaintyx.oceancolour.ocx import OCI
 from uncertaintyx.plot.plots import BernsteinBasisPlot
