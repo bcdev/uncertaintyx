@@ -4,7 +4,7 @@
 Empirical model functions for NASA Ocean Colour algorithms. Refer to the
 Algorithm Publication Tool (https://doi.org/10.5067/JCQB8QALDOYD).
 
-Refer to Lachlan et al. (2019, https://doi.org/10.3389/feart.2019.00176)
+Refer to McKinna et al. (2019, https://doi.org/10.3389/feart.2019.00176)
 for propagating radiometric data uncertainties through NASA Ocean Colour
 algorithms.
 
@@ -223,7 +223,7 @@ class OCI(ToM):
     red.
 
     The blending occurs when :class:`OCx` is between, e.g.,
-    0.25-0.35 mg m-3, creating a smooth handover between :class:`OCI`
+    0.25-0.35 mg m-3, creating a smooth handover between :class:`CI`
     (low chlorophyll specialist) and :class:`OCx` (baseline). The
     blending uses perfectly normalized weights. Low :class:`CI`
     values favour :class:`CI` while high :class:`CI` values
