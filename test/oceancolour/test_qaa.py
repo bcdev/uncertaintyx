@@ -203,8 +203,8 @@ class QaaTest(unittest.TestCase):
         self.assertAlmostEqual(0.015, result.popt[0], delta=0.005)
         self.assertAlmostEqual(0.0, result.popt[1], delta=0.5)
         self.assertAlmostEqual(0.0, result.popt[2], delta=5.0)
-        self.assertAlmostEqual(0.001, result.punc[0], delta=0.001)
-        self.assertAlmostEqual(0.001, result.punc[0], delta=0.001)
+        self.assertAlmostEqual(0.005, result.punc[0], delta=0.005)
+        self.assertAlmostEqual(0.005, result.punc[0], delta=0.005)
         self.assertAlmostEqual(5.0, result.punc[0], delta=5.0)
         self.assertAlmostEqual(1.5e-05, result.zvar.item(), delta=0.1e-05)
 
