@@ -320,7 +320,7 @@ class ScatterPlot(Plotting):
         context: Literal["paper", "notebook", "talk", "poster"] = "paper",
     ):
         """
-        Creates a new regression plot.
+        Creates a new scatter plot.
 
         :param context: The plot context.
         """
