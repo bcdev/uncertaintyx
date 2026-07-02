@@ -175,7 +175,7 @@ tensor-valued language of today’s computational frameworks.
 [![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
 [![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
 [![codecov](https://codecov.io/gh/bcdev/uncertaintyx/graph/badge.svg?token=742AWtYDCD)](https://codecov.io/gh/bcdev/uncertaintyx)
-![loc](https://img.shields.io/badge/loc-2.3k-blue)
+![loc](https://img.shields.io/badge/loc-2.4k-blue)
 
 <script>
 MathJax = {
