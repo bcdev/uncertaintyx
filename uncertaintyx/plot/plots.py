@@ -142,6 +142,102 @@ class BernsteinBasisPlot(Plotting):
         return fig
 
 
+class LinePlot(Plotting):
+    """A line plot."""
+
+    def __init__(
+        self,
+        context: Literal["paper", "notebook", "talk", "poster"] = "paper",
+    ):
+        """
+        Creates a new line plot.
+
+        :param context: The plot context.
+        """
+        self._context = context
+
+    def plot(
+        self,
+        x: list[np.ndarray],
+        y: list[np.ndarray],
+        u: list[np.ndarray] | None = None,
+        *,
+        title: str | None = None,
+        xlabel: str | None = None,
+        ylabel: str | None = None,
+        xrange: tuple[Any, Any] | None = None,
+        yrange: tuple[Any, Any] | None = None,
+        xticks: tuple[Any, ...] | None = None,
+        yticks: tuple[Any, ...] | None = None,
+        labels: list[str] | None = None,
+        savefig: str | None = None,
+    ):
+        """
+        Plots the data supplied as arguments.
+        """
+        sns.set_theme(context=self._context)
+        sns.set_style("ticks")
+        sns.set_palette(sns.color_palette("colorblind"))
+
+        styles = list(
+            cycler("linestyle", self._styles) * cycler("color", self._colors)
+        )
+
+        fig, ax = plt.subplots()
+        if u is not None:
+            for k, (x_, y_, u_) in enumerate(zip(x, y, u)):
+                style = styles[k]
+                ax.plot(
+                    x_,
+                    y_,
+                    **style,
+                    label=f"{k + 1}" if labels is None else labels[k],
+                )
+                if u_ is not None:
+                    ax.fill_between(x_, y_, y_ + u_, **style, alpha=0.3)
+                    ax.fill_between(x_, y_, y_ - u_, **style, alpha=0.3)
+        else:
+            for k, (x_, y_) in enumerate(zip(x, y)):
+                style = styles[k]
+                ax.plot(
+                    x_,
+                    y_,
+                    **style,
+                    label=f"{k + 1}" if labels is None else labels[k],
+                )
+        ax.legend(ncol=2)
+
+        if title:
+            ax.set_title(title)
+        if xlabel:
+            ax.set_xlabel(xlabel)
+        if ylabel:
+            ax.set_ylabel(ylabel)
+        if xrange:
+            ax.set_xlim(xrange)
+        if yrange:
+            ax.set_ylim(yrange)
+        if xticks:
+            ax.set_xticks(xticks)
+        if yticks:
+            ax.set_yticks(yticks)
+        if savefig:
+            fig.savefig(savefig, dpi=300)
+        plt.close(fig)
+
+        return fig
+
+    @property
+    def _colors(self) -> List[Any]:
+        """Returns a list of colours available."""
+        return sns.color_palette("colorblind")
+
+    @property
+    def _styles(self) -> list[str]:
+        """Returns a list of line styles available."""
+        return ["-", "--", ":", "-."]
+
+
 class MatrixPlot(Plotting):
     """A matrix plot."""
 
