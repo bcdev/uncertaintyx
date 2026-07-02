@@ -46,6 +46,10 @@ class SpectrumTest(unittest.TestCase):
         self.assertEqual((1, 48), y_t.shape)
         self.assertTrue(np.allclose(y_t, 1.0))
 
+        K = f.kernel_matrix(f.prior())  # noqa: N806
+        y_k = (K @ y_s.T).T
+        self.assertTrue(np.allclose(y_k, y_t))
+
     def test_triangle_spectrum(self):
         """
         Tests the triangle spectrum.
@@ -62,6 +66,10 @@ class SpectrumTest(unittest.TestCase):
         self.assertIsInstance(y_t, np.ndarray)
         self.assertEqual((1, 48), y_t.shape)
         self.assertTrue(np.allclose(y_t, SAMPLING_CHIME / 10.0))
+
+        K = f.kernel_matrix(f.prior())  # noqa: N806
+        y_k = (K @ y_s.T).T
+        self.assertTrue(np.allclose(y_k, y_t))
 
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from uncertaintyx.m.jax import ToM
+from uncertaintyx.m.jax import jac_x
 
 
 class HSI(ToM):
@@ -18,6 +19,13 @@ class HSI(ToM):
         x_t: np.ndarray,
         sigma: Any = 3.46,
     ):
+        """
+        Creates a new CHIME/HSI convolution model.
+
+        :param x_s: The source spectral sampling (nm).
+        :param x_t: The target spectral sampling (nm).
+        :param sigma: The width of the Gaussian kernel (nm).
+        """
         x_s = jnp.asarray(x_s)
         x_t = jnp.asarray(x_t)
         w_t = (x_t[-1] - x_t[0]) / (len(x_t) - 1)
@@ -71,7 +79,9 @@ class HSI(ToM):
 
             return jnp.sum((A - B) - (C - D), axis=-1) / w_t
 
-        super().__init__(f, jit=False)
+        super().__init__(f)
+        self._x_s = x_s
+        self._x_t = x_t
         self._sigma = sigma
 
     def prior(
@@ -84,3 +94,20 @@ class HSI(ToM):
         Returns the width of the Gaussian smoothing kernel (nm).
         """
         return np.asarray([self._sigma])
+
+    def kernel_matrix(self, p: np.ndarray) -> np.ndarray:
+        """
+        Returns the kernel matrix of the convolution model.
+
+        Multiplying the kernel matrix with a spectrum vector (or a
+        batch of spectrum vectors) returns the convoluted spectrum
+        quickly.
+
+        :param p: The model parameters.
+        :return: The kernel matrix.
+        """
+        return np.squeeze(
+            self.jac_x(
+                p, np.ones_like(self._x_s, shape=(1, self._x_s.shape[0]))
+            )
+        )
