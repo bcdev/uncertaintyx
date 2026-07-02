@@ -2,8 +2,8 @@
 #  License: MIT
 from abc import ABCMeta
 from abc import abstractmethod
+from typing import Any
 
-import numpy as np
 from matplotlib.figure import Figure
 
 
@@ -11,7 +11,7 @@ class Plotting(metaclass=ABCMeta):
     """The plotting interface."""
 
     @abstractmethod
-    def plot(self, *data: np.ndarray, **kwargs) -> Figure:
+    def plot(self, *data: Any, **kwargs) -> Figure:
         """
         Plots the data.
 
