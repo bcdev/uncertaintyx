@@ -114,8 +114,8 @@ class SpectrumTest(unittest.TestCase):
             labels=["HyperBOOST", "CHIME/HSI"],
             title="Spectral convolution",
             xlabel=r"wavelength $\lambda$ (nm)",
-            ylabel=r"remote sensing reflectance $\rho(\lambda)$ (sr^{-1}$)",
-            savefig="hsi_spectrum.png" if False else None,
+            ylabel=r"remote sensing reflectance $\rho(\lambda)$ (sr$^{-1}$)",
+            savefig="hsi_spectrum.png" if True else None,
         )
 
 
