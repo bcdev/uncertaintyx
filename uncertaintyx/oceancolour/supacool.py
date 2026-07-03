@@ -24,8 +24,8 @@ class HSI(ToM):
     is defined and evaluated in this `WolframAlpha Query`_.
 
     .. _WolframAlpha Query: https://www.wolframalpha.com/input?i2d=true&i=
-        Divide%5BIntegrate%5B%5C%2840%29Subscript%5Bm%2Ci%5D+%5C%2840%29t+
-        -+Subscript%5Bx%2Ci%5D%5C%2841%29+%2B+Subscript%5By%2Ci%5D%5C%2841
+        Divide%5BIntegrate%5B%5C%2840%29Subscript%5Bm%2Ck%5D+%5C%2840%29t+
+        -+Subscript%5Bx%2Ck%5D%5C%2841%29+%2B+Subscript%5By%2Ck%5D%5C%2841
         %29+exp%5C%2840%29-Divide%5B1%2C2%5D+Power%5B%5C%2840%29Divide%5B%
         5C%2840%29u+-+t%5C%2841%29%2Cs%5D%5C%2841%29%2C2%5D%5C%2841%29%2Ct
         %2Cu%5D%2Cs+sqrt%5C%2840%292+%CF%80%5C%2841%29%5D
@@ -79,7 +79,7 @@ class HSI(ToM):
             x_l = x_s[jnp.newaxis, 1:]
             y_l = y_s[jnp.newaxis, 1:]
 
-            m_i = (y_l - y_k) / (x_l - x_k)
+            m_k = (y_l - y_k) / (x_l - x_k)
 
             def f(s, t):
                 """An auxiliary function."""
@@ -103,8 +103,8 @@ class HSI(ToM):
                 a = 0.5 * f(s, t - u)
                 b = 0.5 * g(s, t - u)
 
-                c = m_i * (s**2 - t**2 + u**2 + 2.0 * (t - u) * x_k)
-                d = m_i * (t + u - 2.0 * x_k) + 2.0 * y_k
+                c = m_k * (s**2 - t**2 + u**2 + 2.0 * (t - u) * x_k)
+                d = m_k * (t + u - 2.0 * x_k) + 2.0 * y_k
 
                 return 0.5 * a * (c - 2.0 * (t - u) * y_k) - b * d
 
