@@ -10,7 +10,7 @@ from uncertaintyx.m.jax import ToM
 
 
 class HSI(ToM):
-    """
+    r"""
     The CHIME/HSI convolution model class.
 
     The spectral convolution with the CHIME/HSI instrument spectral
