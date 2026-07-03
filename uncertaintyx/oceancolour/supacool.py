@@ -11,7 +11,7 @@ from uncertaintyx.m.jax import ToM
 
 class HSI(ToM):
     """
-    The CHIME/HSI convolution model function.
+    The CHIME/HSI convolution model class.
 
     The spectral convolution with the CHIME/HSI instrument spectral
     response function (reflecting the spectral grating) is conducted
@@ -23,6 +23,11 @@ class HSI(ToM):
     resampling across all CHIME/HSI and source spectral bands. The
     methodology borrows from techniques in computational astrophysics
     spectroscopy.
+
+    The underlying indefinite convolution integral (or antiderivative)
+    is defined and evaluated in this `WolframAlpha Query`_.
+
+    .. _WolframAlpha Query: https://www.wolframalpha.com/input?i2d=true&i=Divide%5BIntegrate%5B%5C%2840%29Subscript%5Bm%2Ci%5D+%5C%2840%29t+-+Subscript%5Bx%2Ci%5D%5C%2841%29+%2B+Subscript%5By%2Ci%5D%5C%2841%29+exp%5C%2840%29-Divide%5B1%2C2%5D+Power%5B%5C%2840%29Divide%5B%5C%2840%29u+-+t%5C%2841%29%2Cs%5D%5C%2841%29%2C2%5D%5C%2841%29%2Ct%2Cu%5D%2Cs+sqrt%5C%2840%292+%CF%80%5C%2841%29%5D
     """
 
     def __init__(
@@ -66,13 +71,14 @@ class HSI(ToM):
             m_i = (y_j - y_i) / (x_j - x_i)
 
             def f(s, t):
-                """The function :math:`f(t)`."""
+                """An auxiliary function."""
                 return jax.lax.erf(t / (jnp.sqrt(2.0) * s))
 
             def g(s, t):
-                """The function :math:`g(t)`."""
-                term = jnp.exp(-0.5 * (t / s) ** 2)
-                return term * s / (jnp.sqrt(2.0 * jnp.pi))
+                """An auxiliary function."""
+                return (s / jnp.sqrt(2.0 * jnp.pi)) * jnp.exp(
+                    -0.5 * (t / s) ** 2
+                )
 
             def h(s, t, u):
                 """
@@ -82,8 +88,6 @@ class HSI(ToM):
                 The first convolution is a Gaussian filter reflecting
                 the spectral grating, while the second convolution is
                 a boxcar filter reflecting the detector element.
-
-                The double integral is evaluated here: https://www.wolframalpha.com/input?i2d=true&i=Divide%5BIntegrate%5B%5C%2840%29Subscript%5Bm%2Ci%5D+%5C%2840%29t+-+Subscript%5Bx%2Ci%5D%5C%2841%29+%2B+Subscript%5By%2Ci%5D%5C%2841%29+exp%5C%2840%29-Divide%5B1%2C2%5D+Power%5B%5C%2840%29Divide%5B%5C%2840%29u+-+t%5C%2841%29%2Cs%5D%5C%2841%29%2C2%5D%5C%2841%29%2Ct%2Cu%5D%2Cs+sqrt%5C%2840%292+%CF%80%5C%2841%29%5D
                 """
                 a = 0.5 * f(s, t - u)
                 b = 0.5 * g(s, t - u)
