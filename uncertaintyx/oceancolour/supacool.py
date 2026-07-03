@@ -39,6 +39,9 @@ class HSI(ToM):
         """
         Creates a new CHIME/HSI convolution model.
 
+        Though the CHIME/HSI target sampling is presumably equidistant,
+        the model function does not require equidistant samplings.
+
         :param x_s: The source spectral sampling (nm).
         :param x_t: The target spectral sampling (nm).
         :param sigma: The width of the Gaussian kernel (nm).
