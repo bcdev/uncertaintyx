@@ -66,18 +66,20 @@ class HSI(ToM):
             :param y_s: The source remote sensing reflectance (sr-1).
             :returns: The target remote sensing reflectance (sr-1).
             """
+            w_t = jnp.diff(x_t)
+            h_i = 0.5 * jnp.pad(w_t, (1, 0), "edge")
+            h_j = 0.5 * jnp.pad(w_t, (0, 1), "edge")
 
-            w_t = jnp.pad(jnp.diff(x_t), (0, 1), "edge")
-            u_i = x_t[:, jnp.newaxis] - 0.5 * w_t[:, jnp.newaxis]
-            u_j = x_t[:, jnp.newaxis] + 0.5 * w_t[:, jnp.newaxis]
+            u_i = x_t[:, jnp.newaxis] - h_i[:, jnp.newaxis]
+            u_j = x_t[:, jnp.newaxis] + h_j[:, jnp.newaxis]
 
-            x_i = x_s[jnp.newaxis, :-1]
-            y_i = y_s[jnp.newaxis, :-1]
+            x_k = x_s[jnp.newaxis, :-1]
+            y_k = y_s[jnp.newaxis, :-1]
 
-            x_j = x_s[jnp.newaxis, 1:]
-            y_j = y_s[jnp.newaxis, 1:]
+            x_l = x_s[jnp.newaxis, 1:]
+            y_l = y_s[jnp.newaxis, 1:]
 
-            m_i = (y_j - y_i) / (x_j - x_i)
+            m_i = (y_l - y_k) / (x_l - x_k)
 
             def f(s, t):
                 """An auxiliary function."""
@@ -89,7 +91,7 @@ class HSI(ToM):
                     -0.5 * (t / s) ** 2
                 )
 
-            def h(s, t, u):
+            def h(s, t, u):  # noqa: N806
                 """
                 The antiderivative function.
 
@@ -101,17 +103,17 @@ class HSI(ToM):
                 a = 0.5 * f(s, t - u)
                 b = 0.5 * g(s, t - u)
 
-                c = m_i * (s**2 - t**2 + u**2 + 2.0 * (t - u) * x_i)
-                d = m_i * (t + u - 2.0 * x_i) + 2.0 * y_i
+                c = m_i * (s**2 - t**2 + u**2 + 2.0 * (t - u) * x_k)
+                d = m_i * (t + u - 2.0 * x_k) + 2.0 * y_k
 
-                return 0.5 * a * (c - 2.0 * (t - u) * y_i) - b * d
+                return 0.5 * a * (c - 2.0 * (t - u) * y_k) - b * d
 
-            A = h(p[0], x_j, u_j)  # noqa: N806
-            B = h(p[0], x_i, u_j)  # noqa: N806
-            C = h(p[0], x_j, u_i)  # noqa: N806
-            D = h(p[0], x_i, u_i)  # noqa: N806
+            A = h(p[0], x_l, u_j)  # noqa: N806
+            B = h(p[0], x_k, u_j)  # noqa: N806
+            C = h(p[0], x_l, u_i)  # noqa: N806
+            D = h(p[0], x_k, u_i)  # noqa: N806
 
-            return jnp.sum((A - B) - (C - D), axis=-1) / w_t
+            return jnp.sum((A - B) - (C - D), axis=-1) / (h_i + h_j)
 
         super().__init__(f)
         self._x_s = x_s
