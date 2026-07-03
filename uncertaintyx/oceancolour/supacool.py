@@ -53,9 +53,9 @@ class HSI(ToM):
             :returns: The target remote sensing reflectance (sr-1).
             """
 
-            w_t = (x_t[-1] - x_t[0]) / (len(x_t) - 1)
-            u_i = x_t[:, jnp.newaxis] - 0.5 * w_t
-            u_j = x_t[:, jnp.newaxis] + 0.5 * w_t
+            w_t = jnp.pad(jnp.diff(x_t), (0, 1), "edge")
+            u_i = x_t[:, jnp.newaxis] - 0.5 * w_t[:, jnp.newaxis]
+            u_j = x_t[:, jnp.newaxis] + 0.5 * w_t[:, jnp.newaxis]
 
             x_i = x_s[jnp.newaxis, :-1]
             y_i = y_s[jnp.newaxis, :-1]
