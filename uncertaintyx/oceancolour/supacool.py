@@ -11,7 +11,7 @@ from uncertaintyx.m.jax import ToM
 
 class HSI(ToM):
     r"""
-    The CHIME/HSI convolution model class.
+    The CHIME/HSI spectral convolution model.
 
     The spectral convolution with the CHIME/HSI instrument spectral
     response function (reflecting the spectral grating) is conducted
