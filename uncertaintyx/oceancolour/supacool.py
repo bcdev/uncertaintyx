@@ -20,8 +20,8 @@ class HSI(ToM):
     subsequent box-car resampling (reflecting the detector element) is
     also performed analytically.
 
-    The underlying indefinite convolution integral (or antiderivative)
-    is defined and evaluated in this `WolframAlpha Query`_.
+    The underlying indefinite double integral (or antiderivative) is
+    defined and evaluated in this `WolframAlpha Query`_.
 
     .. _WolframAlpha Query: https://www.wolframalpha.com/input?i2d=true&i=
         Divide%5BIntegrate%5B%5C%2840%29Subscript%5Bm%2Ck%5D+%5C%2840%29t+
@@ -59,6 +59,9 @@ class HSI(ToM):
             """
             Simulates a CHIME/HSI spectrum.
 
+            The algorithm applies the two-dimensional Fundamental
+            Theorem of Calculus over a rectangular domain.
+
             The only model parameter is the width of the Gaussian
             smoothing kernel (nm).
 
@@ -91,14 +94,9 @@ class HSI(ToM):
                     -0.5 * (t / s) ** 2
                 )
 
-            def h(s, t, u):  # noqa: N806
+            def h(s, t, u):
                 """
-                The antiderivative function.
-
-                The antiderivative is a double convolution integral.
-                The first convolution is a Gaussian filter reflecting
-                the spectral grating, while the second convolution is
-                a boxcar filter reflecting the detector element.
+                The double antiderivative function.
                 """
                 a = 0.5 * f(s, t - u)
                 b = 0.5 * g(s, t - u)
@@ -108,12 +106,13 @@ class HSI(ToM):
 
                 return 0.5 * a * (c - 2.0 * (t - u) * y_k) - b * d
 
-            A = h(p[0], x_l, u_j)  # noqa: N806
-            B = h(p[0], x_k, u_j)  # noqa: N806
-            C = h(p[0], x_l, u_i)  # noqa: N806
-            D = h(p[0], x_k, u_i)  # noqa: N806
-
-            return jnp.sum((A - B) - (C - D), axis=-1) / (h_i + h_j)
+            return jnp.sum(
+                h(p[0], x_l, u_j)
+                - h(p[0], x_k, u_j)
+                - h(p[0], x_l, u_i)
+                + h(p[0], x_k, u_i),
+                axis=-1,
+            ) / (h_i + h_j)
 
         super().__init__(f)
         self._x_s = x_s
