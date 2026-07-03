@@ -18,16 +18,22 @@ class HSI(ToM):
     analytically by interpreting each source spectrum as a polyline and
     evaluating the convolution using piecewise integration by parts. The
     subsequent box-car resampling (reflecting the detector element) is
-    also performed analytically, yielding a flux-conserving and fully
-    closed-form solution for both the spectral convolution and the
-    resampling across all CHIME/HSI and source spectral bands. The
-    methodology borrows from techniques in computational astrophysics
-    spectroscopy.
+    also performed analytically.
 
     The underlying indefinite convolution integral (or antiderivative)
     is defined and evaluated in this `WolframAlpha Query`_.
 
-    .. _WolframAlpha Query: https://www.wolframalpha.com/input?i2d=true&i=Divide%5BIntegrate%5B%5C%2840%29Subscript%5Bm%2Ci%5D+%5C%2840%29t+-+Subscript%5Bx%2Ci%5D%5C%2841%29+%2B+Subscript%5By%2Ci%5D%5C%2841%29+exp%5C%2840%29-Divide%5B1%2C2%5D+Power%5B%5C%2840%29Divide%5B%5C%2840%29u+-+t%5C%2841%29%2Cs%5D%5C%2841%29%2C2%5D%5C%2841%29%2Ct%2Cu%5D%2Cs+sqrt%5C%2840%292+%CF%80%5C%2841%29%5D
+    .. _WolframAlpha Query: https://www.wolframalpha.com/input?i2d=true&i=
+        Divide%5BIntegrate%5B%5C%2840%29Subscript%5Bm%2Ci%5D+%5C%2840%29t+
+        -+Subscript%5Bx%2Ci%5D%5C%2841%29+%2B+Subscript%5By%2Ci%5D%5C%2841
+        %29+exp%5C%2840%29-Divide%5B1%2C2%5D+Power%5B%5C%2840%29Divide%5B%
+        5C%2840%29u+-+t%5C%2841%29%2Cs%5D%5C%2841%29%2C2%5D%5C%2841%29%2Ct
+        %2Cu%5D%2Cs+sqrt%5C%2840%292+%CF%80%5C%2841%29%5D
+
+    The methodology borrows from techniques in computational astrophysics
+    spectroscopy and yields a flux-conserving and fully closed-form solution
+    for both the spectral convolution and the resampling across all target
+    and source spectral bands.
     """
 
     def __init__(
