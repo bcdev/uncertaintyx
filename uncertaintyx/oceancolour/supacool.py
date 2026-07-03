@@ -7,11 +7,23 @@ import jax.numpy as jnp
 import numpy as np
 
 from uncertaintyx.m.jax import ToM
-from uncertaintyx.m.jax import jac_x
 
 
 class HSI(ToM):
-    """The CHIME/HSI convolution model function."""
+    """
+    The CHIME/HSI convolution model function.
+
+    The spectral convolution with the CHIME/HSI instrument spectral
+    response function (reflecting the spectral grating) is conducted
+    analytically by interpreting each source spectrum as a polyline and
+    evaluating the convolution using piecewise integration by parts. The
+    subsequent box-car resampling (reflecting the detector element) is
+    also performed analytically, yielding a flux-conserving and fully
+    closed-form solution for both the spectral convolution and the
+    resampling across all CHIME/HSI and source spectral bands. The
+    methodology borrows from techniques in computational astrophysics
+    spectroscopy.
+    """
 
     def __init__(
         self,
@@ -28,10 +40,30 @@ class HSI(ToM):
         """
         x_s = jnp.asarray(x_s)
         x_t = jnp.asarray(x_t)
-        w_t = (x_t[-1] - x_t[0]) / (len(x_t) - 1)
 
         def f(p, y_s):
-            """Simulates a CHIME/HSI spectrum."""
+            """
+            Simulates a CHIME/HSI spectrum.
+
+            The only model parameter is the width of the Gaussian
+            smoothing kernel (nm).
+
+            :param p: The model parameters.
+            :param y_s: The source remote sensing reflectance (sr-1).
+            :returns: The target remote sensing reflectance (sr-1).
+            """
+
+            w_t = (x_t[-1] - x_t[0]) / (len(x_t) - 1)
+            u_i = x_t[:, jnp.newaxis] - 0.5 * w_t
+            u_j = x_t[:, jnp.newaxis] + 0.5 * w_t
+
+            x_i = x_s[jnp.newaxis, :-1]
+            y_i = y_s[jnp.newaxis, :-1]
+
+            x_j = x_s[jnp.newaxis, 1:]
+            y_j = y_s[jnp.newaxis, 1:]
+
+            m_i = (y_j - y_i) / (x_j - x_i)
 
             def f(s, t):
                 """The function :math:`f(t)`."""
@@ -42,7 +74,7 @@ class HSI(ToM):
                 term = jnp.exp(-0.5 * (t / s) ** 2)
                 return term * s / (jnp.sqrt(2.0 * jnp.pi))
 
-            def h(s, t, u, x_i, y_i, m_i):
+            def h(s, t, u):
                 """
                 The antiderivative function.
 
@@ -61,21 +93,10 @@ class HSI(ToM):
 
                 return 0.5 * a * (c - 2.0 * (t - u) * y_i) - b * d
 
-            u_i = x_t[:, jnp.newaxis] - 0.5 * w_t
-            u_j = x_t[:, jnp.newaxis] + 0.5 * w_t
-
-            x_i = x_s[jnp.newaxis, :-1]
-            y_i = y_s[jnp.newaxis, :-1]
-
-            x_j = x_s[jnp.newaxis, 1:]
-            y_j = y_s[jnp.newaxis, 1:]
-
-            m_i = (y_j - y_i) / (x_j - x_i)
-
-            A = h(p[0], x_j, u_j, x_i, y_i, m_i)  # noqa: N806
-            B = h(p[0], x_i, u_j, x_i, y_i, m_i)  # noqa: N806
-            C = h(p[0], x_j, u_i, x_i, y_i, m_i)  # noqa: N806
-            D = h(p[0], x_i, u_i, x_i, y_i, m_i)  # noqa: N806
+            A = h(p[0], x_j, u_j)  # noqa: N806
+            B = h(p[0], x_i, u_j)  # noqa: N806
+            C = h(p[0], x_j, u_i)  # noqa: N806
+            D = h(p[0], x_i, u_i)  # noqa: N806
 
             return jnp.sum((A - B) - (C - D), axis=-1) / w_t
 
@@ -91,7 +112,10 @@ class HSI(ToM):
         preset: str | None = None,
     ) -> np.ndarray:
         """
-        Returns the width of the Gaussian smoothing kernel (nm).
+        Returns the model parameters.
+
+        The only model parameter is the width of the Gaussian
+        smoothing kernel (nm).
         """
         return np.asarray([self._sigma])
 
