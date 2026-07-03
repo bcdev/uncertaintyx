@@ -25,8 +25,11 @@ SAMPLING_BOOST_PADDED = np.pad(
     SAMPLING_BOOST, (0, PAD_WITH_BOOST), "linear_ramp", end_values=820.5
 )
 """
-The HyperBOOST spectral sampling padded at the
-red end to avoid boundary effects.
+The HyperBOOST spectral sampling padded at the red
+edge to avoid boundary effects.
+
+The padding here requires an equidistant sampling, which
+applies to So-Rad but not to HTRSB radiometers.
 """
 
 SAMPLING_CHIME = np.linspace(404.2, 799.0, 48)
