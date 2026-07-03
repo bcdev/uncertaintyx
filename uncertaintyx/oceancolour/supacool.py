@@ -43,7 +43,7 @@ class HSI(ToM):
         sigma: Any = 3.46,
     ):
         """
-        Creates a new CHIME/HSI convolution model.
+        Creates a new CHIME/HSI spectral convolution model.
 
         Though the CHIME/HSI target sampling is presumably equidistant,
         the model function does not require equidistant samplings.
