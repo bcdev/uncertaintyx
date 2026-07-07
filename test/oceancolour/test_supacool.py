@@ -63,6 +63,35 @@ def read_boost_data_padded(
     return rrs, rrs.shape[0], rrs.shape[1]
 
 
+def read_chime_data(
+    package: str, filename: str
+) -> tuple[np.ndarray, int, int]:
+    """
+    Returns a CHIME table.
+
+    :param package: The package name.
+    :param filename: The filename.
+    :returns: The data table.
+    """
+    with resources.path(package, filename) as resource:
+        with open(resource) as r:
+            df = pd.read_csv(r, sep=";", header=None, index_col=None)
+            tab = df.values
+    return tab, tab.shape[0], tab.shape[1]
+
+
+def snr_to_rrs(
+    snr: np.ndarray, wav: np.ndarray, rrs: np.ndarray
+) -> np.ndarray:
+    """
+    Scales the sensor signal-to-noise ratio from TOA to
+    remote sensing reflectance.
+    """
+    return (
+        snr * (np.pi * rrs) / (np.pi * rrs + 3.6e09 / wav[np.newaxis, :] ** 4)
+    )
+
+
 class SpectrumTest(unittest.TestCase):
     """Tests the CHIME/HSI spectral convolution model."""
 
@@ -130,6 +159,38 @@ class SpectrumTest(unittest.TestCase):
             xlabel=r"wavelength $\lambda$ (nm)",
             ylabel=r"remote sensing reflectance $\rho(\lambda)$ (sr$^{-1}$)",
             savefig="hsi_spectrum.png" if True else None,
+        )
+
+        snr, _, _ = read_chime_data(
+            "test.resources.oceancolour", "chime_snr.csv"
+        )
+        u_n = y_t / snr_to_rrs(snr, x_t, y_t)
+
+        rra, _, _ = read_chime_data(
+            "test.resources.oceancolour", "chime_rra.csv"
+        )
+        u_a = y_t / (snr_to_rrs(1.0 / rra, x_t, y_t))
+
+        LinePlot().plot(
+            [x_t, x_t, x_t],
+            [y_t[0], u_n[0], u_a[0]],
+            xrange=(405.0, 795.0),
+            yrange=(0.000, 0.015),
+            labels=["remote sensing reflectance", "noise", "accuracy"],
+            xlabel=r"wavelength $\lambda$ (nm)",
+            ylabel=r"reflectance (sr$^{-1}$)",
+            savefig="hsi_spectrum_snr_ara.png" if True else None,
+        )
+
+        LinePlot().plot(
+            [x_t, x_t, x_t],
+            [y_t[0] /  y_t[0], u_n[0] / y_t[0], u_a[0] / y_t[0]],
+            xrange=(405.0, 795.0),
+            yrange=(0.000, 1.15),
+            labels=["remote sensing reflectance", "noise", "accuracy"],
+            xlabel=r"wavelength $\lambda$ (nm)",
+            ylabel=r"relative reflectance",
+            savefig="hsi_spectrum_snr_ara_relative.png" if True else None,
         )
 
 
