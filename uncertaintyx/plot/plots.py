@@ -170,6 +170,7 @@ class LinePlot(Plotting):
         xticks: tuple[Any, ...] | None = None,
         yticks: tuple[Any, ...] | None = None,
         labels: list[str] | None = None,
+        columns: int = 3,
         savefig: str | None = None,
     ):
         """
@@ -205,7 +206,7 @@ class LinePlot(Plotting):
                     **style,
                     label=f"{k + 1}" if labels is None else labels[k],
                 )
-        ax.legend(ncol=2)
+        ax.legend(ncol=columns)
 
         if title:
             ax.set_title(title)
