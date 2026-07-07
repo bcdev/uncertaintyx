@@ -184,7 +184,7 @@ class SpectrumTest(unittest.TestCase):
 
         LinePlot().plot(
             [x_t, x_t, x_t],
-            [y_t[0] /  y_t[0], u_n[0] / y_t[0], u_a[0] / y_t[0]],
+            [y_t[0] / y_t[0], u_n[0] / y_t[0], u_a[0] / y_t[0]],
             xrange=(405.0, 795.0),
             yrange=(0.000, 1.15),
             labels=["remote sensing reflectance", "noise", "accuracy"],
