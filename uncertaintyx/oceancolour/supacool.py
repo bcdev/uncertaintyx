@@ -6,7 +6,92 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from uncertaintyx.f.jax import ToF
 from uncertaintyx.m.jax import ToM
+
+
+class AtmosphericCorrection(ToF):
+    """
+    Propagates top-of-atmosphere reflectance to aquatic
+    remote sensing reflectance.
+
+    Only a pure Rayleigh scattering atmosphere and normal
+    illumination and viewing conditions are considered.
+    """
+
+    def __init__(self, wav: np.ndarray):
+        """
+        Creates a new atmospheric correction function.
+
+        :param wav: The spectral wavelength (nm).
+        """
+        wav_ = jnp.asarray(wav)
+
+        def f(toa):
+            """
+            The atmospheric correction function.
+
+            :param toa: The top-of-atmosphere reflectance.
+            :returns: The remote sensing reflectance (sr-1)
+            """
+
+            def rayleigh(x):
+                """
+                Returns the Rayleigh optical thickness.
+
+                Uses the approximation of Bucholtz (1995) and Bodaine (1999).
+
+                :param x: The spectral wavelength (nm).
+                :returns: The Rayleigh optical depth.
+                """
+                return 0.00877 * (x / 1000.0) ** -4.05
+
+            tau = rayleigh(wav_)
+            return (toa - 0.375 * tau) / (np.pi * jnp.exp(-2.0 * tau))
+
+        super().__init__(f)
+
+
+class AtmosphericSimulation(ToF):
+    """
+    Propagates aquatic remote sensing reflectance to
+    top-of-atmosphere reflectance.
+
+    Only a pure Rayleigh scattering atmosphere and normal
+    illumination and viewing conditions are considered.
+    """
+
+    def __init__(self, wav: np.ndarray):
+        """
+        Creates a new atmospheric simulation function.
+
+        :param wav: The spectral wavelength (nm).
+        """
+        wav_ = jnp.asarray(wav)
+
+        def f(rrs):
+            """
+            The atmospheric simulation function.
+
+            :param rrs: The remote sensing reflectance (sr-1)
+            :returns: The top-of-atmosphere reflectance.
+            """
+
+            def rayleigh(x):
+                """
+                Returns the Rayleigh optical thickness.
+
+                Uses the approximation of Bucholtz (1995) and Bodaine (1999).
+
+                :param x: The spectral wavelength (nm).
+                :returns: The Rayleigh optical depth.
+                """
+                return 0.00877 * (x / 1000.0) ** -4.05
+
+            tau = rayleigh(wav_)
+            return 0.375 * tau + np.pi * rrs * jnp.exp(-2.0 * tau)
+
+        super().__init__(f)
 
 
 class HSI(ToM):

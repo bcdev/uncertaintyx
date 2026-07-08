@@ -8,7 +8,10 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from uncertaintyx.f.jax import ToF
 from uncertaintyx.m.jax import ToM
+from uncertaintyx.oceancolour.supacool import AtmosphericCorrection
+from uncertaintyx.oceancolour.supacool import AtmosphericSimulation
 from uncertaintyx.oceancolour.supacool import HSI
 from uncertaintyx.plot.plots import LinePlot
 
@@ -80,18 +83,6 @@ def read_chime_data(
     return tab, tab.shape[0], tab.shape[1]
 
 
-def snr_to_rrs(
-    snr: np.ndarray, wav: np.ndarray, rrs: np.ndarray
-) -> np.ndarray:
-    """
-    Scales the sensor signal-to-noise ratio from TOA to
-    remote sensing reflectance.
-    """
-    return (
-        snr * (np.pi * rrs) / (np.pi * rrs + 3.6e09 / wav[np.newaxis, :] ** 4)
-    )
-
-
 class SpectrumTest(unittest.TestCase):
     """Tests the CHIME/HSI spectral convolution model."""
 
@@ -153,7 +144,7 @@ class SpectrumTest(unittest.TestCase):
             [x_s, x_t],
             [y_s[0], y_t[0]],
             xrange=(405.0, 795.0),
-            yrange=(0.000, 0.015),
+            yrange=(1.5e-04, 1.5e-02),
             labels=["HyperBOOST", "CHIME/HSI"],
             title="Spectral convolution",
             xlabel=r"wavelength $\lambda$ (nm)",
@@ -161,36 +152,67 @@ class SpectrumTest(unittest.TestCase):
             savefig="hsi_spectrum.png" if True else None,
         )
 
+        u_c = np.sqrt(
+            f.lpu_p(f.prior(), np.square(np.asarray([0.15])), y_s, diag=True)
+        )
+
+        g = AtmosphericSimulation(x_t)
+        h = AtmosphericCorrection(x_t)
+        self.assertIsInstance(f, ToF)
+        self.assertIsInstance(f, ToF)
+
         snr, _, _ = read_chime_data(
             "test.resources.oceancolour", "chime_snr.csv"
         )
-        u_n = y_t / snr_to_rrs(snr, x_t, y_t)
-
         rra, _, _ = read_chime_data(
             "test.resources.oceancolour", "chime_rra.csv"
         )
-        u_a = y_t / (snr_to_rrs(1.0 / rra, x_t, y_t))
 
-        LinePlot().plot(
-            [x_t, x_t, x_t],
-            [y_t[0], u_n[0], u_a[0]],
-            xrange=(405.0, 795.0),
-            yrange=(0.000, 0.015),
-            labels=["remote sensing reflectance", "noise", "accuracy"],
-            xlabel=r"wavelength $\lambda$ (nm)",
-            ylabel=r"reflectance (sr$^{-1}$)",
-            savefig="hsi_spectrum_snr_ara.png" if True else None,
+        toa = g.eval(y_t)
+        u_n = np.sqrt(h.lpu(toa, np.square(toa / snr), diag=True))
+        u_a = np.sqrt(
+            h.lpu(toa, np.square(toa * rra / np.sqrt(12.0)), diag=True)
         )
 
         LinePlot().plot(
-            [x_t, x_t, x_t],
-            [y_t[0] / y_t[0], u_n[0] / y_t[0], u_a[0] / y_t[0]],
+            [x_t, x_t, x_t, x_t],
+            [y_t[0], u_n[0], u_a[0], u_c[0]],
             xrange=(405.0, 795.0),
-            yrange=(0.000, 1.15),
-            labels=["remote sensing reflectance", "noise", "accuracy"],
+            yrange=(1.5e-09, 1.5e-02),
+            labels=[
+                "RRS",
+                "RRS radiometric uncertainty (random)",
+                "RRS radiometric uncertainty (systematic)",
+                "RRS convolution uncertainty (systematic)",
+            ],
+            xlabel=r"wavelength $\lambda$ (nm)",
+            ylabel=r"reflectance (sr$^{-1}$)",
+            semilogy=True,
+            columns=1,
+            savefig="hsi_spectrum_unc.png" if True else None,
+        )
+
+        LinePlot().plot(
+            [x_t, x_t, x_t, x_t],
+            [
+                y_t[0] / y_t[0],
+                u_n[0] / y_t[0],
+                u_a[0] / y_t[0],
+                u_c[0] / y_t[0],
+            ],
+            xrange=(405.0, 795.0),
+            yrange=(1.5e-06, 1.5),
+            labels=[
+                "RRS",
+                "RRS radiometric uncertainty (random)",
+                "RRS radiometric uncertainty (systematic)",
+                "RRS convolution uncertainty (systematic)",
+            ],
             xlabel=r"wavelength $\lambda$ (nm)",
             ylabel=r"relative reflectance",
-            savefig="hsi_spectrum_snr_ara_relative.png" if True else None,
+            semilogy=True,
+            columns=1,
+            savefig="hsi_spectrum_unc_relative.png" if True else None,
         )
 
 
