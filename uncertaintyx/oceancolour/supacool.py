@@ -15,7 +15,8 @@ def _rayleigh(x):
     Returns the Rayleigh optical thickness of the atmosphere.
 
     Uses the approximation of
-    `Dutton et al., (1994) <https://doi.org/10.1029/93JD03520>`_.
+    `Dutton et al., (1994) <https://doi.org/10.1029/93JD03520>`_
+    at standard pressure.
 
     :param x: The spectral wavelength (nm).
     :returns: The Rayleigh optical depth.
@@ -29,7 +30,7 @@ class AtmosphericCorrection(ToF):
     remote sensing reflectance.
 
     Only a pure Rayleigh scattering atmosphere and normal
-    illumination and viewing conditions are considered.
+    view and illumination conditions are considered.
     """
 
     def __init__(self, wav: np.ndarray):
@@ -59,7 +60,7 @@ class AtmosphericSimulation(ToF):
     top-of-atmosphere reflectance.
 
     Only a pure Rayleigh scattering atmosphere and normal
-    illumination and viewing conditions are considered.
+    view and illumination conditions are considered.
     """
 
     def __init__(self, wav: np.ndarray):
