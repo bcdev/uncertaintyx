@@ -158,8 +158,8 @@ class SpectrumTest(unittest.TestCase):
 
         g = AtmosphericSimulation(x_t)
         h = AtmosphericCorrection(x_t)
-        self.assertIsInstance(f, ToF)
-        self.assertIsInstance(f, ToF)
+        self.assertIsInstance(g, ToF)
+        self.assertIsInstance(h, ToF)
 
         snr, _, _ = read_chime_data(
             "test.resources.oceancolour", "chime_snr.csv"
