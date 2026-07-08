@@ -170,6 +170,8 @@ class LinePlot(Plotting):
         xticks: tuple[Any, ...] | None = None,
         yticks: tuple[Any, ...] | None = None,
         labels: list[str] | None = None,
+        semilogx: bool = False,
+        semilogy: bool = False,
         columns: int = 3,
         savefig: str | None = None,
     ):
@@ -222,6 +224,10 @@ class LinePlot(Plotting):
             ax.set_xticks(xticks)
         if yticks:
             ax.set_yticks(yticks)
+        if semilogx:
+            ax.semilogx()
+        if semilogy:
+            ax.semilogy()
         if savefig:
             fig.savefig(savefig, dpi=300)
         plt.close(fig)
