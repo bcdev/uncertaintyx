@@ -10,6 +10,19 @@ from uncertaintyx.f.jax import ToF
 from uncertaintyx.m.jax import ToM
 
 
+def _rayleigh(x):
+    """
+    Returns the Rayleigh optical thickness of the atmosphere.
+
+    Uses the approximation of
+    `Dutton et al., (1994) <https://doi.org/10.1029/93JD03520>`_.
+
+    :param x: The spectral wavelength (nm).
+    :returns: The Rayleigh optical depth.
+    """
+    return 0.00877 * (x / 1000.0) ** -4.05
+
+
 class AtmosphericCorrection(ToF):
     """
     Propagates top-of-atmosphere reflectance to aquatic
@@ -34,19 +47,7 @@ class AtmosphericCorrection(ToF):
             :param toa: The top-of-atmosphere reflectance.
             :returns: The remote sensing reflectance (sr-1)
             """
-
-            def rayleigh(x):
-                """
-                Returns the Rayleigh optical thickness.
-
-                Uses the approximation of Bucholtz (1995) and Bodaine (1999).
-
-                :param x: The spectral wavelength (nm).
-                :returns: The Rayleigh optical depth.
-                """
-                return 0.00877 * (x / 1000.0) ** -4.05
-
-            tau = rayleigh(wav_)
+            tau = _rayleigh(wav_)
             return (toa - 0.375 * tau) / (np.pi * jnp.exp(-2.0 * tau))
 
         super().__init__(f)
@@ -76,19 +77,7 @@ class AtmosphericSimulation(ToF):
             :param rrs: The remote sensing reflectance (sr-1)
             :returns: The top-of-atmosphere reflectance.
             """
-
-            def rayleigh(x):
-                """
-                Returns the Rayleigh optical thickness.
-
-                Uses the approximation of Bucholtz (1995) and Bodaine (1999).
-
-                :param x: The spectral wavelength (nm).
-                :returns: The Rayleigh optical depth.
-                """
-                return 0.00877 * (x / 1000.0) ** -4.05
-
-            tau = rayleigh(wav_)
+            tau = _rayleigh(wav_)
             return 0.375 * tau + np.pi * rrs * jnp.exp(-2.0 * tau)
 
         super().__init__(f)
