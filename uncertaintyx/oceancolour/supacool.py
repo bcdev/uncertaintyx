@@ -10,6 +10,18 @@ from uncertaintyx.f.jax import ToF
 from uncertaintyx.m.jax import ToM
 
 
+def _aot(x, t: Any = 0.05):
+    """
+    Returns the aerosol optical thickness of a clear maritime
+    atmosphere.
+
+    :param x: The spectral wavelength (nm).
+    :param t: The aerosol optical thickness at 550 nm.
+    :returns: The aerosol optical thickness.
+    """
+    return t * (550.0 / x)
+
+
 def _rayleigh(x):
     """
     Returns the Rayleigh optical thickness of the atmosphere.
@@ -48,8 +60,10 @@ class AtmosphericCorrection(ToF):
             :param toa: The top-of-atmosphere reflectance.
             :returns: The remote sensing reflectance (sr-1)
             """
-            tau = _rayleigh(wav_)
-            return (toa - 0.375 * tau) / (np.pi * jnp.exp(-2.0 * tau))
+            tau_a = _aot(wav_, 0.0)
+            tau_r = _rayleigh(wav_)
+            t = jnp.exp(-2.0 * (tau_r + tau_a))
+            return (toa - 0.375 * tau_r - 0.025 * tau_a) / (jnp.pi * t)
 
         super().__init__(f)
 
@@ -78,8 +92,10 @@ class AtmosphericSimulation(ToF):
             :param rrs: The remote sensing reflectance (sr-1)
             :returns: The top-of-atmosphere reflectance.
             """
-            tau = _rayleigh(wav_)
-            return 0.375 * tau + np.pi * rrs * jnp.exp(-2.0 * tau)
+            tau_a = _aot(wav_, 0.0)
+            tau_r = _rayleigh(wav_)
+            t = jnp.exp(-2.0 * (tau_r + tau_a))
+            return 0.375 * tau_r + 0.025 * tau_a + jnp.pi * rrs * t
 
         super().__init__(f)
 
