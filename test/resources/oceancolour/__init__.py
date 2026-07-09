@@ -15,10 +15,14 @@ The following files are provided:
    bbp.csv, Particulate back-scattering, m-1, Lee et al. (2015)
    bbw.csv, Back-scattering by pure seawater, m-1, Lee et al. (2015)
    wav.csv, Exact spectral wavelengths, nm, Lee et al. (2015)
-   owt.csv, Optical water type classes, Jackson et al. (2017)
+   owt.csv, Optical water type classes, sr-1, Jackson et al. (2017)
    rrs.csv, Remote sensing reflectance, sr-1, Lee et al. (2015)
    fig2.csv, Plot data,, Lee et al. (2010; Figure 2)
    fig3.csv, Plot data,, Lee et al. (2010; Figure 3)
+   chime_rra.csv, CHIME relative radiometric accuracy,, SUPaCOOL
+   chime_snr.csv, CHIME signal-to-noise ratio,, SUPaCOOL
+   hyperboost.csv, Example remote sensing reflectance spectrum, sr-1, SUPaCOOL
+
 
 References:
 
@@ -34,4 +38,6 @@ https://www.ioccg.org/groups/Software_OCA/QAA_v6_2014209.pdf
 
 Lee et al. (2015). Excel sheet with QAA v6 reference calculations.
 https://www.ioccg.org/groups/Software_OCA/QAA_v6.xlsm:
+
+SUPaCOOL. D3.2 Reference Open Database Description.
 """
