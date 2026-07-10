@@ -106,8 +106,7 @@ def T_r(x, m_s: Any = 1.0, m_v: Any = 1.0):  # noqa: N806
 
 def tau_a(x, t: Any = 0.0, a: Any = 1.0):
     """
-    Returns the aerosol optical thickness of a clear maritime
-    atmosphere.
+    Returns the aerosol optical thickness of the atmosphere.
 
     :param x: The spectral wavelength (nm).
     :param t: The aerosol optical thickness at 550 nm.
