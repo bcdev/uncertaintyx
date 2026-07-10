@@ -10,19 +10,108 @@ from uncertaintyx.f.jax import ToF
 from uncertaintyx.m.jax import ToM
 
 
-def _aot(x, t: Any = 0.05):
+def P_a(m: Any = -1.0, g: Any = 0.7):  # noqa: N806
+    """
+    The Henyey-Greenstein aerosol phase function.
+
+    :param m: The cosine of the scattering angle.
+    :param g: The asymmetry factor.
+    :returns: The aerosol scattering phase.
+    """
+    return (1.0 - g**2) / (1.0 + g**2 - 2.0 * g * m) ** 1.5
+
+
+def P_r(m: Any = -1.0):  # noqa: N806
+    """
+    The Rayleigh phase function.
+
+    :param m: The cosine of the scattering angle.
+    :returns: The Rayleigh scattering phase.
+    """
+    return 0.75 * (1.0 + m**2)
+
+
+def R_a(  # noqa: N806
+    x,
+    t: Any = 0.0,
+    a: Any = 1.0,
+    m_s: Any = 1.0,
+    m_v: Any = 1.0,
+    m_d: Any = 1.0,
+    w: Any = 0.98,
+):
+    """
+    Returns the aerosol path reflectance.
+
+    :param x: The spectral wavelength (nm).
+    :param t: The aerosol optical thickness at 550 nm.
+    :param a: The aerosol Angstrom exponent.
+    :param m_s: The cosine of the solar zenith angle.
+    :param m_v: The cosine of the view zenith angle.
+    :param m_d: The cosine of the azimuthal difference angle.
+    :param w: The single scattering albedo.
+    :returns: The aerosol path reflectance.
+    """
+    m = scattering_cosine(m_s, m_v, m_d)
+    return (w * P_a(m) * tau_a(x, t, a)) / (4.0 * m_s * m_v)
+
+
+def R_r(x, m_s: Any = 1.0, m_v: Any = 1.0, m_d: Any = 1.0):  # noqa: N806
+    """
+    Returns the Rayleigh path reflectance.
+
+    :param x: The spectral wavelength (nm).
+    :param m_s: The cosine of the solar zenith angle.
+    :param m_v: The cosine of the view zenith angle.
+    :param m_d: The cosine of the azimuthal difference angle.
+    :returns: The Rayleigh path reflectance.
+    """
+    m = scattering_cosine(m_s, m_v, m_d)
+    return (P_r(m) * tau_r(x)) / (4.0 * m_s * m_v)
+
+
+def T_a(  # noqa: N806
+    x, t: Any = 0.0, a: Any = 1.0, m_s: Any = 1.0, m_v: Any = 1.0
+):
+    """
+    Returns the aerosol transmittance.
+
+    :param x: The spectral wavelength (nm).
+    :param t: The aerosol optical thickness at 550 nm.
+    :param a: The aerosol Angstrom exponent.
+    :param m_s: The cosine of the solar zenith angle.
+    :param m_v: The cosine of the view zenith angle.
+    :returns: The aerosol transmittance.
+    """
+    return jnp.exp(-tau_a(x, t, a) * (1.0 / m_s + 1.0 / m_v))
+
+
+def T_r(x, m_s: Any = 1.0, m_v: Any = 1.0):  # noqa: N806
+    """
+    Returns the Rayleigh transmittance.
+
+    :param x: The spectral wavelength (nm).
+    :param m_s: The cosine of the solar zenith angle.
+    :param m_v: The cosine of the view zenith angle.
+    :returns: The Rayleigh transmittance.
+    """
+    return jnp.exp(-tau_r(x) * (1.0 / m_s + 1.0 / m_v))
+
+
+def tau_a(x, t: Any = 0.0, a: Any = 1.0):
     """
     Returns the aerosol optical thickness of a clear maritime
     atmosphere.
 
     :param x: The spectral wavelength (nm).
     :param t: The aerosol optical thickness at 550 nm.
+    :param a: The aerosol Angstrom exponent.
     :returns: The aerosol optical thickness.
     """
-    return t * (550.0 / x)
+    return t * (550.0 / x) ** a
 
 
-def _rayleigh(x):
+def tau_r(x):
     """
     Returns the Rayleigh optical thickness of the atmosphere.
 
@@ -34,6 +123,31 @@ def _rayleigh(x):
     :returns: The Rayleigh optical depth.
     """
     return 0.00877 * (x / 1000.0) ** -4.05
+
+
+def scattering_cosine(m_s: Any = 1.0, m_v: Any = 1.0, m_d: Any = 1.0):
+    """
+    Returns the cosine of the scattering angle.
+
+    :param m_s: The cosine of the solar zenith angle.
+    :param m_v: The cosine of the view zenith angle.
+    :param m_d: The cosine of the azimuthal difference angle.
+    :returns: The cosine of the scattering angle.
+    """
+    return jnp.sqrt(1.0 - m_s**2) * jnp.sqrt(1.0 - m_v**2) * m_d - m_s * m_v
+
+
+def spherical_albedo(x, t: Any = 0.0, a: Any = 1.0, g: Any = 0.7):
+    """
+    Returns the spherical albedo of the atmosphere.
+
+    :param x: The spectral wavelength (nm).
+    :param t: The aerosol optical thickness at 550 nm.
+    :param a: The aerosol Angstrom exponent.
+    :param g: The Henyey-Greenstein asymmetry factor.
+    :returns: The spherical albedo of the atmosphere.
+    """
+    return tau_r(x) / 3.0 + (1.0 - g) * tau_a(x, t, a)
 
 
 class AtmosphericCorrection(ToF):
@@ -60,10 +174,10 @@ class AtmosphericCorrection(ToF):
             :param toa: The top-of-atmosphere reflectance.
             :returns: The remote sensing reflectance (sr-1)
             """
-            tau_a = _aot(wav_, 0.0)
-            tau_r = _rayleigh(wav_)
-            t = jnp.exp(-2.0 * (tau_r + tau_a))
-            return (toa - 0.375 * tau_r - 0.025 * tau_a) / (jnp.pi * t)
+            r = R_r(wav_) + R_a(wav_)
+            t = T_r(wav_) * T_a(wav_)
+            s = spherical_albedo(wav_)
+            return (toa - r) / (jnp.pi * (t + s * (toa - r)))
 
         super().__init__(f)
 
@@ -92,10 +206,10 @@ class AtmosphericSimulation(ToF):
             :param rrs: The remote sensing reflectance (sr-1)
             :returns: The top-of-atmosphere reflectance.
             """
-            tau_a = _aot(wav_, 0.0)
-            tau_r = _rayleigh(wav_)
-            t = jnp.exp(-2.0 * (tau_r + tau_a))
-            return 0.375 * tau_r + 0.025 * tau_a + jnp.pi * rrs * t
+            r = R_r(wav_) + R_a(wav_)
+            t = T_r(wav_) * T_a(wav_)
+            s = spherical_albedo(wav_)
+            return r + (jnp.pi * t * rrs) / (1.0 - jnp.pi * s * rrs)
 
         super().__init__(f)
 
