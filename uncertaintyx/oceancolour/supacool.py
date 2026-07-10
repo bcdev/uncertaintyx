@@ -39,23 +39,23 @@ def P_r(m: Any = -1.0):  # noqa: N806
 
 def R_a(  # noqa: N806
     x,
-    t: Any = 0.0,
-    a: Any = 1.0,
     m_s: Any = 1.0,
     m_v: Any = 1.0,
     m_d: Any = 1.0,
+    t: Any = 0.0,
+    a: Any = 1.0,
     w: Any = 0.98,
 ):
     """
     Returns the aerosol path reflectance.
 
     :param x: The spectral wavelength (nm).
-    :param t: The aerosol optical thickness at 550 nm.
-    :param a: The aerosol Angstrom exponent.
     :param m_s: The cosine of the solar zenith angle.
     :param m_v: The cosine of the view zenith angle.
     :param m_d: The cosine of the azimuthal difference angle.
-    :param w: The single scattering albedo.
+    :param t: The aerosol optical thickness at 550 nm.
+    :param a: The aerosol Angstrom exponent.
+    :param w: The aerosol single scattering albedo.
     :returns: The aerosol path reflectance.
     """
     m = scattering_cosine(m_s, m_v, m_d)
@@ -77,16 +77,16 @@ def R_r(x, m_s: Any = 1.0, m_v: Any = 1.0, m_d: Any = 1.0):  # noqa: N806
 
 
 def T_a(  # noqa: N806
-    x, t: Any = 0.0, a: Any = 1.0, m_s: Any = 1.0, m_v: Any = 1.0
+    x, m_s: Any = 1.0, m_v: Any = 1.0, t: Any = 0.0, a: Any = 1.0
 ):
     """
     Returns the aerosol transmittance.
 
     :param x: The spectral wavelength (nm).
-    :param t: The aerosol optical thickness at 550 nm.
-    :param a: The aerosol Angstrom exponent.
     :param m_s: The cosine of the solar zenith angle.
     :param m_v: The cosine of the view zenith angle.
+    :param t: The aerosol optical thickness at 550 nm.
+    :param a: The aerosol Angstrom exponent.
     :returns: The aerosol transmittance.
     """
     return jnp.exp(-tau_a(x, t, a) * (1.0 / m_s + 1.0 / m_v))
