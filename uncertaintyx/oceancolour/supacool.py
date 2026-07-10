@@ -1,5 +1,11 @@
 #  Copyright (c) Brockmann Consult GmbH, 2026.
 #  License: MIT
+"""
+This module provides functions and empirical model functions used on
+ESA's Sentinel User Preparation and Organic Carbon from Earth Observation
+between Ocean and Land (SUPaCOOL) project.
+"""
+
 from typing import Any
 
 import jax
