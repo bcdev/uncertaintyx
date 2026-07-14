@@ -139,6 +139,42 @@ class WaterClassLinePlotTest(unittest.TestCase):
 class WaterClassScatterPlotTest(unittest.TestCase):
     """Tests plotting water classes."""
 
+    def test_plot_chlorophyll_uncertainty(self):
+        w, R, _, M, m = read_owt_data(  # noqa : N806
+            "test.resources.oceancolour", "owt.csv"
+        )
+        W = np.broadcast_to(w, (M, m))  # noqa : N806
+
+        f_oc = OCI(True)
+        x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
+        u = np.stack(
+            [
+                np.broadcast_to(0.0, (M, 5)),
+                np.asarray([[0.05, 0.05, 0.05, 0.10, 0.20]] * R[:, 1:]),
+            ],
+            axis=1,
+        )
+        p = f_oc.prior(preset="OC4_MERIS")
+        x_rs = x[:, 1, 3]
+        y_oc = f_oc.eval(p, x)
+
+        U = np.square(u)  # noqa : N806
+        U_oc = f_oc.lpu_x(p, x, U)  # noqa : N806
+        u_rs = x_rs * 0.1
+        u_oc = np.sqrt(U_oc)
+
+        fig = WaterClassScatterPlot().plot(
+            x_rs,
+            y_oc,
+            u_rs,
+            u_oc,
+            xlabel=r"$R_{\mathrm{rs}}(555~\text{nm})$ (sr$^{-1}$)",
+            ylabel=r"$\log_{10} C_{\mathrm{chl}}$ (mg m$^{-3}$)",
+            savefig="chlorophyll_uncertainty.png" if False else None,
+        )
+        self.assertIsNotNone(fig)
+
+
     def test_plot_phytoplankton_uncertainty(self):
         w, R, _, M, m = read_owt_data(  # noqa : N806
             "test.resources.oceancolour", "owt.csv"
