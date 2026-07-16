@@ -155,7 +155,7 @@ class WaterClassScatterPlotTest(unittest.TestCase):
             axis=1,
         )
         p = f_oc.prior(preset="OC4_MERIS")
-        x_rs = x[:, 1, 3]
+        x_rs = x[:, 1, 0]
         y_oc = f_oc.eval(p, x)
 
         U = np.square(u)  # noqa : N806
@@ -168,7 +168,7 @@ class WaterClassScatterPlotTest(unittest.TestCase):
             y_oc,
             u_rs,
             u_oc,
-            xlabel=r"$R_{\mathrm{rs}}(555~\text{nm})$ (sr$^{-1}$)",
+            xlabel=r"$R_{\mathrm{rs}}(443~\text{nm})$ (sr$^{-1}$)",
             ylabel=r"$\log_{10} C_{\mathrm{chl}}$ (mg m$^{-3}$)",
             savefig="chlorophyll_uncertainty.png" if False else None,
         )
