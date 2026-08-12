@@ -268,6 +268,8 @@ class MatrixPlot(Plotting):
         ylabel: str | None = None,
         xrange: tuple[Any, Any] | None = None,
         yrange: tuple[Any, Any] | None = None,
+        xticks: Any | None = None,
+        yticks: Any | None = None,
         cbar_label: str | None = None,
         cbar_min: Any | None = None,
         cbar_max: Any | None = None,
