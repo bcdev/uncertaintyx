@@ -474,6 +474,105 @@ class ScatterPlot(Plotting):
         return fig
 
 
+class TrendPlot(Plotting):
+    """A time series trend plot."""
+
+    def __init__(
+        self,
+        result: Fitted,
+        context: Literal["paper", "notebook", "talk", "poster"] = "paper",
+    ):
+        """
+        Creates a new regression plot.
+
+        :param result: The regression result.
+        :param context: The plot context.
+        """
+        self._result = result
+        self._context = context
+
+    @property
+    def _colors(self) -> List[Any]:
+        """Returns a list of colours available."""
+        return sns.color_palette("colorblind")
+
+    def plot(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        u: np.ndarray,
+        *,
+        title: str | None = None,
+        xlabel: str | None = None,
+        ylabel: str | None = None,
+        xrange: tuple[Any, Any] | None = None,
+        yrange: tuple[Any, Any] | None = None,
+        xticks: Any | None = None,
+        yticks: Any | None = None,
+        savefig: str | None = None,
+        **kwargs,
+    ):
+        """
+        Plots the regression result along with data supplied as arguments.
+        """
+        sns.set_theme(context=self._context)
+        sns.set_style("ticks")
+        sns.set_palette(sns.color_palette("colorblind"))
+
+        fig, ax = plt.subplots(figsize=(12, 5))
+        ax.scatter(x, y, s=3, color=self._colors[0])
+        ax.vlines(x, ymin=y - u, ymax=y + u, color=self._colors[0])
+
+        if not xrange:
+            xrange = np.min(x), np.max(x)
+        if not yrange:
+            yrange = np.min(y), np.max(y)
+        x = np.linspace(xrange[0], xrange[1], 1000)
+        y_opt = self._result.f(x)
+        y_unp = self._result.yunc_p(x)
+        y_unc = self._result.yunc_t(x)
+        ax.plot(
+            x, y_opt, linestyle="-", color=self._colors[1], label="regression"
+        )
+        ax.plot(
+            x,
+            y_opt - y_unp,
+            "--",
+            color=self._colors[2],
+            label="standard uncertainty of regression",
+        )
+        ax.plot(x, y_opt + y_unp, linestyle="--", color=self._colors[2])
+        ax.plot(
+            x,
+            y_opt - y_unc,
+            "-.",
+            color=self._colors[3],
+            label="standard uncertainty of residuals",
+        )
+        ax.plot(x, y_opt + y_unc, linestyle="-.", color=self._colors[3])
+        ax.legend()
+
+        if title:
+            ax.set_title(title)
+        if xlabel:
+            ax.set_xlabel(xlabel)
+        if ylabel:
+            ax.set_ylabel(ylabel)
+        if xrange:
+            ax.set_xlim(xrange)
+        if yrange:
+            ax.set_ylim(yrange)
+        if xticks is not None:
+            ax.set_xticks(xticks)
+        if yticks is not None:
+            ax.set_yticks(yticks)
+        if savefig:
+            fig.savefig(savefig, dpi=300)
+        plt.close(fig)
+
+        return fig
+
+
 class WaterClassLinePlot(Plotting):
     """A water class line plot."""
 
