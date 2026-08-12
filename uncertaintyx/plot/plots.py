@@ -167,8 +167,8 @@ class LinePlot(Plotting):
         ylabel: str | None = None,
         xrange: tuple[Any, Any] | None = None,
         yrange: tuple[Any, Any] | None = None,
-        xticks: tuple[Any, ...] | None = None,
-        yticks: tuple[Any, ...] | None = None,
+        xticks: Any | None = None,
+        yticks: Any | None = None,
         labels: list[str] | None = None,
         semilogx: bool = False,
         semilogy: bool = False,
@@ -220,9 +220,9 @@ class LinePlot(Plotting):
             ax.set_xlim(xrange)
         if yrange:
             ax.set_ylim(yrange)
-        if xticks:
+        if xticks is not None:
             ax.set_xticks(xticks)
-        if yticks:
+        if yticks is not None:
             ax.set_yticks(yticks)
         if semilogx:
             ax.semilogx()
