@@ -96,18 +96,18 @@ def _batch(
     :returns: The fit result.
     """
 
-    def g(P: Array, x: Array) -> Array:  # noqa : N806
+    def g(q: Array, x: Array) -> Array:  # noqa : N806
         r"""
         The sample Jacobian.
 
-        :param P: The parameters :math:`p \in \mathbb{R}^{k}`.
+        :param q: The parameters :math:`q \in \mathbb{R}^{k}`.
         :param x: The sample :math:`x \in \mathbb{R}^{m}`
         :returns: :math:`(G_x f)(q, x) \in \mathbb{R}^{n \times m}`
         """
         return (
-            jax.jacrev(f, argnums=1)(P, x)
+            jax.jacrev(f, argnums=1)(q, x)
             if y.size < x.size
-            else jax.jacfwd(f, argnums=1)(P, x)
+            else jax.jacfwd(f, argnums=1)(q, x)
         )
 
     def upc(d: int, G: Array, U: Array) -> Array:  # noqa: N806
@@ -137,7 +137,7 @@ def _batch(
         return jnp.sum(jnp.tensordot(G, U, axes=(dims, dims)) * G, axis=dims)
 
     def loss(
-        P: Array,  # noqa: N806
+        q: Array,
         x: Array,
         y: Array,
         ux: Array,
@@ -146,15 +146,15 @@ def _batch(
         r"""
         The sample loss function.
 
-        :param P: The parameters :math:`p \in \mathbb{R}^{k}`.
+        :param q: The parameters :math:`q \in \mathbb{R}^{k}`.
         :param x: The sample :math:`x \in \mathbb{R}^{m}`.
         :param y: The sample :math:`y \in \mathbb{R}^{n}`.
         :param ux: :math:`U(x) \in \mathbb{R}^{m \times m}`.
         :param uy: :math:`U(y) \in \mathbb{R}^{n \times n}`.
         :returns: The sample loss.
         """
-        d = f(P, x) - y
-        G = g(P, x)  # noqa: N806
+        d = f(q, x) - y
+        G = g(q, x)  # noqa: N806
         if y.size > 1 and use_covar:
             d = d.reshape(-1)
             U = upc(x.ndim, G, ux).reshape((y.size, -1)) + (  # noqa: N806
@@ -172,28 +172,29 @@ def _batch(
             b = d / U
         return 0.5 * jnp.sum(d * b)
 
-    def prior(P: Array) -> Array:  # noqa: N806
+    def prior(q: Array) -> Array:
         r"""
         The prior loss function.
 
-        :param P: The parameters :math:`p \in \mathbb{R}^{k}`.
+        :param q: The parameters :math:`q \in \mathbb{R}^{k}`.
         :returns: The prior term.
         """
-        d = jnp.reshape(P - p, -1)
+        d = jnp.reshape(q - p, -1)
         b = hp * d if hp.ndim == p.ndim else hp @ d
         return 0.5 * jnp.sum(d * b)
 
-    def misfit(P: Array, _: None = None) -> Array:  # noqa
+    def misfit(q: Array, _: None = None) -> Array:
         r"""
         The misfit function.
 
-        :param P: The parameters :math:`p \in \mathbb{R}^{k}`.
+        :param q: The parameters :math:`q \in \mathbb{R}^{k}`.
+        :param _: Not used.
         :returns: The total cost.
         """
         loss_term = jnp.sum(
-            jax.vmap(loss, in_axes=(None, 0, 0, 0, 0))(P, x, y, ux, uy)
+            jax.vmap(loss, in_axes=(None, 0, 0, 0, 0))(q, x, y, ux, uy)
         )
-        return loss_term if up is None else loss_term + prior(P)
+        return loss_term if up is None else loss_term + prior(q)
 
     def post(p: Array) -> tuple[Array, Array]:
         r"""
