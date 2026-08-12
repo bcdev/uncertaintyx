@@ -317,6 +317,10 @@ class MatrixPlot(Plotting):
         if extent:
             ax.set_xlim(xmin=extent[0], xmax=extent[1])
             ax.set_ylim(ymin=extent[2], ymax=extent[3])
+        if xticks is not None:
+            ax.set_xticks(xticks)
+        if yticks is not None:
+            ax.set_yticks(yticks)
         if savefig:
             fig.savefig(savefig, dpi=300)
         plt.close(fig)
