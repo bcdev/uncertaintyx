@@ -79,7 +79,7 @@ class HomoHeteroscedasticRegression(Fitting):
         :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
-        :param u: Standard uncertainties :math:`u(X)`.
+        :param u: Standard uncertainties :math:`u(Y)`.
         :returns: The fit result.
         """
         return self._eiv.fit(f, x, y, uy=u, **kwargs)
@@ -120,7 +120,7 @@ class HeteroHomoscedasticRegression(Fitting):
         :param f: The model function.
         :param x: Samples :math:`X \in \mathbb{R}^{M \times m}`.
         :param y: Samples :math:`Y \in \mathbb{R}^{M \times n}`.
-        :param u: Standard uncertainties :math:`u(Y)`.
+        :param u: Standard uncertainties :math:`u(X)`.
         :returns: The fit result.
         """
         return self._eiv.fit(f, x, y, ux=u, **kwargs)
