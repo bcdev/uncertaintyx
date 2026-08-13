@@ -64,7 +64,7 @@ In a development environment, you may instead type (once)
 which registers the current directory into your environment in a way which does
 not require repeated installation.
 
-## Running the tests
+## Run the tests
 
 To execute unit level tests `cd` into the `uncertaintyx` directory and type
 
