@@ -9,6 +9,8 @@ import seaborn as sns
 from cycler import cycler
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
+from matplotlib.ticker import ScalarFormatter
+from sympy.abc import alpha
 
 from ..b.jax import BernsteinGrid
 from ..plotting import Plotting
@@ -307,8 +309,15 @@ class MatrixPlot(Plotting):
             vmin=cbar_min,
             vmax=cbar_max,
         )
+        formatter = ScalarFormatter()
+        formatter.set_powerlimits((-3, 3))
         plt.colorbar(
-            im, ax=ax, label=cbar_label, extend="both", extendfrac=0.05
+            im,
+            ax=ax,
+            label=cbar_label,
+            extend="both",
+            extendfrac=0.05,
+            format=formatter,
         )
         if title:
             ax.set_title(title)
@@ -356,6 +365,7 @@ class RegressionPlot(Plotting):
         self,
         x: np.ndarray,
         y: np.ndarray,
+        u: np.ndarray | None = None,
         *,
         title: str | None = None,
         xlabel: str | None = None,
@@ -373,8 +383,11 @@ class RegressionPlot(Plotting):
         sns.set_palette(sns.color_palette("colorblind"))
 
         fig, ax = plt.subplots()
-        ax.scatter(x, y, s=1, color=self._colors[0])
-
+        ax.plot(x, y, linestyle="none", marker=".", color=self._colors[0])
+        if u is not None:
+            ax.vlines(
+                x, ymin=y - u, ymax=y + u, color=self._colors[0], alpha=0.5
+            )
         if not xrange:
             xrange = np.min(x), np.max(x)
         if not yrange:
@@ -500,7 +513,7 @@ class TrendPlot(Plotting):
         self,
         x: np.ndarray,
         y: np.ndarray,
-        u: np.ndarray,
+        u: np.ndarray | None = None,
         *,
         title: str | None = None,
         xlabel: str | None = None,
@@ -520,9 +533,11 @@ class TrendPlot(Plotting):
         sns.set_palette(sns.color_palette("colorblind"))
 
         fig, ax = plt.subplots(figsize=(12, 5))
-        ax.scatter(x, y, s=3, color=self._colors[0])
-        ax.vlines(x, ymin=y - u, ymax=y + u, color=self._colors[0])
-
+        ax.plot(x, y, linestyle="none", marker=".", color=self._colors[0])
+        if u is not None:
+            ax.vlines(
+                x, ymin=y - u, ymax=y + u, color=self._colors[0], alpha=0.5
+            )
         if not xrange:
             xrange = np.min(x), np.max(x)
         if not yrange:
