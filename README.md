@@ -1,47 +1,12 @@
 ![Bernstein basis](https://github.com/user-attachments/assets/80d2ee7c-3e1f-4242-ac07-6880516eaf8e "Bernstein basis")
 
-# Context
-
-In an algorithm-driven measurement context, the “measurement models” are
-not static laboratory instruments but complex, evolving data-processing
-codes. In this setting, the classical [GUM](https://doi.org/10.59161/JCGMGUM-1-2023)
-framework—built on assumptions of a fixed analytical model, a fixed data
-flow, and manually maintained analytical Jacobians—offers less immediate
-practical guidance. The true forward map is defined by the current state of
-the code, which evolves as algorithms, implementations, and data dependencies
-change.
-
-Algorithmic differentiation (AD) provides a more flexible foundation: it
-derives local linearizations directly from the implementation whenever
-needed, ensuring that sensitivity information remains consistent with
-the code itself. Combined with random sampling methods for strongly 
-nonlinear behaviour, AD enables uncertainty propagation to be formulated
-in terms of algorithmically differentiable programs.
-
-As the computational backbone of much of modern machine learning, AD
-frameworks represent inputs, outputs, and sensitivities as dynamic
-tensor-valued objects, freeing the uncertainty calculus from reliance on
-fixed closed-form formulas. Moreover, AD allows sensitivities and
-uncertainties to be integrated **within** data‑processing codes themselves,
-turning them from external annotations into active elements of
-computational workflows.
-
-> **Note**
-> [NPL Report CMSC 26/03](https://eprintspublications.npl.co.uk/2828/1/cmsc26.pdf)
-> ranks AD as the most accurate. AD workflows were instrumental
-> within the [FIDUCEO](https://www.fiduceo.eu)
-> project to enable the multi‑mission remote sensing calibration
-> that underpins Earth climate data records
-> ([Quast et al., 2019](https://doi.org/10.3390/rs11050480);
-> [Giering et al., 2019](https://doi.org/10.3390/rs11091002)).
-
 # Synopsis
 
 **Uncertaintyx** (or just **Tyx**) is a lightweight framework for
 tensor‑level uncertainty propagation, inverse problems, and
 metrology‑aware workflows. It produces uncertainty tensors by combining
-tensor‑valued models with AD backends such as [JAX](https://docs.jax.dev/).
-Conventional [NumPy](https://numpy.org)
+tensor‑valued models with algorithmic differentiation (AD) backends
+such as [JAX](https://docs.jax.dev/). Conventional [NumPy](https://numpy.org)
 acts as a bidirectional interoperability layer, enabling JAX‑based code
 to interoperate smoothly with existing workflows.
 
