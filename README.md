@@ -1,12 +1,11 @@
 ![Bernstein basis](https://github.com/user-attachments/assets/80d2ee7c-3e1f-4242-ac07-6880516eaf8e "Bernstein basis")
 
-Future satellite missions such as NASA's [CLARREO Pathfinder](https://science.nasa.gov/mission/clarreo-pathfinder/)
+**Metrology space missions** such as NASA's [CLARREO Pathfinder](https://science.nasa.gov/mission/clarreo-pathfinder/)
 will, for the first time, allow radiometric calibration that is
-traceable to SI metrological standards. This raises a fundamental
-question for any remote‑sensing activity: if the measurements reach
-metrological quality, can the processing algorithms keep up—or do
-they throw away that precision because uncertainty is not properly
-propagated?
+traceable to SI standards. This raises a fundamental question for
+any remote‑sensing activity: if the measurements reach metrological
+quality, can the processing algorithms keep up—or do they throw away
+that precision because uncertainty is not properly propagated?
 
 Expressing algorithm logic in a differentiation‑enabled framework
 automatically tracks how uncertainties in inputs, calibration, and
@@ -22,9 +21,8 @@ Strategically, it positions providers to offer truly uncertainty‑aware
 services that fully exploit upcoming metrological missions, instead of
 being limited by legacy ideas that ignore metrology.
 
-Everyone wants explainable AI, but most “ML” in Remote Sensing still
+**Everyone wants explainable AI**, but most “ML” in Remote Sensing still
 remains a decoupled black box that ignores the physics we already know.
-
 Our idea is to flip that around: start from existing, physics‑based
 algorithms and express their logic in a differentiation‑enabled framework.
 Algorithmic differentiation (AD) then provides exact sensitivities of every
