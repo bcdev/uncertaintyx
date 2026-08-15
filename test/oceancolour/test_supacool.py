@@ -149,7 +149,7 @@ class SpectrumTest(unittest.TestCase):
             title="Spectral convolution",
             xlabel=r"wavelength $\lambda$ (nm)",
             ylabel=r"remote sensing reflectance $\rho(\lambda)$ (sr$^{-1}$)",
-            savefig="hsi_spectrum.png" if True else None,
+            savefig="hsi_spectrum.png" if False else None,
         )
 
         u_c = np.sqrt(
@@ -189,7 +189,7 @@ class SpectrumTest(unittest.TestCase):
             ylabel=r"reflectance (sr$^{-1}$)",
             semilogy=True,
             columns=1,
-            savefig="hsi_spectrum_unc.png" if True else None,
+            savefig="hsi_spectrum_unc.png" if False else None,
         )
 
         LinePlot().plot(
@@ -212,7 +212,7 @@ class SpectrumTest(unittest.TestCase):
             ylabel=r"relative reflectance",
             semilogy=True,
             columns=1,
-            savefig="hsi_spectrum_unc_relative.png" if True else None,
+            savefig="hsi_spectrum_unc_relative.png" if False else None,
         )
 
 
