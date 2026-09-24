@@ -1,5 +1,3 @@
-![Bernstein basis](https://github.com/user-attachments/assets/80d2ee7c-3e1f-4242-ac07-6880516eaf8e "Bernstein basis")
-
 **Metrology space missions** such as NASA's [CLARREO Pathfinder](https://science.nasa.gov/mission/clarreo-pathfinder/)
 will, for the first time, allow radiometric calibration that is
 traceable to SI standards. This raises a fundamental question for
