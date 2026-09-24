@@ -174,7 +174,7 @@ tensor-valued language of today’s computational frameworks.
 > tests to verify correctness and accuracy to the last digit
 > listed.
 
-# Further reading
+# Poster
 
 Quast, R., Baljeet Singh, Y. K.& Brandt, G. (2026). Turning Uncertainty
 Into Knowledge: Inverse Problem Theory Lifted to the Computational
