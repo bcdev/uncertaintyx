@@ -54,9 +54,7 @@ uncertainty propagation requires flattening these N-D arrays into 1D
 vectors, which obscures the vital spatiotemporal structure of both the
 data and the algorithms designed to analyse it. Tensors are the ideal
 solution, and the law of propagation of uncertainty, when formulated
-and coded in general tensor form, is elegantly beautiful. If you’re curious,
-compare [NIST TN 1297](https://www.nist.gov/pml/nist-technical-note-1297/nist-tn-1297-appendix-law-propagation-uncertainty) (Equation A-3)
-with the tensor equation and code further below.
+and coded in general tensor form, is elegantly beautiful.
 
 **Why JAX?** Traditional methods like finite differences, manual Jacobians,
 or Monte Carlo often struggle with scalability for high-dimensional
