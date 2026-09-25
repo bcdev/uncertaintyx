@@ -1,3 +1,5 @@
+# Synopsis
+
 [![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
 [![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
 [![codecov](https://codecov.io/gh/bcdev/uncertaintyx/graph/badge.svg?token=742AWtYDCD)](https://codecov.io/gh/bcdev/uncertaintyx)
@@ -42,8 +44,6 @@ uncertainty‑aware program. The result is a class of physics‑informed ML
 systems for Remote Sensing that are both high‑performance and inherently
 explainable, because their behaviour is rooted in—and analysable through—the
 underlying physics.
-
-# Synopsis
 
 **Uncertaintyx** (or just **Tyx**) is a lightweight framework for
 tensor‑level uncertainty propagation, inverse problems, and
