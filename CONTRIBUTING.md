@@ -1,5 +1,7 @@
 # Contributing
 
+We currently do not accept external contributions.
+
 ## Coding standards
 
 Coding standards applied and adhered to in this project are based on [PEP&nbsp;8](https://pep8.org) 
