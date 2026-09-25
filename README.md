@@ -173,6 +173,13 @@ tensor-valued language of today’s computational frameworks.
 > tests to verify correctness and accuracy to the last digit
 > listed.
 
+# Getting started
+
+The unit-test suite serves as the primary source of operational usage
+examples. Refer to the [test](test/) directory for practical examples
+on defining models and running uncertainty propagation (e.g., the JCGM
+GUM verification tests).
+
 # Poster
 
 Quast, R., Baljeet Singh, Y. K.& Brandt, G. (2026). Turning Uncertainty
