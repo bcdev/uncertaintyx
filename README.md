@@ -172,7 +172,7 @@ tensor-valued language of today’s computational frameworks.
 # Getting started
 
 The unit-test suite serves as the primary source of operational usage
-examples. Refer to the [test](test/) directory for practical examples
+examples. Refer to the `test` directory for practical examples
 on defining models and running uncertainty propagation (e.g., the JCGM
 GUM verification tests).
 
