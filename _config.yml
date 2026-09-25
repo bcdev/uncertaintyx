@@ -1,4 +1,4 @@
 theme: jekyll-theme-slate
 title: "Uncertaintyx"
 description: "Tensor-level uncertainty propagation with JAX"
-show_downloads: true
+show_downloads: false
