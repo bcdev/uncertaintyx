@@ -37,12 +37,6 @@ When the `uncertaintyx` environment is active, the list output reads like
     base                     /...
     uncertaintyx          *  /.../envs/uncertaintyx
 
-Alternatively, you may update your existing conda `base` environment
-
-    conda env update --file environment.yml --name base
-
-and use it instead of the `uncertaintyx` environment.
-
 ## Install the Python package
 
 To install the Uncertaintyx Python package and its dependencies into
