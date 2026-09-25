@@ -1,3 +1,8 @@
+[![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
+[![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
+[![codecov](https://codecov.io/gh/bcdev/uncertaintyx/graph/badge.svg?token=742AWtYDCD)](https://codecov.io/gh/bcdev/uncertaintyx)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21280786.svg)](https://doi.org/10.5281/zenodo.21280786)
+
 **Metrology space missions** such as NASA's [CLARREO Pathfinder](https://science.nasa.gov/mission/clarreo-pathfinder/)
 will, for the first time, allow radiometric calibration that is
 traceable to SI standards. This raises a fundamental question for
@@ -178,10 +183,6 @@ Quast, R., Baljeet Singh, Y. K.& Brandt, G. (2026). Turning Uncertainty
 Into Knowledge: Inverse Problem Theory Lifted to the Computational
 Top-Level [Graphic]. Zenodo. ESA Phinnovation Summit 2026, ESA ESRIN, 
 Frascati, Italy. <https://doi.org/10.5281/zenodo.21280786>.
-
-[![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
-[![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
-[![codecov](https://codecov.io/gh/bcdev/uncertaintyx/graph/badge.svg?token=742AWtYDCD)](https://codecov.io/gh/bcdev/uncertaintyx)
 
 <script>
 MathJax = {
