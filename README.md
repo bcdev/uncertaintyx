@@ -35,10 +35,6 @@ systems for Remote Sensing that are both high‑performance and inherently
 explainable, because their behaviour is rooted in—and analysable through—the
 underlying physics.
 
-[![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
-[![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
-[![codecov](https://codecov.io/gh/bcdev/uncertaintyx/graph/badge.svg?token=742AWtYDCD)](https://codecov.io/gh/bcdev/uncertaintyx)
-
 # Synopsis
 
 **Uncertaintyx** (or just **Tyx**) is a lightweight framework for
@@ -179,6 +175,10 @@ The unit-test suite serves as the primary source of operational usage
 examples. Refer to the [test](test/) directory for practical examples
 on defining models and running uncertainty propagation (e.g., the JCGM
 GUM verification tests).
+
+[![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
+[![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
+[![codecov](https://codecov.io/gh/bcdev/uncertaintyx/graph/badge.svg?token=742AWtYDCD)](https://codecov.io/gh/bcdev/uncertaintyx)
 
 # Poster
 
