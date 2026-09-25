@@ -18,7 +18,7 @@ services that fully exploit upcoming metrological missions, instead of
 being limited by legacy ideas that ignore metrology.
 
 **Everyone wants explainable AI**, but often “ML” in Remote Sensing
-remains a decoupled black box that ignores the physics we already know.
+is a decoupled black box that ignores the physics we already know.
 Our idea is to flip that around: start from existing, physics‑based
 algorithms and express their logic in a differentiation‑enabled framework.
 Algorithmic differentiation (AD) then provides exact sensitivities of every
