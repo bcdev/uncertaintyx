@@ -16,11 +16,8 @@ license: MIT
 repository-code: >-
   https://github.com/bcdev/uncertaintyx/
 abstract: >-
-  Uncertaintyx is a lightweight framework for
-  tensor‑level uncertainty propagation, fitting
-  of empirical or physics‑informed models, and
-  metrology‑aware workflows. It produces uncertainty
-  tensors by combining tensor‑valued models with
-  algorithmic differentiation backends such as JAX.
-  Conventional NumPy acts as a bidirectional
-  interoperability layer.
+  Uncertaintyx is a lightweight, Python layer
+  that provides a simple facade for algorithmic
+  differentiation backends to encapsulate the
+  complexities of tensor-level differentiable
+  programming.
