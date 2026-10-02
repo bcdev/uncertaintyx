@@ -19,21 +19,22 @@ being limited by legacy ideas that ignore metrology.
 
 **Everyone wants explainable AI**, but often “ML” in Remote Sensing
 is a decoupled black box that ignores the physics we already know.
-Our idea is to flip that around: start from existing, physics‑based
-algorithms and express their logic in a differentiation‑enabled framework.
-Algorithmic differentiation (AD) then provides exact sensitivities of every
-output to every input and parameter, directly from the real code. Jacobians
-and covariance tensors become operational data inside the algorithms, so
-you can see and quantify how the physics drives the predictions and how
-uncertainty propagates through each step.
-Bringing physics‑based equations into a differentiation‑enabled framework
-creates a natural bridge between physics and machine learning: physical
-models stay in charge of structure and constraints, while learned components
-fill in what the physics does not capture, all within one differentiable,
-uncertainty‑aware program. The result is a class of physics‑informed ML
-systems for Remote Sensing that are both high‑performance and inherently
-explainable, because their behaviour is rooted in—and analysable through—the
-underlying physics.
+Our idea is to flip that around: by expressing existing, physics‑based
+algorithms in a differentiation‑enabled framework, algorithmic
+differentiation (AD) effectively translates the physics itself into
+the mathematical form of machine learning. Through AD, physical equations
+cease to be static code; they become dynamic, differentiable computational
+graphs that speak the native language of ML. This structural transformation
+creates an inherent, two-way bridge: physical models stay in charge of
+structure and constraints, while learned components can be seamlessly
+woven into the same differentiable program to fill in what the formulas
+do not capture. Crucially, because the physics has been transformed into
+a differentiable framework, Jacobians and covariance tensors become
+operational data inside the algorithm. You can see and quantify exactly
+how uncertainty propagates through each step. The result is a class of
+physics‑informed ML systems for Remote Sensing that are both high‑performance
+and inherently explainable, because their learning behavior is natively
+rooted in—and constrained by—the underlying physics.
 
 # Synopsis
 
