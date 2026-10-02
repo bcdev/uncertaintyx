@@ -32,9 +32,9 @@ do not capture. Crucially, because the physics has been transformed into
 a differentiable framework, Jacobians and covariance tensors become
 operational data inside the algorithm. You can see and quantify exactly
 how uncertainty propagates through each step. The result is a class of
-physics‑informed ML systems for Remote Sensing that are both high‑performance
-and inherently explainable, because their learning behavior is natively
-rooted in—and constrained by—the underlying physics.
+differentiable programming (∂P) systems for Remote Sensing that are both
+high‑performance and inherently explainable, because their learning
+behavior is natively rooted in—and constrained by—the underlying physics.
 
 # Synopsis
 
