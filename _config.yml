@@ -1,4 +1,4 @@
 theme: jekyll-theme-slate
 title: "Uncertaintyx"
-description: "Tensor-level uncertainty propagation with JAX"
+description: "Inverse Problem Theory Lifted to the Computational Top-Level"
 show_downloads: false
