@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 title: >-
-  Uncertaintyx: tensor-level uncertainty
-  propagation with JAX
+  Uncertaintyx: Inverse Problem Theory at the 
+  Computational Top-Level
 message: >-
   If you use this software, please cite it using the
   metadata from this file.
