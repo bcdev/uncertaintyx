@@ -1,7 +1,6 @@
 [![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
 [![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
 [![codecov](https://codecov.io/gh/bcdev/uncertaintyx/graph/badge.svg?token=742AWtYDCD)](https://codecov.io/gh/bcdev/uncertaintyx)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21280786.svg)](https://doi.org/10.5281/zenodo.21280786)
 
 **Metrology space missions** such as NASA's [CLARREO Pathfinder](https://science.nasa.gov/mission/clarreo-pathfinder/)
 will, for the first time, allow radiometric calibration that is
@@ -175,19 +174,79 @@ tensor-valued language of today’s computational frameworks.
 > tests to verify correctness and accuracy to the last digit
 > listed.
 
-# Poster
-
-Quast, R., Baljeet Singh, Y. K. & Brandt, G. (2026). Turning Uncertainty
-Into Knowledge: Inverse Problem Theory Lifted to the Computational
-Top-Level [Graphic]. Zenodo. ESA Phinnovation Summit 2026, ESA ESRIN, 
-Frascati, Italy. <https://doi.org/10.5281/zenodo.21280786>.
-
-# Getting started
+# Quickstart
 
 The unit-test suite serves as the primary source of operational usage
 examples. Refer to the `test` directory for practical examples
-on defining models and running uncertainty propagation (e.g., the JCGM
-GUM verification tests).
+on defining models and running uncertainty propagation. The following
+example demonstrates how to define a simple additive measurement model
+and propagate uncertainties using Tyx:
+
+```python
+import jax.numpy as jnp
+import numpy as np
+from jax import Array
+
+import uncertaintyx.f.jax as tyx
+
+C = jnp.asarray([[1.0, 0.0, 1.0], [0.0, 1.0, 1.0]])
+"""The sensitivity matrix of the additive measurement model."""
+
+
+class AdditiveModel(tyx.ToF):
+    """
+    The additive measurement model (JCGM 102:2011,
+    Example 9.2).
+    """
+
+    def __init__(self):
+        def f(x: Array) -> Array:
+            """The measurement model"""
+            return C @ x
+
+        super().__init__(f)
+
+
+f = AdditiveModel()
+
+X = np.array([[0.0, 0.0, 0.0]])
+"""The input."""
+U = np.array([[1.0, 1.0, 1.0]])
+"""The input uncertainty matrix (diagonal)."""
+
+Y = f.eval(X)
+"""The output."""
+V = f.lpu(X, U)
+"""The output uncertainty matrix."""
+G = f.jac(X)
+"""The Jacobian matrix."""
+
+np.testing.assert_allclose(Y, np.array([[0.0, 0.0]]))
+"""Expect zero output for zero input."""
+
+np.testing.assert_allclose(
+    G, np.array([[[1.0, 0.0, 1.0], [0.0, 1.0, 1.0]]])
+)
+"""
+Expect the Jacobian to match the linear sensitivity
+matrix C.
+"""
+
+np.testing.assert_allclose(
+    V, np.array([[[2.0, 1.0], [1.0, 2.0]]])
+)
+"""
+Expect the propagated uncertainties based on the law
+of propagation of uncertainty.
+"""
+```
+
+# Poster [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21280786.svg)](https://doi.org/10.5281/zenodo.21280786)
+
+Quast, R., Baljeet Singh, Y. K. & Brandt, G. (2026). *Turning Uncertainty
+Into Knowledge: Inverse Problem Theory Lifted to the Computational
+Top-Level*. Zenodo. ESA Phinnovation Summit 2026, ESA ESRIN, Frascati,
+Italy. <https://doi.org/10.5281/zenodo.21280786>.
 
 <script>
   window.MathJax = {
