@@ -36,6 +36,8 @@ differentiable programming (∂P) systems for Remote Sensing that are both
 high‑performance and inherently explainable, because their learning
 behavior is natively rooted in—and constrained by—the underlying physics.
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21280786.svg)](https://doi.org/10.5281/zenodo.21280786)
+
 # Synopsis
 
 **Uncertaintyx** (or just **Tyx**) is a lightweight framework for
@@ -170,6 +172,13 @@ tensor-valued language of today’s computational frameworks.
 > tests to verify correctness and accuracy to the last digit
 > listed.
 
+# Poster
+
+Quast, R., Baljeet Singh, Y. K. & Brandt, G. (2026). Turning Uncertainty
+Into Knowledge: Inverse Problem Theory Lifted to the Computational
+Top-Level [Graphic]. Zenodo. ESA Phinnovation Summit 2026, ESA ESRIN, 
+Frascati, Italy. <https://doi.org/10.5281/zenodo.21280786>.
+
 # Getting started
 
 The unit-test suite serves as the primary source of operational usage
@@ -180,13 +189,6 @@ GUM verification tests).
 [![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
 [![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
 [![codecov](https://codecov.io/gh/bcdev/uncertaintyx/graph/badge.svg?token=742AWtYDCD)](https://codecov.io/gh/bcdev/uncertaintyx)
-
-# Poster
-
-Quast, R., Baljeet Singh, Y. K. & Brandt, G. (2026). Turning Uncertainty
-Into Knowledge: Inverse Problem Theory Lifted to the Computational
-Top-Level [Graphic]. Zenodo. ESA Phinnovation Summit 2026, ESA ESRIN, 
-Frascati, Italy. <https://doi.org/10.5281/zenodo.21280786>.
 
 <script>
 MathJax = {
