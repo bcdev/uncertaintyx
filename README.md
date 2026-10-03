@@ -189,9 +189,7 @@ from jax import Array
 import uncertaintyx.f.jax as tyx
 
 C = jnp.asarray([[1.0, 0.0, 1.0], [0.0, 1.0, 1.0]])
-"""
-The sensitivity matrix of the measurement model.
-"""
+"""The sensitivity matrix."""
 
 
 class AdditiveModel(tyx.ToF):
