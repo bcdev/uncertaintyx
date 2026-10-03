@@ -235,8 +235,8 @@ np.testing.assert_allclose(
     V, np.array([[[2.0, 1.0], [1.0, 2.0]]])
 )
 """
-Expect the propagated uncertainties based on the law
-of propagation of uncertainty.
+Expect the propagated uncertainty matrix based on the
+law of propagation of uncertainty.
 """
 ```
 
