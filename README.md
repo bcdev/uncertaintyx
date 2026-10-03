@@ -241,12 +241,13 @@ of propagation of uncertainty.
 """
 ```
 
-# Poster [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21280786.svg)](https://doi.org/10.5281/zenodo.21280786)
+# References
 
-Quast, R., Baljeet Singh, Y. K. & Brandt, G. (2026). *Turning Uncertainty
+Quast, R., Baljeet Singh, Y. K. & Brandt, G. (2026). Turning Uncertainty
 Into Knowledge: Inverse Problem Theory Lifted to the Computational
-Top-Level*. Zenodo. ESA Phinnovation Summit 2026, ESA ESRIN, Frascati,
-Italy. <https://doi.org/10.5281/zenodo.21280786>.
+Top-Level [Graphic]. Zenodo. ESA Phinnovation Summit 2026, ESA ESRIN,
+Frascati, Italy.  
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21280786.svg)](https://doi.org/10.5281/zenodo.21280786)
 
 <script>
   window.MathJax = {
