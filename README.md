@@ -227,8 +227,8 @@ np.testing.assert_allclose(
     G, np.array([[[1.0, 0.0, 1.0], [0.0, 1.0, 1.0]]])
 )
 """
-Expect the Jacobian to match the linear sensitivity
-matrix C.
+Expect the Jacobian matrix to match the
+sensitivity matrix.
 """
 
 np.testing.assert_allclose(
