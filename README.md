@@ -177,8 +177,7 @@ tensor-valued language of today’s computational frameworks.
 # Quickstart
 
 The unit-test suite serves as the primary source of operational usage
-examples. Refer to the `test` directory for practical examples
-on defining models and running uncertainty propagation. The following
+examples. Refer to the `test` directory for practical examples. The following
 example demonstrates how to define a simple additive measurement model
 and propagate uncertainties using Tyx:
 
