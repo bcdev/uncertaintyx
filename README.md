@@ -1,3 +1,8 @@
+[![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
+[![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
+[![codecov](https://codecov.io/gh/bcdev/uncertaintyx/graph/badge.svg?token=742AWtYDCD)](https://codecov.io/gh/bcdev/uncertaintyx)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21280786.svg)](https://doi.org/10.5281/zenodo.21280786)
+
 **Metrology space missions** such as NASA's [CLARREO Pathfinder](https://science.nasa.gov/mission/clarreo-pathfinder/)
 will, for the first time, allow radiometric calibration that is
 traceable to SI standards. This raises a fundamental question for
@@ -35,8 +40,6 @@ how uncertainty propagates through each step. The result is a class of
 differentiable programming (∂P) systems for Remote Sensing that are both
 high‑performance and inherently explainable, because their learning
 behavior is natively rooted in—and constrained by—the underlying physics.
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21280786.svg)](https://doi.org/10.5281/zenodo.21280786)
 
 # Synopsis
 
@@ -186,17 +189,12 @@ examples. Refer to the `test` directory for practical examples
 on defining models and running uncertainty propagation (e.g., the JCGM
 GUM verification tests).
 
-[![CodeQL Advanced](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/codeql.yml)
-[![Python package](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml/badge.svg)](https://github.com/bcdev/uncertaintyx/actions/workflows/python-package.yml)
-[![codecov](https://codecov.io/gh/bcdev/uncertaintyx/graph/badge.svg?token=742AWtYDCD)](https://codecov.io/gh/bcdev/uncertaintyx)
-
 <script>
-MathJax = {
-  tex: {
-    inlineMath: [['$', '$'], ['\\(', '\\)']]
-  }
-};
+  window.MathJax = {
+    tex: {
+      inlineMath: { '[+]': [['$', '$']] },
+      processEscapes: true
+    }
+  };
 </script>
-<script id="MathJax-script" async
-  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
-</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
