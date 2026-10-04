@@ -40,6 +40,8 @@ jobs:
       run: |
         pytest --cov=.
     - name: Upload coverage reports to Codecov
+      permissions:
+        contents: read
       uses: codecov/codecov-action@v6
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
