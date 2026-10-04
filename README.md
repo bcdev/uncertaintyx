@@ -328,8 +328,8 @@ np.testing.assert_allclose(
 """
 Expect 1/2 posterior variance.
 
-Combining two independent sources of unit uncertainty for
-a direct measurement halves the posterior variance.
+Combining two independent sources of unit variance for
+a direct measurement halves the variance.
 """
 
 np.testing.assert_allclose(
