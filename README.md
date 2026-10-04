@@ -177,9 +177,9 @@ tensor-valued language of today’s computational frameworks.
 # Quickstart
 
 The unit-test suite serves as the primary source of operational usage
-examples. Refer to the `test` directory for practical examples. The following
-example demonstrates how to define a simple additive measurement model
-and propagate uncertainties using Tyx:
+examples. Refer to the `test` directory for practical examples. The
+following example demonstrates how to define a simple additive measurement
+model and propagate uncertainties using Tyx:
 
 ```python
 import jax.numpy as jnp
@@ -239,6 +239,111 @@ Expect the propagated uncertainty matrix based on the
 law of propagation of uncertainty.
 """
 ```
+
+The following example demonstrates how to conduct an optimal
+estimation (OE) retrieval:
+
+```python
+import numpy as np
+
+from uncertaintyx.f.jax import Line
+from uncertaintyx.retrieve.oe.jax import OE
+
+M = 100
+"""The dimension of a batch."""
+m = 10
+"""The dimension of a sample."""
+
+
+def fuzzy(val) -> np.ndarray:
+    """Returns a batch filled with fuzzy values."""
+    return np.random.normal(val, 1.0, (M, m))
+
+
+def sharp(val) -> np.ndarray:
+    """Returns a batch filled with sharp values."""
+    return np.broadcast_to(val, (M, m))
+
+
+f = Line()
+"""
+The identity forward model.
+
+Each state parameter is measured directly and
+independently (y = x).
+
+The identity model represents a direct observation
+of the entire state where the instrument introduces
+no structural information loss or cross-talk. The
+only source of uncertainty is random measurement
+noise.
+"""
+
+x = fuzzy(0.0)
+"""The prior parameter values."""
+y = fuzzy(0.0)
+"""The measurement values."""
+ux = sharp(1.0)
+"""
+The prior parameter uncertainty matrix, represented
+as a vector of variances.
+"""
+uy = sharp(1.0)
+"""
+The measurement uncertainty, represented as a vector
+of variances.
+"""
+
+retrieved = OE().retrieve(f, x, y, ux=ux, uy=uy)
+"""
+The retrieval result.
+
+Following Tarantola's probabilistic framework, Tyx
+finds the maximum a posteriori (MAP) estimate using
+L-BFGS optimization. The posterior covariance matrix
+is then obtained by inverting the Hessian of the
+cost function at the minimum.
+
+Unlike the widely used Rodgers approach, Tyx scales
+efficiently to more complex and non-linear problems.
+"""
+
+np.testing.assert_array_equal(retrieved.info, 0)
+"""Expect all OE iterations to converge successfully."""
+
+np.testing.assert_allclose(retrieved.xopt, np.mean([x, y], axis=0))
+"""
+Expect the posterior parameter values to match the mean
+of prior parameter values and measurements.
+
+Since prior and measurement have equal uncertainty and a
+direct 1:1 mapping, the optimal posterior estimate must be
+the exact arithmetic mean of the prior and the measurement.
+"""
+
+np.testing.assert_allclose(
+    [retrieved.xcov[:, i, j] for i in range(m) for j in range(m) if i == j],
+    0.5,
+)
+"""
+Expect 1/2 posterior variance.
+
+Combining two independent sources of unit uncertainty for a
+direct measurement halves the posterior variance.
+"""
+
+np.testing.assert_allclose(
+    [retrieved.xcov[:, i, j] for i in range(m) for j in range(m) if i != j],
+    0.0,
+)
+"""
+Expect zero posterior covariance.
+
+Since both the prior and measurement errors are uncorrelated,
+the posterior covariance must be zero.
+"""
+```
+
 
 # References
 
