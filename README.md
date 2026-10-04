@@ -313,12 +313,13 @@ np.testing.assert_array_equal(retrieved.info, 0)
 
 np.testing.assert_allclose(retrieved.xopt, np.mean([x, y], axis=0))
 """
-Expect the posterior parameter values to match the mean
-of prior parameter values and measurements.
+Expect the posterior parameter values to match the
+mean of prior parameter values and measurements.
 
-Since prior and measurement have equal uncertainty and a
-direct 1:1 mapping, the optimal posterior estimate must be
-the exact arithmetic mean of the prior and the measurement.
+Since prior and measurement have equal uncertainty
+and a direct 1:1 mapping, the optimal posterior estimate
+must be the exact arithmetic mean of the prior and
+the measurement.
 """
 
 np.testing.assert_allclose(
@@ -328,8 +329,8 @@ np.testing.assert_allclose(
 """
 Expect 1/2 posterior variance.
 
-Combining two independent sources of unit uncertainty for a
-direct measurement halves the posterior variance.
+Combining two independent sources of unit uncertainty for
+a direct measurement halves the posterior variance.
 """
 
 np.testing.assert_allclose(
