@@ -280,12 +280,12 @@ noise.
 """
 
 x = fuzzy(0.0)
-"""The prior parameter values."""
+"""The prior state parameter values."""
 y = fuzzy(0.0)
 """The measurement values."""
 ux = sharp(1.0)
 """
-The prior parameter uncertainty matrix, represented
+The prior state parameter uncertainty matrix, represented
 as a vector of variances.
 """
 uy = sharp(1.0)
@@ -313,7 +313,7 @@ np.testing.assert_array_equal(retrieved.info, 0)
 
 np.testing.assert_allclose(retrieved.xopt, np.mean([x, y], axis=0))
 """
-Expect the posterior parameter values to match the
+Expect the posterior state parameter values to match the
 mean of prior parameter values and measurements.
 
 Since prior and measurement have equal uncertainty
