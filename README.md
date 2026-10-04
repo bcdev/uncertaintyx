@@ -299,13 +299,12 @@ retrieved = OE().retrieve(f, x, y, ux=ux, uy=uy)
 The retrieval result.
 
 Following Tarantola's probabilistic framework, Tyx
-finds the maximum a posteriori (MAP) estimate using
-L-BFGS optimization. The posterior covariance matrix
-is then obtained by inverting the Hessian of the
-cost function at the minimum.
-
-Unlike the widely used Rodgers approach, Tyx scales
-efficiently to more complex and non-linear problems.
+finds the maximum a posteriori estimate using
+quasi-Newton optimization. The posterior covariance
+matrix is then obtained by inverting the Hessian of
+the cost function at the minimum. Unlike the widely
+used Rodgers approach, this scales efficiently to
+complex and non-linear problems.
 """
 
 np.testing.assert_array_equal(retrieved.info, 0)
@@ -314,7 +313,7 @@ np.testing.assert_array_equal(retrieved.info, 0)
 np.testing.assert_allclose(retrieved.xopt, np.mean([x, y], axis=0))
 """
 Expect the posterior state parameter values to match the
-mean of prior parameter values and measurements.
+mean of the prior and the measurement.
 
 Since prior and measurement have equal uncertainty
 and a direct 1:1 mapping, the optimal posterior estimate
