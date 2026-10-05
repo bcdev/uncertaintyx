@@ -178,7 +178,7 @@ tensor-valued language of today’s computational frameworks.
 
 The unit-test suite serves as the primary source of operational usage
 examples. Refer to the `test` directory for practical examples. The
-following example demonstrates how to define a simple additive measurement
+following example illustrates how to define a simple additive measurement
 model and propagate uncertainties using Tyx:
 
 ```python
@@ -240,7 +240,7 @@ law of propagation of uncertainty.
 """
 ```
 
-The following example demonstrates how to conduct an optimal
+The following example illustrates how to conduct an optimal
 estimation:
 
 ```python
