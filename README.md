@@ -241,7 +241,7 @@ law of propagation of uncertainty.
 ```
 
 The following example demonstrates how to conduct an optimal
-estimation (OE) retrieval:
+estimation:
 
 ```python
 import numpy as np
