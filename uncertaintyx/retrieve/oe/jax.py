@@ -232,7 +232,7 @@ class OE(Retrieving):
 
     Models the inversion strictly after Tarantola's paradigm of
     multiplying continuous probability densities. The numerical
-    execution utilizes a highly scalable Laplace Approximation,
+    execution utilizes a highly scalable Laplace approximation,
     satisfying the resource trade-offs of JCGM GUM-6:2020. The
     resulting posterior uncertainty tensor (JCGM 102:2011) maps
     the true information entropy with machine precision via
