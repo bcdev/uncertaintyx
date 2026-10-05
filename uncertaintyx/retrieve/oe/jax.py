@@ -6,6 +6,14 @@ Optimal estimation (OE) implementation. Refer to:
 Tarantola (2005). Inverse Problem Theory and Methods for
 Model Parameter Estimation. Society for Industrial and Applied
 Mathematics. https://doi.org/10.1137/1.9780898717921
+
+JCGM 101:2008. Supplement 1 to the Guide to the expression
+of uncertainty in measurement - Propagation of distributions
+using a Monte Carlo method. https://doi.org/10.59161/JCGM101-2008
+
+JCGM GUM-6:2020. Guide to the expression of uncertainty in
+measurement — Part 6: Developing and using measurement models.
+https://doi.org/10.59161/JCGMGUM-6-2020
 """
 
 from typing import Any
