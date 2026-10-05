@@ -6,16 +6,19 @@ variance method (EVM). Refer to:
 
 Giering, Quast, Mittaz et al. (2019). A Novel Framework to
 Harmononise Satellite Data Series for Climate Applications.
-Remote Sens., 11, 1002. https://doi.org/10.3390/rs11091002.
+Remote Sens., 11, 1002. https://doi.org/10.3390/rs11091002
 
 Tarantola (2005). Inverse Problem Theory and Methods for
 Model Parameter Estimation. Society for Industrial and Applied
 Mathematics. https://doi.org/10.1137/1.9780898717921
 
-Watson et al. (1984). The effective variance weighting
-for least squares calculations applied to the mass balance
-receptor model. Atmospheric Environment (1967), 18, 1347-1355.
-https://doi.org/10.1016/0004-6981(84)90043-X.
+JCGM 101:2008. Supplement 1 to the Guide to the expression
+of uncertainty in measurement - Propagation of distributions
+using a Monte Carlo method. https://doi.org/10.59161/JCGM101-2008
+
+JCGM GUM-6:2020. Guide to the expression of uncertainty in
+measurement — Part 6: Developing and using measurement models.
+https://doi.org/10.59161/JCGMGUM-6-2020
 """
 
 from typing import Any
