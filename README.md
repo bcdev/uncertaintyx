@@ -301,9 +301,7 @@ Following Tarantola's probabilistic framework, Tyx
 finds the maximum a posteriori estimate using
 quasi-Newton optimization. The posterior covariance
 matrix is then obtained by inverting the Hessian of
-the cost function at the minimum. Unlike the widely
-used Rodgers approach, this scales efficiently to
-complex and non-linear problems.
+the cost function at the minimum.
 """
 
 np.testing.assert_array_equal(retrieved.info, 0)
