@@ -240,10 +240,17 @@ def _batch(
         misfit, make_minimizer(), p, max_steps=max_steps, throw=False
     )
     popt = optimum.value
+    """
+    Expectation of the posterior PDF (MAP estimator, JCGM 101:2008).
+    """
     pcov, punc = post(popt)
+    """
+    Combined covariance matrix via Laplace Approximation (JCGM 102:2011)
+    and standard uncertainties extracted from diagonal (JCGM 100/102).
+    """
     cost = misfit(popt)
     info = jnp.where(optimum.result == optimistix.RESULTS.successful, 0, 1)
-
+    
     return popt, pcov, punc, cost, info
 
 
