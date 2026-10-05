@@ -7,9 +7,17 @@ Tarantola (2005). Inverse Problem Theory and Methods for
 Model Parameter Estimation. Society for Industrial and Applied
 Mathematics. https://doi.org/10.1137/1.9780898717921
 
+JCGM 100:2008. Evaluation of measurement data - Guide to the
+expression of uncertainty in measurement.
+https://doi.org/10.59161/JCGM100-2008E
+
 JCGM 101:2008. Supplement 1 to the Guide to the expression
 of uncertainty in measurement - Propagation of distributions
 using a Monte Carlo method. https://doi.org/10.59161/JCGM101-2008
+
+JCGM 102:2011. Supplement 2 to the Guide to the expression of
+uncertainty in measurement - Extension to any number of output
+quantities. https://doi.org/10.59161/JCGM102-2011
 
 JCGM GUM-6:2020. Guide to the expression of uncertainty in
 measurement — Part 6: Developing and using measurement models.
@@ -149,7 +157,14 @@ def _sample(
         misfit, make_minimizer(), x, max_steps=max_steps, throw=False
     )
     xopt = optimum.value
+    """
+    Expectation of the posterior PDF (MAP estimator, JCGM 101:2008).
+    """
     xcov, xunc = post(xopt)
+    """
+    Combined covariance matrix via Laplace Approximation (JCGM 102:2011)
+    and standard uncertainties extracted from diagonal (JCGM 100/102).
+    """
     cost = misfit(xopt)
     info = jnp.where(optimum.result == optimistix.RESULTS.successful, 0, 1)
 
@@ -214,6 +229,14 @@ def _batch(
 class OE(Retrieving):
     """
     Optimal estimation (OE) retrieval.
+
+    Models the inversion strictly after Tarantola's paradigm of
+    multiplying continuous probability densities. The numerical
+    execution utilizes a highly scalable Laplace Approximation,
+    satisfying the resource trade-offs of JCGM GUM-6:2020. The
+    resulting posterior uncertainty tensor (JCGM 102:2011) maps
+    the true information entropy with machine precision via
+    automatic differentiation.
     """
 
     def retrieve(

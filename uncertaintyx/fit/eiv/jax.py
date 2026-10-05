@@ -15,6 +15,10 @@ JCGM 101:2008. Supplement 1 to the Guide to the expression
 of uncertainty in measurement - Propagation of distributions
 using a Monte Carlo method. https://doi.org/10.59161/JCGM101-2008
 
+JCGM 102:2011. Supplement 2 to the Guide to the expression of
+uncertainty in measurement - Extension to any number of output
+quantities. https://doi.org/10.59161/JCGM102-2011
+
 JCGM GUM-6:2020. Guide to the expression of uncertainty in
 measurement — Part 6: Developing and using measurement models.
 https://doi.org/10.59161/JCGMGUM-6-2020
@@ -259,8 +263,12 @@ class EIV(Fitting):
     Bayesian errors-in-variables optimizer based on the effective
     variance method (EVM).
 
-    This implementation is intended for large scale problems with
-    up to millions of data points.
+    Implements a Bayesian errors-in-variables inversion fully compliant
+    with JCGM 101:2008 and 102:2011. It utilizes a highly scalable
+    effective variance method (EVM) for big data (GUM-6:2020). The
+    algorithmically derived Jacobian and posterior Hessian matrices
+    extract the exact information entropy at the maximum a posteriori
+    point with machine precision.
     """
 
     def fit(

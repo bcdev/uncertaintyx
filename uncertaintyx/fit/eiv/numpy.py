@@ -11,6 +11,22 @@ Regression. https://doi.org/10.6028/NIST.IR.4834.
 Boggs et al. (1989). Algorithm 676: ODRPACK: software for
 weighted orthogonal distance regression. ACM Trans. Math.
 Softw. 15, 348–364. https://doi.org/10.1145/76909.76913.
+
+JCGM 100:2008. Evaluation of measurement data - Guide to the
+expression of uncertainty in measurement.
+https://doi.org/10.59161/JCGM100-2008E
+
+JCGM 101:2008. Supplement 1 to the Guide to the expression
+of uncertainty in measurement - Propagation of distributions
+using a Monte Carlo method. https://doi.org/10.59161/JCGM101-2008
+
+JCGM 102:2011. Supplement 2 to the Guide to the expression of
+uncertainty in measurement - Extension to any number of output
+quantities. https://doi.org/10.59161/JCGM102-2011
+
+JCGM GUM-6:2020. Guide to the expression of uncertainty in
+measurement — Part 6: Developing and using measurement models.
+https://doi.org/10.59161/JCGMGUM-6-2020
 """
 
 import numpy as np
@@ -23,11 +39,11 @@ from ...tyx import M
 
 class EIV(Fitting):
     """
-    Errors-in-variables optimizer based on orthogonal
-    distance regression (ODR).
-
-    This implementation is intended for problems with
-    up to :math:`10^4` to :math:`10^5` data points.
+    Implements an errors-in-variables inversion via Orthogonal
+    Distance Regression (ODR) compliant with JCGM 100:2008 and
+    102:2011. By simultaneously optimizing parameters and latent
+    variables, it evaluates the global covariance matrix at the
+    solution minimum (GUM-6:2020).
     """
 
     def fit(
@@ -122,8 +138,17 @@ class EIV(Fitting):
         )
 
         popt = u(res.beta, k_u)
+        """
+        Expectation of the posterior PDF (MAP estimator, JCGM 101:2008).
+        """
         punc = u(res.sd_beta, k_u)
+        """
+        Standard uncertainties extracted from diagonal (JCGM 100/102).
+        """
         pcov = u(res.cov_beta * res.res_var, k_u + k_u)
+        """
+        Covariance matrix via Laplace Approximation (JCGM 102:2011).
+        """
         zvar = np.var(f.eval(popt, x) - y, axis=0, ddof=popt.size)
         cost = np.asarray(0.5 * res.sum_square)  # standard convention
 
