@@ -4,13 +4,12 @@
 Errors-in-variables implementation based on the effective
 variance method (EVM). Refer to:
 
-Giering, Quast, Mittaz et al. (2019). A Novel Framework to
-Harmononise Satellite Data Series for Climate Applications.
-Remote Sens., 11, 1002. https://doi.org/10.3390/rs11091002
+Orear (1992). Least squares when both variables have uncertainties.
+Am. J. Phys., 50, 912–916. https://doi.org/10.1119/1.12972
 
-Tarantola (2005). Inverse Problem Theory and Methods for
-Model Parameter Estimation. Society for Industrial and Applied
-Mathematics. https://doi.org/10.1137/1.9780898717921
+JCGM 100:2008. Evaluation of measurement data - Guide to the
+expression of uncertainty in measurement.
+https://doi.org/10.59161/JCGM100-2008E
 
 JCGM 101:2008. Supplement 1 to the Guide to the expression
 of uncertainty in measurement - Propagation of distributions
