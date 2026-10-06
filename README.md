@@ -168,11 +168,14 @@ of the Law of Propagation of Uncertainty into the high-dimensional,
 tensor-valued language of today’s computational frameworks.
 
 > **Note**
-> Tyx passes the GUM example cases with explicit measurement
+> The mathematical approaches taken by Tyx for model parameter estimation
+> and uncertainty propagation—specifically utilizing optimal estimation
+> and errors-in-variables methods—are conceptually compliant with
+> [JCGM Guides in Metrology](https://www.bipm.org/en/committees/jc/jcgm/publications).
+> Tyx passes the JCGM example cases with explicit measurement
 > models in [JCGM 102:2011](https://doi.org/10.59161/JCGM102-2011)
 > (Examples 9.2, 9.3, and 9.4) which are implemented as unit‑level
-> tests to verify correctness and accuracy to the last digit
-> listed.
+> tests to verify correctness and accuracy to the last digit listed.
 
 # Quickstart
 
