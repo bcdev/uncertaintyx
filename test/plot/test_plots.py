@@ -146,10 +146,7 @@ class TrendPlotTest(unittest.TestCase):
         print("popt = ", result.popt)
         print("punc = ", result.punc)
         print("pcov = ", result.pcov)
-        # popt =  [ 3.99182492e-03 -6.95701442e+00]
-        # punc =  [8.57642714e-04 1.72442549e+00]
-        # pcov =  [[ 7.35551025e-07 -1.47893071e-03]
-        #          [-1.47893071e-03  2.97364326e+00]]
+
         TrendPlot(result).plot(
             x,
             y,
@@ -211,23 +208,6 @@ class TrendPlotTest(unittest.TestCase):
         print("popt = ", result.popt)
         print("punc = ", result.punc)
         print("pcov = ", result.pcov)
-        # bootstrap-ols <--- what I would use
-        # popt =  [  0.05297873 -48.87937122]
-        # punc =  [1.46733165e-02 2.94981772e+01]
-        # pcov =  [[ 2.15306217e-04 -4.32833105e-01]
-        #          [-4.32833105e-01  8.70142461e+02]]
-        #
-        # wls-mc
-        # popt =  [  0.05229117 -47.65867234]
-        # punc =  [1.39539075e-01 2.80508025e+02]
-        # pcov =  [[ 1.94711535e-02 -3.91415786e+01]
-        #          [-3.91415786e+01  7.86847519e+04]]
-        #
-        # wls
-        # popt =  [  0.05238153 -47.83809934]
-        # punc =  [1.40079482e-01 2.81608691e+02]
-        # pcov =  [[ 1.96222614e-02 -3.94473482e+01]
-        #          [-3.94473482e+01  7.93034548e+04]]
 
         TrendPlot(result).plot(
             x,
