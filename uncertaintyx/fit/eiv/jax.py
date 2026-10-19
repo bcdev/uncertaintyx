@@ -254,7 +254,7 @@ def _batch(
     """
     cost = misfit(popt)
     info = jnp.where(optimum.result == optimistix.RESULTS.successful, 0, 1)
-    
+
     return popt, pcov, punc, cost, info
 
 
