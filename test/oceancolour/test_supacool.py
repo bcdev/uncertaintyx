@@ -4,13 +4,9 @@
 import unittest
 from importlib import resources
 from typing import Any
-from typing import Any
 
 import numpy as np
 import pandas as pd
-from numpy import dtype
-from numpy import float64
-from numpy import ndarray
 
 from uncertaintyx.f.jax import ToF
 from uncertaintyx.m.jax import ToM
