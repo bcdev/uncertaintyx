@@ -4,9 +4,13 @@
 import unittest
 from importlib import resources
 from typing import Any
+from typing import Any
 
 import numpy as np
 import pandas as pd
+from numpy import dtype
+from numpy import float64
+from numpy import ndarray
 
 from uncertaintyx.f.jax import ToF
 from uncertaintyx.m.jax import ToM
@@ -74,7 +78,7 @@ def read_boost_data_padded(
 
 def read_chime_data(
     package: str, filename: str
-) -> tuple[np.ndarray, int, int]:
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Returns a CHIME table.
 
@@ -84,9 +88,44 @@ def read_chime_data(
     """
     with resources.path(package, filename) as resource:
         with open(resource) as r:
-            df = pd.read_csv(r, sep=";", header=None, index_col=None)
-            tab = df.values
-    return tab, tab.shape[0], tab.shape[1]
+            df = pd.read_csv(r, sep=";")
+    return df.values[:, 1], df.values[:, 2]
+
+
+def get_rra(wav: np.ndarray, toa: np.ndarray) -> tuple[np.ndarray, ...]:
+    """
+    Returns the CHIME relative radiometric accuracy at the
+    top of the atmosphere.
+    """
+    a, b, = read_chime_data(
+        "test.resources.oceancolour", "chime_rra.csv"
+    )
+    ell = 3.95 - 0.57 * np.log(wav)
+    """The aquatic-to-terrestrial reference radiance ratio."""
+    terrest = 0.025 + 150.0 / (a + b)
+    aquatic = 0.025 + 150.0 / (a + b * ell)
+    ell = toa * ell / (1.0E06 * np.power(wav, -2.663))
+    """The aquatic-to-terrestrial sample radiance ratio."""
+    sample = 0.025 + 150.0 / (a + b * ell)
+    return terrest, aquatic, sample
+
+
+def get_snr(wav: np.ndarray, toa: np.ndarray) -> tuple[np.ndarray, ...]:
+    """
+    Returns the CHIME signal-to-noise ratio at the
+    top of the atmosphere.
+    """
+    g, n, = read_chime_data(
+        "test.resources.oceancolour", "chime_snr.csv"
+    )
+    ell = 3.95 - 0.57 * np.log(wav)
+    """The aquatic-to-terrestrial reference radiance ratio."""
+    terrest = g / np.sqrt(n + 1.0)
+    aquatic = (g * ell) / np.sqrt(n + ell)
+    ell = toa * ell / (1.0E06 * np.power(wav, -2.663))
+    """The aquatic-to-terrestrial sample radiance ratio."""
+    sample = (g * ell) / np.sqrt(n + ell)
+    return terrest, aquatic, sample
 
 
 class SpectrumTest(unittest.TestCase):
@@ -168,17 +207,63 @@ class SpectrumTest(unittest.TestCase):
         self.assertIsInstance(g, ToF)
         self.assertIsInstance(h, ToF)
 
-        snr, _, _ = read_chime_data(
-            "test.resources.oceancolour", "chime_snr.csv"
-        )
-        rra, _, _ = read_chime_data(
-            "test.resources.oceancolour", "chime_rra.csv"
-        )
-
         toa = g.eval(y_t)
+        snr_terrest, snr_aquatic, snr = get_snr(x_t, toa)
+        rra_terrest, rra_aquatic, rra = get_rra(x_t, toa)
         u_n = np.sqrt(h.lpu(toa, np.square(toa / snr), diag=True))
         u_a = np.sqrt(
             h.lpu(toa, np.square(toa * rra / np.sqrt(12.0)), diag=True)
+        )
+
+        LinePlot().plot(
+            [x_t, x_t, x_t],
+            [rra[0], rra_terrest, rra_aquatic],
+            xrange=(405.0, 795.0),
+            yrange=(0.00, 0.05),
+            labels=[
+                "aquatic sample",
+                "terrestrial reference",
+                "aquatic reference",
+            ],
+            xlabel=r"wavelength $\lambda$ (nm)",
+            ylabel=r"relative radiometric accuracy",
+            semilogy=False,
+            columns=3,
+            savefig="hsi_rra.png" if True else None,
+        )
+
+        LinePlot().plot(
+            [x_t, x_t, x_t],
+            [snr[0], snr_terrest, snr_aquatic],
+            xrange=(405.0, 795.0),
+            yrange=(0.0, 450.0),
+            labels=[
+                "aquatic sample",
+                "terrestrial reference",
+                "aquatic reference",
+            ],
+            xlabel=r"wavelength $\lambda$ (nm)",
+            ylabel=r"signal-to-noise ratio",
+            semilogy=False,
+            columns=3,
+            savefig="hsi_snr.png" if True else None,
+        )
+
+        LinePlot().plot(
+            [x_t, x_t, x_t],
+            [np.pi * y_t[0], 1.0E06 * np.power(x_t, -2.663), toa[0]],
+            xrange=(405.0, 795.0),
+            yrange=(0.00, 0.15),
+            labels=[
+                "water-leaving reflectance (example)",
+                "top-of-atmosphere aquatic reference",
+                "top-of atmosphere reflectance (example)",
+            ],
+            xlabel=r"wavelength $\lambda$ (nm)",
+            ylabel=r"reflectance",
+            semilogy=False,
+            columns=1,
+            savefig="hsi_spectrum_toa.png" if True else None,
         )
 
         LinePlot().plot(
