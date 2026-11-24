@@ -93,14 +93,15 @@ def get_rra(wav: np.ndarray, toa: np.ndarray) -> tuple[np.ndarray, ...]:
     Returns the CHIME relative radiometric accuracy at the
     top of the atmosphere.
     """
-    a, b, = read_chime_data(
-        "test.resources.oceancolour", "chime_rra.csv"
-    )
+    (
+        a,
+        b,
+    ) = read_chime_data("test.resources.oceancolour", "chime_rra.csv")
     ell = 3.95 - 0.57 * np.log(wav)
     """The aquatic-to-terrestrial reference radiance ratio."""
     terrest = 0.025 + 150.0 / (a + b)
     aquatic = 0.025 + 150.0 / (a + b * ell)
-    ell = toa * ell / (1.0E06 * np.power(wav, -2.663))
+    ell = toa * ell / (1.0e06 * np.power(wav, -2.663))
     """The aquatic-to-terrestrial sample radiance ratio."""
     sample = 0.025 + 150.0 / (a + b * ell)
     return terrest, aquatic, sample
@@ -111,14 +112,15 @@ def get_snr(wav: np.ndarray, toa: np.ndarray) -> tuple[np.ndarray, ...]:
     Returns the CHIME signal-to-noise ratio at the
     top of the atmosphere.
     """
-    g, n, = read_chime_data(
-        "test.resources.oceancolour", "chime_snr.csv"
-    )
+    (
+        g,
+        n,
+    ) = read_chime_data("test.resources.oceancolour", "chime_snr.csv")
     ell = 3.95 - 0.57 * np.log(wav)
     """The aquatic-to-terrestrial reference radiance ratio."""
     terrest = g / np.sqrt(n + 1.0)
     aquatic = (g * ell) / np.sqrt(n + ell)
-    ell = toa * ell / (1.0E06 * np.power(wav, -2.663))
+    ell = toa * ell / (1.0e06 * np.power(wav, -2.663))
     """The aquatic-to-terrestrial sample radiance ratio."""
     sample = (g * ell) / np.sqrt(n + ell)
     return terrest, aquatic, sample
@@ -247,13 +249,13 @@ class SpectrumTest(unittest.TestCase):
 
         LinePlot().plot(
             [x_t, x_t, x_t],
-            [np.pi * y_t[0], 1.0E06 * np.power(x_t, -2.663), toa[0]],
+            [np.pi * y_t[0], 1.0e06 * np.power(x_t, -2.663), toa[0]],
             xrange=(405.0, 795.0),
             yrange=(0.00, 0.15),
             labels=[
-                "water-leaving reflectance (example)",
+                "water-leaving reflectance (sample)",
                 "top-of-atmosphere aquatic reference",
-                "top-of atmosphere reflectance (example)",
+                "top-of atmosphere reflectance (sample)",
             ],
             xlabel=r"wavelength $\lambda$ (nm)",
             ylabel=r"reflectance",
