@@ -40,12 +40,19 @@ class MaranonTest(unittest.TestCase):
     """
 
     def test_phytoplankton_carbon(self):
-        """Tests the phytoplankton carbon model function."""
+        """
+        Tests the phytoplankton carbon model function.
+
+        Combines the Maranon et al. (2014) phytoplankton biomass
+        model and the OCI chlorophyll algorithm.
+        """
         w, R, _, M, m = read_owt_data(  # noqa : N806
             "test.resources.oceancolour", "owt.csv"
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
-        U = np.asarray([[0.05, 0.05, 0.05, 0.05, 0.10]] * R[:, 1:])
+        U = np.asarray(  # noqa : N806
+            [[0.05, 0.05, 0.05, 0.05, 0.10]] * R[:, 1:]
+        )
 
         f = MaranonOCI(True)
         x = np.stack([W[:, 1:], R[:, 1:], U], axis=1)
@@ -65,12 +72,12 @@ class MaranonTest(unittest.TestCase):
         self.assertAlmostEqual(1.062, y[5], places=3)
         self.assertAlmostEqual(1.178, y[6], places=3)
         self.assertAlmostEqual(1.277, y[7], places=3)
-        self.assertAlmostEqual(1.533, y[8], places=3)
-        self.assertAlmostEqual(1.651, y[9], places=3)
-        self.assertAlmostEqual(1.881, y[10], places=3)
-        self.assertAlmostEqual(2.426, y[11], places=3)
-        self.assertAlmostEqual(2.336, y[12], places=3)
-        self.assertAlmostEqual(2.351, y[13], places=3)
+        self.assertAlmostEqual(1.538, y[8], places=3)
+        self.assertAlmostEqual(1.660, y[9], places=3)
+        self.assertAlmostEqual(1.890, y[10], places=3)
+        self.assertAlmostEqual(2.434, y[11], places=3)
+        self.assertAlmostEqual(2.349, y[12], places=3)
+        self.assertAlmostEqual(2.362, y[13], places=3)
 
         U = np.square(u)  # noqa : N806
         U = f.lpu_x(p, x, U)  # noqa : N806
@@ -84,13 +91,13 @@ class MaranonTest(unittest.TestCase):
         self.assertAlmostEqual(0.043, u[4], places=3)
         self.assertAlmostEqual(0.038, u[5], places=3)
         self.assertAlmostEqual(0.034, u[6], places=3)
-        self.assertAlmostEqual(0.051, u[7], places=3)
-        self.assertAlmostEqual(0.050, u[8], places=3)
-        self.assertAlmostEqual(0.057, u[9], places=3)
-        self.assertAlmostEqual(0.071, u[10], places=3)
-        self.assertAlmostEqual(0.101, u[11], places=3)
-        self.assertAlmostEqual(0.097, u[12], places=3)
-        self.assertAlmostEqual(0.098, u[13], places=3)
+        self.assertAlmostEqual(0.052, u[7], places=3)
+        self.assertAlmostEqual(0.045, u[8], places=3)
+        self.assertAlmostEqual(0.061, u[9], places=3)
+        self.assertAlmostEqual(0.076, u[10], places=3)
+        self.assertAlmostEqual(0.107, u[11], places=3)
+        self.assertAlmostEqual(0.101, u[12], places=3)
+        self.assertAlmostEqual(0.104, u[13], places=3)
 
 
 if __name__ == "__main__":

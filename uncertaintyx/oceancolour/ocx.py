@@ -26,11 +26,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from ..m.jax import ToM
-from ..m.jax import jac_x
-from ..m.jax import lpu_x
-from ..math.jax import fuzzy_ge
 from ..math.jax import fuzzy_gt
-from ..math.jax import fuzzy_lt
 from ..math.jax import gumbel_uncertainty
 from ..math.jax import softmax
 
@@ -183,11 +179,13 @@ class OCx(ToM):
             """
             if x.ndim == 1:
                 b = jnp.log10(jnp.nanmax(x[:-1]) / x[-1])
-                return 10.0 ** jnp.polyval(p[::-1], b)
-            R, U = x  # noqa: N806
-            w = softmax(R[:-1], gumbel_uncertainty(U[:-1]))
-            b = jnp.log10(jnp.where(w > 0.0, R[:-1], 1.0) / R[-1])
-            return 10.0 ** jnp.dot(w, jnp.polyval(p[::-1], b))
+                chl =  10.0 ** jnp.polyval(p[::-1], b)
+            else:
+                R, U = x  # noqa: N806
+                w = softmax(R[:-1], gumbel_uncertainty(U[:-1]))
+                b = jnp.log10(jnp.where(w > 0.0, R[:-1], 1.0) / R[-1])
+                chl = 10.0 ** jnp.dot(w, jnp.polyval(p[::-1], b))
+            return chl
 
         super().__init__(f)
 
@@ -246,7 +244,7 @@ class OCx(ToM):
 
 class OCI(ToM):
     """
-    The differentiable blended ∂OCI model function.
+    The OCI model function.
 
     The 2-4 nearest wavebands to 412, 443, 490 and 510 nm are used
     for the blue, while the nearest waveband to 555 nm is used for
@@ -270,13 +268,13 @@ class OCI(ToM):
         :param b: The index of the blue waveband near 443 nm.
         """
         ci: ToM = CI()
+        """The CI model function."""
         oc: ToM = OCx()
+        """The OCx model function."""
 
         def f(p, x):
             r"""
-            The blended OCI/OCX model function.
-
-            The blending is self-adjusting.
+            The OCI model function.
 
             Let :math:`p \in \mathbb{R}^{k}, k = 2 + 2 + 5` be the
             model parameters and let :math:`\lambda = (\lambda_1,\dots
@@ -305,31 +303,22 @@ class OCI(ToM):
             """
 
             def blend(p, chl_ci, chl_oc):
-                """Returns the blended chlorophyll concentration."""
+                """
+                Returns the blended chlorophyll concentration.
+
+                The blending is only meaningful if CI chlorophyll is
+                within the threshold interval.
+                """
                 ti = p[1] - chl_ci
                 tx = chl_ci - p[0]
                 return (chl_ci * ti + chl_oc * tx) / (p[1] - p[0])
 
-            def lpu_ci(p, x, u):
-                """Propagates standard uncertainty."""
-                var = jnp.zeros_like(x).at[1].set(jnp.square(u))
-                return jnp.sqrt(
-                    lpu_x(x.ndim, jac_x(ci.f, p, x), var, diag=True)
-                )
-
             chl_ci = ci.f(p[2:4], x[:, [b, -2, -1]])
-            if x.shape[0] == 3:
-                chl_oc = oc.f(p[4:9], x[1:, 0:-1])
-                unc_ci = lpu_ci(p[2:4], x[:, [b, -2, -1]], x[2, [b, -2, -1]])
-            else:
-                chl_oc = oc.f(p[4:9], x[1, 0:-1])
-                unc_ci = 0.0
-            w_ci = fuzzy_lt(chl_ci - p[0], 1.0, 0.0, unc_ci)
-            w_oc = fuzzy_ge(chl_ci - p[1], 1.0, 0.0, unc_ci)
-            chl = (
-                w_ci * chl_ci
-                + w_oc * chl_oc
-                + (1.0 - w_ci - w_oc) * blend(p, chl_ci, chl_oc)
+            chl_oc = oc.f(p[4:9], jnp.squeeze(x[1:, :-1]))
+            chl = jnp.where(  # no fuzzy in-range
+                chl_ci < p[0],
+                chl_ci,
+                jnp.where(chl_ci > p[1], chl_oc, blend(p, chl_ci, chl_oc)),
             )
             return jnp.log10(chl) if as_log10 else chl
 

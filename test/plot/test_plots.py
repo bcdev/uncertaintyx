@@ -155,7 +155,7 @@ class TrendPlotTest(unittest.TestCase):
             xrange=(1997.75, 2024.25),
             yrange=(0.7, 1.5),
             xticks=np.linspace(1999, 2023, 9),
-            savefig="poc_trend.png" if True else None,
+            savefig="poc_trend.png" if False else None,
             title="Particulate organic carbon (1998 - 2024)",
         )
         years = (1998.0 + 1.0 / 12, 2024.0 - 1.0 / 12.0)
@@ -171,7 +171,7 @@ class TrendPlotTest(unittest.TestCase):
             cbar_min=-0.0001,
             cbar_label=r"trend variance-covariance / (Gt C)$^2$",
             cmap="cividis",
-            savefig="poc_trend_cov.png" if True else None,
+            savefig="poc_trend_cov.png" if False else None,
             title="Particulate organic carbon (1998 - 2024)",
         )
 
@@ -217,7 +217,7 @@ class TrendPlotTest(unittest.TestCase):
             xrange=(1997.75, 2023.25),
             yrange=(51.5, 64.5),
             xticks=np.linspace(1998, 2023, 6),
-            savefig="pp_trend.png" if True else None,
+            savefig="pp_trend.png" if False else None,
             title="Primary production (1998 - 2023)",
         )
         years = (1998.0 + 1.0 / 12, 2023.0 - 1.0 / 12.0)
@@ -233,7 +233,7 @@ class TrendPlotTest(unittest.TestCase):
             cbar_min=-0.02,
             cbar_label=r"trend variance-covariance / (Gt C)$^2$",
             cmap="cividis",
-            savefig="pp_trend_cov.png" if True else None,
+            savefig="pp_trend_cov.png" if False else None,
             title="Primary production (1998 - 2023)",
         )
 
@@ -264,9 +264,12 @@ class WaterClassLinePlotTest(unittest.TestCase):
             "test.resources.oceancolour", "owt.csv"
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
+        U = np.asarray(  # noqa : N806
+            [[0.05, 0.05, 0.05, 0.10, 0.20]] * R[:, 1:]
+        )
 
         f = OCI()
-        x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
+        x = np.stack([W[:, 1:], R[:, 1:], U], axis=1)
         p = f.prior(preset="OC4_MERIS")
         y = f.eval(p, x)
         g = f.jac_x(p, x)
@@ -278,7 +281,7 @@ class WaterClassLinePlotTest(unittest.TestCase):
             ylabel=r"elasticity "
             r"$\epsilon(C_{\mathrm{chl}}, R_{\mathrm{rs}}(\lambda))$",
             yrange=(-4.5, 4.5),
-            savefig="chlorophyll_elasticity.png" if False else None,
+            savefig="chlorophyll_elasticity.png" if True else None,
         )
         self.assertIsNotNone(fig)
 
@@ -287,9 +290,12 @@ class WaterClassLinePlotTest(unittest.TestCase):
             "test.resources.oceancolour", "owt.csv"
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
+        U = np.asarray(  # noqa : N806
+            [[0.05, 0.05, 0.05, 0.10, 0.20]] * R[:, 1:]
+        )
 
         f = MaranonOCI()
-        x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
+        x = np.stack([W[:, 1:], R[:, 1:], U], axis=1)
         p = f.prior(preset="OC4_MERIS")
         y = f.eval(p, x)
         g = f.jac_x(p, x)
@@ -301,7 +307,7 @@ class WaterClassLinePlotTest(unittest.TestCase):
             ylabel=r"elasticity "
             r"$\epsilon(C_{\mathrm{phy}}, R_{\mathrm{rs}}(\lambda))$",
             yrange=(-4.5, 4.5),
-            savefig="phytoplankton_elasticity.png" if False else None,
+            savefig="phytoplankton_elasticity.png" if True else None,
         )
         self.assertIsNotNone(fig)
 
@@ -314,14 +320,14 @@ class WaterClassScatterPlotTest(unittest.TestCase):
             "test.resources.oceancolour", "owt.csv"
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
+        U = np.asarray(  # noqa : N806
+            [[0.05, 0.05, 0.05, 0.10, 0.20]] * R[:, 1:]
+        )
 
         f_oc = OCI(True)
-        x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
+        x = np.stack([W[:, 1:], R[:, 1:], U], axis=1)
         u = np.stack(
-            [
-                np.broadcast_to(0.0, (M, 5)),
-                np.asarray([[0.05, 0.05, 0.05, 0.10, 0.20]] * R[:, 1:]),
-            ],
+            [np.broadcast_to(0.0, (M, 5)), U, np.broadcast_to(0.0, (M, 5))],
             axis=1,
         )
         p = f_oc.prior(preset="OC4_MERIS")
@@ -340,7 +346,7 @@ class WaterClassScatterPlotTest(unittest.TestCase):
             u_oc,
             xlabel=r"$R_{\mathrm{rs}}(443~\text{nm})$ (sr$^{-1}$)",
             ylabel=r"$\log_{10} C_{\mathrm{chl}}$ (mg m$^{-3}$)",
-            savefig="chlorophyll_uncertainty.png" if False else None,
+            savefig="chlorophyll_uncertainty.png" if True else None,
         )
         self.assertIsNotNone(fig)
 
@@ -349,15 +355,15 @@ class WaterClassScatterPlotTest(unittest.TestCase):
             "test.resources.oceancolour", "owt.csv"
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
+        U = np.asarray(  # noqa : N806
+            [[0.05, 0.05, 0.05, 0.10, 0.20]] * R[:, 1:]
+        )
 
         f_oc = OCI(True)
         f_pc = MaranonOCI(True)
-        x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
+        x = np.stack([W[:, 1:], R[:, 1:], U], axis=1)
         u = np.stack(
-            [
-                np.broadcast_to(0.0, (M, 5)),
-                np.asarray([[0.05, 0.05, 0.05, 0.10, 0.20]] * R[:, 1:]),
-            ],
+            [np.broadcast_to(0.0, (M, 5)), U, np.broadcast_to(0.0, (M, 5))],
             axis=1,
         )
         p = f_pc.prior(preset="OC4_MERIS")
@@ -378,7 +384,7 @@ class WaterClassScatterPlotTest(unittest.TestCase):
             u_pc,
             xlabel=r"$\log_{10} C_{\mathrm{chl}}$ (mg m$^{-3}$)",
             ylabel=r"$\log_{10} C_{\mathrm{phy}}$ (mg C m$^{-3}$)",
-            savefig="phytoplankton_uncertainty.png" if False else None,
+            savefig="phytoplankton_uncertainty.png" if True else None,
         )
         self.assertIsNotNone(fig)
 
