@@ -183,6 +183,7 @@ def nan_softmax(x: Array, u) -> Array:
     :param u: The uncertainty parameter :math:`u > 0`.
     :returns: The softmax values :math:`\sigma(x, u) \in (0, 1)^n`.
     """
+    u = jnp.where(u > 0.0, u, jnp.nan)
     valid = x == x
     y = jnp.where(valid, x, 0.0) / u  # noqa
     z = jnn.softmax(y, where=valid)
