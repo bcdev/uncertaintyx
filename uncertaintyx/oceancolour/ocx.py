@@ -26,11 +26,18 @@ import jax.numpy as jnp
 import numpy as np
 
 from ..m.jax import ToM
+from ..m.jax import jac_x
+from ..m.jax import lpu_x
+from ..math.jax import fuzzy_ge
+from ..math.jax import fuzzy_gt
+from ..math.jax import fuzzy_lt
+from ..math.jax import gumbel_uncertainty
+from ..math.jax import softmax
 
 
 class CI(ToM):
     """
-    NASA's ocean colour chlorophyll index (CI) model function.
+    The differentiable ocean colour chlorophyll index (∂CI) model function.
 
     The nearest wavebands to 443, 555, and 670 nm are used for the blue,
     green, and red, respectively, for all sensors.
@@ -47,20 +54,29 @@ class CI(ToM):
             parameters and let :math:`\lambda = (\lambda_\mathrm{b},
             \lambda_\mathrm{g}, \lambda_\mathrm{r}) \in \mathbb{R}^{3}`
             denote the central wavelengths of wavebands in the blue,
-            green and red, respectively. Further let
+            green and red, respectively. Further let either
 
             .. math::
                 x = (\lambda, R_\mathrm{rs}(\lambda))
                 \in \mathbb{R}^{2 \times 3}
 
-            denote the function inputs. Then:
+            or
+
+            .. math::
+                x = (\lambda, R_\mathrm{rs}(\lambda), U_\mathrm{rs}(\lambda))
+                \in \mathbb{R}^{3 \times 3}
+
+            with standard uncertainties :math:`U_\mathrm{rs}(\lambda)` be
+            the function inputs. If uncertainties are provided, green band
+            remote sensing reflectance corrections are weighted by the
+            probability of the threshold condition holding.
 
             :param p: The parameters :math:`p \in \mathbb{R}^{2}`.
-            :param x: The inputs :math:`x \in \mathbb{R}^{2 \times 3}`.
+            :param x: The inputs :math:`x`.
             :returns: The chlorophyll concentration (mg m-3).
             """
 
-            def maybe_convert(g, G):  # noqa: N806
+            def maybe_convert(g, G, U):  # noqa: N806
                 r"""
                 Converts remote sensing reflectance in the green
                 waveband, if its central wavelength is not within
@@ -74,30 +90,29 @@ class CI(ToM):
                         [0.000891, 1.039, -0.183044, 0.971, -0.000170],
                     ]
                 )
+                # noinspection PyTypeChecker
                 return jnp.where(
                     g < 547.5,
-                    convert(G, c[0]),
+                    convert(c[0], G, U),
                     jnp.where(
                         g < 553.0,
-                        convert(G, c[1]),
+                        convert(c[1], G, U),
                         jnp.where(
                             g > 562.5,
-                            convert(G, c[2]),
+                            convert(c[3], G, U),
                             jnp.where(
                                 g > 557.0,
-                                convert(G, c[2]),
+                                convert(c[2], G, U),
                                 G,
                             ),
                         ),
                     ),
                 )
 
-            def convert(x, c):
+            def convert(c, x, u):
                 sw, a1, b1, a2, b2 = c
-                return jnp.where(
-                    x < sw,
-                    10.0 ** (a1 * jnp.log10(x) - b1),
-                    a2 * x - b2,
+                return fuzzy_gt(
+                    sw - x, 10.0 ** (a1 * jnp.log10(x) - b1), a2 * x - b2, u
                 )
 
             a0, a1 = p
@@ -105,7 +120,9 @@ class CI(ToM):
             g = x[0, 1]
             r = x[0, 2]
             B = x[1, 0]  # noqa: N806
-            G = maybe_convert(g, x[1, 1])  # noqa: N806
+            G = maybe_convert(  # noqa: N806
+                g, x[1, 1], x[2, 1] if x.shape[0] == 3 else 0.0
+            )
             R = x[1, 2]  # noqa: N806
             c = G - (B + (R - B) * (g - b) / (r - b))
 
@@ -125,7 +142,7 @@ class CI(ToM):
 
 class OCx(ToM):
     """
-    NASA's OCx chlorophyll model function.
+    The differentiable ∂OCx chlorophyll model function.
 
     The 2-4 nearest wavebands to 412, 443, 490 and 510 nm are used
     for the blue, while the nearest waveband to 555 nm is used for
@@ -144,19 +161,33 @@ class OCx(ToM):
             \lambda_\mathrm{m}) \in \mathbb{R}^{m}` denote the central
             wavelengths of :math:`2 \le m-1 \le 4` wavebands in the blue,
             and a single waveband :math:`\lambda_{m}` in the green.
-            Further let
+            Further let either
 
             .. math::
                 x = R_\mathrm{rs}(\lambda) \in \mathbb{R}^{m}
 
-            denote the function inputs. Then:
+            or
+
+            .. math::
+                x = (R_\mathrm{rs}(\lambda), U_\mathrm{rs}(\lambda))
+                \in \mathbb{R}^{2 \times m}
+
+            with standard uncertainties :math:`U_\mathrm{rs}(\lambda)` be
+            the function inputs. If uncertainties are provided, blue-to-green
+            band ratio polynomials are weighted by the probability of the
+            maximum condition holding.
 
             :param p: The parameters :math:`p \in \mathbb{R}^{5}`.
-            :param x: The inputs :math:`x \in \mathbb{R}^{m}`.
+            :param x: The inputs :math:`x`.
             :returns: The chlorophyll concentration (mg m-3).
             """
-            b = jnp.log10(jnp.nanmax(x[:-1]) / x[-1])
-            return 10.0 ** jnp.polyval(p[::-1], b)
+            if x.ndim == 1:
+                b = jnp.log10(jnp.nanmax(x[:-1]) / x[-1])
+                return 10.0 ** jnp.polyval(p[::-1], b)
+            R, U = x  # noqa: N806
+            w = softmax(R[:-1], gumbel_uncertainty(U[:-1]))
+            b = jnp.log10(jnp.where(w > 0.0, R[:-1], 1.0) / R[-1])
+            return 10.0 ** jnp.dot(w, jnp.polyval(p[::-1], b))
 
         super().__init__(f)
 
@@ -215,21 +246,20 @@ class OCx(ToM):
 
 class OCI(ToM):
     """
-    The blended OCx/CI model function.
+    The differentiable blended ∂OCI model function.
 
     The 2-4 nearest wavebands to 412, 443, 490 and 510 nm are used
     for the blue, while the nearest waveband to 555 nm is used for
     the green, and the nearest waveband to 670 nm is used for the
     red.
 
-    The blending occurs when :class:`OCx` is between, e.g.,
+    The blending occurs when :class:`CI` is between, e.g.,
     0.25-0.35 mg m-3, creating a smooth handover between :class:`CI`
     (low chlorophyll specialist) and :class:`OCx` (baseline). The
-    blending uses perfectly normalized weights. Low :class:`CI`
-    values favour :class:`CI` while high :class:`CI` values
-    favour :class:`OCx` through self-weighting. A quadratic term
-    creates curvature that eliminates boundary discontinuities while
-    :class:`OCx` acts as regime detector.
+    blending uses normalized weights. Low :class:`CI` values favour
+    :class:`CI` while high :class:`CI` values favour :class:`OCx` through
+    self-weighting. A quadratic term creates curvature that eliminates
+    boundary discontinuities while :class:`CI` acts as regime detector.
     """
 
     def __init__(self, as_log10: bool = False, b: Literal[0, 1] = 0):
@@ -248,36 +278,58 @@ class OCI(ToM):
 
             The blending is self-adjusting.
 
-            Let :math:`p = \in \mathbb{R}^{k}, k = 2 + 2 + 5` be the
+            Let :math:`p \in \mathbb{R}^{k}, k = 2 + 2 + 5` be the
             model parameters and let :math:`\lambda = (\lambda_1,\dots
             \lambda_\mathrm{m}) \in \mathbb{R}^{m}` denote the central
             wavelengths of :math:`2 \le m-2 \le 4` wavebands in the blue,
             and a single waveband :math:`\lambda_{m-1}` in the green, and
             a single waveband :math:`\lambda_{m}` in the red. Further let
+            either
 
             .. math::
                 x = (\lambda, R_\mathrm{rs}(\lambda))
                 \in \mathbb{R}^{2 \times m}
 
-            denote the function inputs. Then:
+            or
+
+            .. math::
+                x = (\lambda, R_\mathrm{rs}(\lambda), U_\mathrm{rs}(\lambda))
+                \in \mathbb{R}^{3 \times m}
+
+            with standard uncertainties :math:`U_\mathrm{rs}(\lambda)` be
+            the function inputs.
 
             :param p: The parameters :math:`p \in \mathbb{R}^{k}`.
-            :param x: The inputs :math:`x \in \mathbb{R}^{2 \times m}`.
+            :param x: The inputs :math:`x`.
             :returns: The chlorophyll concentration (mg m-3).
             """
 
-            def blend(p, ci, cx):
+            def blend(p, chl_ci, chl_oc):
                 """Returns the blended chlorophyll concentration."""
-                ti = p[1] - ci
-                tx = ci - p[0]
-                return (ci * ti + cx * tx) / (p[1] - p[0])
+                ti = p[1] - chl_ci
+                tx = chl_ci - p[0]
+                return (chl_ci * ti + chl_oc * tx) / (p[1] - p[0])
 
-            ci_ = ci.f(p[2:4], x[:, [b, -2, -1]])
-            oc_ = oc.f(p[4:9], x[1, 0:-1])
-            chl = jnp.where(
-                oc_ < p[0],
-                ci_,
-                jnp.where(oc_ > p[1], oc_, blend(p, ci_, oc_)),
+            def lpu_ci(p, x, u):
+                """Propagates standard uncertainty."""
+                var = jnp.zeros_like(x).at[1].set(jnp.square(u))
+                return jnp.sqrt(
+                    lpu_x(x.ndim, jac_x(ci.f, p, x), var, diag=True)
+                )
+
+            chl_ci = ci.f(p[2:4], x[:, [b, -2, -1]])
+            if x.shape[0] == 3:
+                chl_oc = oc.f(p[4:9], x[1:, 0:-1])
+                unc_ci = lpu_ci(p[2:4], x[:, [b, -2, -1]], x[2, [b, -2, -1]])
+            else:
+                chl_oc = oc.f(p[4:9], x[1, 0:-1])
+                unc_ci = 0.0
+            w_ci = fuzzy_lt(chl_ci - p[0], 1.0, 0.0, unc_ci)
+            w_oc = fuzzy_ge(chl_ci - p[1], 1.0, 0.0, unc_ci)
+            chl = (
+                w_ci * chl_ci
+                + w_oc * chl_oc
+                + (1.0 - w_ci - w_oc) * blend(p, chl_ci, chl_oc)
             )
             return jnp.log10(chl) if as_log10 else chl
 
