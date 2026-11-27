@@ -11,12 +11,13 @@ import jax.numpy as jnp
 import numpy as np
 
 from ..m.jax import ToM
+from ..math.jax import fuzzy_gt
 
 
 class QAA(ToM):
     r"""
-    The Quasi-Analytical Algorithm (QAA) to compute inherent
-    optical properties.
+    The differentiable Quasi-Analytical Algorithm (∂QAA) to compute
+    inherent optical properties.
 
     Let :math:`m \ge 5` denote the number of spectral wavebands
     with nomial wavelengths :math:`\lambda = (\lambda_1, \dots, \lambda_m`).
@@ -79,8 +80,25 @@ class QAA(ToM):
            b_\mathrm{bw}(\lambda))
            \in \mathbb{R}^{4 \times m}
 
-    QAA returns outputs in batches :math:`Y` of the same size and
-    consisting of samples:
+    or
+
+       .. math::
+           x = (\lambda,
+           R_\mathrm{rs}(\lambda),
+           U_\mathrm{rs}(\lambda),
+           a_\mathrm{w}(\lambda),
+           b_\mathrm{bw}(\lambda))
+           \in \mathbb{R}^{4 \times m}
+
+    with remote sensing reflectance standard uncertainties
+    :math:`U_\mathrm{rs}(\lambda)`. If standard uncertainties
+    are supplied, Case 1 and 2 algorithms are weighted by the
+    probability of the remote sensing reflectance threshold
+    condition holding.
+
+    QAA returns outputs in
+    batches :math:`Y` of the same size and consisting of
+    samples:
 
        .. math::
            y = (a(\lambda),
@@ -255,7 +273,7 @@ class QAA(ToM):
             :math:`m \ge 5` denote the number of spectral wavebands
             with nomial wavelengths
             :math:`\lambda = (\lambda_1, \dots, \lambda_m)`.
-            Further let
+            Further let either
 
             .. math::
                 x = (\lambda, R_\mathrm{rs}(\lambda),
@@ -263,7 +281,18 @@ class QAA(ToM):
                 b_\mathrm{bw}(\lambda))
                 \in \mathbb{R}^{4 \times m}
 
-            denote the function inputs, and let
+            or
+
+            .. math::
+                x = (\lambda, R_\mathrm{rs}(\lambda),
+                U_\mathrm{rs}(\lambda),
+                a_\mathrm{w}(\lambda),
+                b_\mathrm{bw}(\lambda))
+                \in \mathbb{R}^{5 \times m}
+
+            denote the function inputs with remote sensing reflectance
+            standard uncertainties :math:`U_\mathrm{rs}(\lambda)`,
+            and let
 
             .. math::
                 y = (a(\lambda),
@@ -279,32 +308,28 @@ class QAA(ToM):
             """
             r0, r1, g0, g1, h0, h1, h2, e0, e1, e2, s0, s1, s2, t1 = p
             W = x[0]  # noqa: N806
-            R = x[1]  # noqa: N806
-            aw = x[2]
-            bw = x[3]
+            R = x[1] # noqa: N806
+            U = x[2] if x.shape[0] == 5 else jnp.zeros_like(R)  # noqa: N806
+            aw = x[-2]
+            bw = x[-1]
             # 1
             r = _r(R, r0, r1)
             u = _u(r, g0, g1)
             # 2
-            a = jnp.where(
-                R[i670] < t1,
-                _a_1(r, aw, h0, h1, h2),
-                _a_2(R, aw),
-            )
+            a1 = _a_1(r, aw, h0, h1, h2)
+            a2 = _a_2(R, aw)
             # 3
-            b = jnp.where(
-                R[i670] < t1,
-                _b(u[i555], a, bw[i555]),
-                _b(u[i670], a, bw[i670]),
-            )
+            b1 = _b(u[i555], a1, bw[i555])
+            b2 = _b(u[i670], a2, bw[i670])
             # 4
             i = r[i443] / r[i555]
             e = _e(i, e0, e1, e2)
             # 5
-            bbp = b * jnp.where(
-                R[i670] < t1,
-                jnp.power(W[i555] / W, e),
-                jnp.power(W[i670] / W, e),
+            bbp = fuzzy_gt(
+                t1 - R[i670],
+                b1 * jnp.power(W[i555] / W, e),
+                b2 * jnp.power(W[i670] / W, e),
+                U[i670],
             )
             # 6
             a = (1.0 - u) * (bw + bbp) / u
