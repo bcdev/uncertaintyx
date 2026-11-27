@@ -57,7 +57,7 @@ def lpu(d: int, g: Tensor, u: Tensor, diag: bool = False) -> Tensor:
     for some :math:`d \in \mathbb{N}`. The summation is taken over
     all :math:`k, l \in D`.
 
-    Under the same notation as :meth:`lpu_p`:
+    Under the same notation as :func:`lpu_p`:
 
     :param d: The number of inner tensor dimensions.
     :param g: Jacobian :math:`G \in \mathbb{R}^{M \times \cdots \times D}`.
@@ -97,7 +97,7 @@ def vec(f: Callable[[Tensor], Tensor], x: Tensor) -> Tensor:
     r"""
     Evaluates :math:`f(X)`.
 
-    Under the same notation as :meth:`jac`:
+    Under the same notation as :func:`jac`:
 
     :param f: The function :math:`f`.
     :param x: :math:`X \in \mathbb{R}^{M \times m}`.
@@ -109,7 +109,7 @@ def vec(f: Callable[[Tensor], Tensor], x: Tensor) -> Tensor:
 def jac_no_jit(  # pragma: no cover
     f: Callable[[Tensor], Tensor], x: Tensor, rev: bool = True
 ) -> Tensor:
-    """Noncompiled version of :meth:`jac` for debugging."""
+    """Noncompiled version of :func:`jac` for debugging."""
     return torch.vmap(torch.func.jacrev(f) if rev else torch.func.jacfwd(f))(
         x
     )
@@ -118,7 +118,7 @@ def jac_no_jit(  # pragma: no cover
 def vec_no_jit(  # pragma: no cover
     f: Callable[[Tensor], Tensor], x: Tensor
 ) -> Tensor:
-    """Noncompiled version of :meth:`vec` for debugging."""
+    """Noncompiled version of :func:`vec` for debugging."""
     return torch.vmap(f)(x)
 
 

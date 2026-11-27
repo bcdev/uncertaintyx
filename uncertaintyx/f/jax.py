@@ -57,7 +57,7 @@ def lpu(d: int, g: Array, u: Array, diag: bool = False) -> Array:
     for some :math:`d \in \mathbb{N}`. The summation is taken over
     all :math:`k, l \in D`.
 
-    Under the same notation as :meth:`lpu_p`:
+    Under the same notation as :func:`lpu_p`:
 
     :param d: The number of inner tensor dimensions.
     :param g: Jacobian :math:`G \in \mathbb{R}^{M \times \cdots \times D}`.
@@ -95,7 +95,7 @@ def vec(f: Callable[[Array], Array], x: Array) -> Array:
     r"""
     Evaluates :math:`f(X)`.
 
-    Under the same notation as :meth:`jac`:
+    Under the same notation as :func:`jac`:
 
     :param f: The function :math:`f`.
     :param x: :math:`X \in \mathbb{R}^{M \times m}`.
@@ -107,14 +107,14 @@ def vec(f: Callable[[Array], Array], x: Array) -> Array:
 def jac_no_jit(  # pragma: no cover
     f: Callable[[Array], Array], x: Array, rev: bool = True
 ) -> Array:
-    """Noncompiled version of :meth:`jac` for debugging."""
+    """Noncompiled version of :func:`jac` for debugging."""
     return jax.vmap(jax.jacrev(f) if rev else jax.jacfwd(f))(x)
 
 
 def vec_no_jit(  # pragma: no cover
     f: Callable[[Array], Array], x: Array
 ) -> Array:
-    """Noncompiled version of :meth:`vec` for debugging."""
+    """Noncompiled version of :func:`vec` for debugging."""
     return jax.vmap(f)(x)
 
 

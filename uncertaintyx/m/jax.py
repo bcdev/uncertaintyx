@@ -53,7 +53,7 @@ def jac_x(
     Evaluates the Jacobian :math:`(G_x f)(p, X)` with respect
     to inputs.
 
-    Under the same notation as :meth:`jac_p`:
+    Under the same notation as :func:`jac_p`:
 
     :param f: The function :math:`f`.
     :param p: :math:`p \in \mathbb{R}^{k}`.
@@ -121,7 +121,7 @@ def lpu_x(d: int, g: Array, u: Array, diag: bool = False) -> Array:
     for some :math:`d \in \mathbb{N}`. The summation is taken over
     all :math:`k, l \in D`.
 
-    Under the same notation as :meth:`lpu_p`:
+    Under the same notation as :func:`lpu_p`:
 
     :param d: The number of inner tensor dimensions.
     :param g: Jacobian :math:`G \in \mathbb{R}^{M \times \cdots \times D}`.
@@ -159,7 +159,7 @@ def vec_x(f: Callable[[Array, Array], Array], p: Array, x: Array) -> Array:
     r"""
     Evaluates :math:`f(p, X)`.
 
-    Under the same notation as :meth:`jac_p`:
+    Under the same notation as :func:`jac_p`:
 
     :param f: The function :math:`f`.
     :param p: :math:`p \in \mathbb{R}^{k}`.
@@ -172,21 +172,21 @@ def vec_x(f: Callable[[Array, Array], Array], p: Array, x: Array) -> Array:
 def jac_p_no_jit(  # pragma: no cover
     f: Callable[[Array, Array], Array], p: Array, x: Array, rev: bool = True
 ) -> Array:
-    """Noncompiled version of :meth:`jac_p` for debugging."""
+    """Noncompiled version of :func:`jac_p` for debugging."""
     return jax.vmap(jac(f, 0, rev), in_axes=(None, 0))(p, x)
 
 
 def jac_x_no_jit(  # pragma: no cover
     f: Callable[[Array, Array], Array], p: Array, x: Array, rev: bool = True
 ) -> Array:
-    """Noncompiled version of :meth:`jac_x` for debugging."""
+    """Noncompiled version of :func:`jac_x` for debugging."""
     return jax.vmap(jac(f, 1, rev), in_axes=(None, 0))(p, x)
 
 
 def vec_x_no_jit(  # pragma: no cover
     f: Callable[[Array, Array], Array], p: Array, x: Array
 ) -> Array:
-    """Noncompiled version of :meth:`vec_x` for debugging."""
+    """Noncompiled version of :func:`vec_x` for debugging."""
     return jax.vmap(f, in_axes=(None, 0))(p, x)
 
 

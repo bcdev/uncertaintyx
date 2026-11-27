@@ -84,7 +84,7 @@ def make_lpu(d: int, diag: bool = False) -> Callable[[Array, Array], Array]:
 def jac_no_jit(  # pragma: no cover
     f: Callable[[Array], Array], p: Array, rev: bool = False
 ) -> Array:
-    """Noncompiled version of :meth:`jac` for debugging."""
+    """Noncompiled version of :func:`jac` for debugging."""
     return jax.jacrev(f)(p) if rev else jax.jacfwd(f)(p)
 
 

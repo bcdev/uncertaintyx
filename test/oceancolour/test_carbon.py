@@ -45,14 +45,12 @@ class MaranonTest(unittest.TestCase):
             "test.resources.oceancolour", "owt.csv"
         )
         W = np.broadcast_to(w, (M, m))  # noqa : N806
+        U = np.asarray([[0.05, 0.05, 0.05, 0.05, 0.10]] * R[:, 1:])
 
         f = MaranonOCI(True)
-        x = np.stack([W[:, 1:], R[:, 1:]], axis=1)
+        x = np.stack([W[:, 1:], R[:, 1:], U], axis=1)
         u = np.stack(
-            [
-                np.broadcast_to(0.0, (M, 5)),
-                np.asarray([[0.05, 0.05, 0.05, 0.05, 0.10]] * R[:, 1:]),
-            ],
+            [np.broadcast_to(0.0, (M, 5)), U, np.broadcast_to(0.0, (M, 5))],
             axis=1,
         )
         p = f.prior(preset="OC4_MERIS")
@@ -65,7 +63,7 @@ class MaranonTest(unittest.TestCase):
         self.assertAlmostEqual(0.781, y[3], places=3)
         self.assertAlmostEqual(0.939, y[4], places=3)
         self.assertAlmostEqual(1.062, y[5], places=3)
-        self.assertAlmostEqual(1.134, y[6], places=3)
+        self.assertAlmostEqual(1.178, y[6], places=3)
         self.assertAlmostEqual(1.277, y[7], places=3)
         self.assertAlmostEqual(1.533, y[8], places=3)
         self.assertAlmostEqual(1.651, y[9], places=3)
@@ -85,7 +83,7 @@ class MaranonTest(unittest.TestCase):
         self.assertAlmostEqual(0.050, u[3], places=3)
         self.assertAlmostEqual(0.043, u[4], places=3)
         self.assertAlmostEqual(0.038, u[5], places=3)
-        self.assertAlmostEqual(0.052, u[6], places=3)
+        self.assertAlmostEqual(0.034, u[6], places=3)
         self.assertAlmostEqual(0.051, u[7], places=3)
         self.assertAlmostEqual(0.050, u[8], places=3)
         self.assertAlmostEqual(0.057, u[9], places=3)
