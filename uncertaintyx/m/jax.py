@@ -42,7 +42,7 @@ def jac_p(
     :param rev: Use reverse mode.
     :returns: :math:`(G_p f)(p, X) \in \mathbb{R}^{M \times n \times k}`.
     """
-    return jax.vmap(jac(f, 0, rev), in_axes=(None, 0))(p, x)
+    return jax.vmap(make_jac_p(f, rev), in_axes=(None, 0))(p, x)
 
 
 @jax.jit(static_argnums=(0, 3))
@@ -61,7 +61,7 @@ def jac_x(
     :param rev: Use reverse mode.
     :returns: :math:`(G_x f)(p, X) \in \mathbb{R}^{M \times n \times m}`.
     """
-    return jax.vmap(jac(f, 1, rev), in_axes=(None, 0))(p, x)
+    return jax.vmap(make_jac_x(f, rev), in_axes=(None, 0))(p, x)
 
 
 def jac(f: Callable[[Array, Array], Array], arg: int, rev: bool = True):
@@ -130,6 +130,32 @@ def lpu_x(d: int, g: Array, u: Array, diag: bool = False) -> Array:
     :returns: Tensor :math:`V \in \mathbb{R}^{M \times \cdots}`.
     """
     return jax.vmap(make_lpu(d, diag), in_axes=(0, 0))(g, u)
+
+
+def make_jac_p(
+    f: Callable[[Array, Array], Array], rev: bool = True
+) -> Callable[[Array, Array], Array]:
+    """
+    Returns the single-sample Jacobian with respect to model parameters.
+
+    :param f: The single-sample function.
+    :param rev: Use reverse mode.
+    :returns: The single-sample Jacobian.
+    """
+    return jac(f, 0, rev)
+
+
+def make_jac_x(
+    f: Callable[[Array, Array], Array], rev: bool = True
+) -> Callable[[Array, Array], Array]:
+    """
+    Returns the single-sample Jacobian with respect to inputs.
+
+    :param f: The single-sample function.
+    :param rev: Use reverse mode.
+    :returns: The single-sample Jacobian.
+    """
+    return jac(f, 1, rev)
 
 
 def make_lpu(d: int, diag: bool = False) -> Callable[[Array, Array], Array]:

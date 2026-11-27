@@ -37,7 +37,7 @@ def jac(f: Callable[[Array], Array], x: Array, rev: bool = True) -> Array:
     :param rev: Use reverse mode.
     :returns: :math:`(G_x f)(X) \in \mathbb{R}^{M \times n \times m}`.
     """
-    return jax.vmap(jax.jacrev(f) if rev else jax.jacfwd(f))(x)
+    return jax.vmap(make_jac(f, rev))(x)
 
 
 @jax.jit(static_argnums=(0, 3))
@@ -66,6 +66,19 @@ def lpu(d: int, g: Array, u: Array, diag: bool = False) -> Array:
     :returns: Tensor :math:`V \in \mathbb{R}^{M \times \cdots}`.
     """
     return jax.vmap(make_lpu(d, diag), in_axes=(0, 0))(g, u)
+
+
+def make_jac(
+    f: Callable[[Array], Array], rev: bool = True
+) -> Callable[[Array], Array]:
+    """
+    Returns the single-sample Jacobian.
+
+    :param f: The single-sample function.
+    :param rev: Use reverse mode.
+    :returns: The single-sample Jacobian.
+    """
+    return jax.jacrev(f) if rev else jax.jacfwd(f)
 
 
 def make_lpu(d: int, diag: bool = False) -> Callable[[Array, Array], Array]:
