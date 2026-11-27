@@ -157,7 +157,7 @@ def gumbel_uncertainty(u: Array) -> Array:
     of random variables. In the context of uncertainty propagation,
     adding Gumbel noise with scale :math:`u_{\mathrm{G}}` to finite
     values :math:`x` yields exact softmax probabilities
-    :math:`\sigma(x, u_{\mathrm{G})` for each element being the
+    :math:`\sigma(x, u_{\mathrm{G}})` for each element being the
     maximum.
 
     :param u: The standard uncertainties :math:`u`.
