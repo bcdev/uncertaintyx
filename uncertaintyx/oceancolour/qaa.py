@@ -308,7 +308,7 @@ class QAA(ToM):
             """
             r0, r1, g0, g1, h0, h1, h2, e0, e1, e2, s0, s1, s2, t1 = p
             W = x[0]  # noqa: N806
-            R = x[1] # noqa: N806
+            R = x[1]  # noqa: N806
             U = x[2] if x.shape[0] == 5 else jnp.zeros_like(R)  # noqa: N806
             aw = x[-2]
             bw = x[-1]
